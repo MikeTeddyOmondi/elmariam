@@ -1,0 +1,20 @@
+{
+  "name": "mail-service",
+  "version": "1.0.0",
+  "description": "A mail service built on Express(Node.js)",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "nodemon -L index.js"
+  },
+  "keywords": [],
+  "author": "MikeTeddyOmondi",
+  "license": "MIT",
+  "dependencies": {
+    "amqplib": "^0.10.3",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "nodemailer": "^6.9.1",
+    "nodemailer-express-handlebars": "^6.1.0"
+  }
+}

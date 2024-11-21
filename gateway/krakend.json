@@ -1,0 +1,1161 @@
+{
+  "$schema": "https://www.krakend.io/schema/v3.json",
+  "version": 3,
+  "name": "hotel-elmariam-api-gateway",
+  "timeout": "30000ms",
+  "cache_ttl": "3600s",
+  "disable_rest": false,
+  "port": 8009,
+  "extra_config": {
+    "router": {
+      "return_error_msg": true,
+      "auto_options": true,
+      "error_body": {
+        "404": {
+          "msg": "Unknown endpoint!",
+          "status": 404
+        }
+      }
+    },
+    "security/cors": {
+      "allow_origins": ["http*"],
+      "allow_methods": ["GET", "HEAD", "POST", "OPTIONS"],
+      "expose_headers": ["Content-Length", "Content-Type"],
+      "allow_credentials": true,
+      "allow_headers": [
+        "Accept",
+        "Authorization",
+        "Accept-Language",
+        "Accept-Encoding",
+        "Access-Control-Request-Headers",
+        "Access-Control-Request-Method",
+        "Access-Control-Allow-Origin",
+        "Access-Control-Allow-Credentials",
+        "Origin",
+        "Cookie",
+        "Content-Type",
+        "Cache-Control",
+        "Pragma",
+        "Host",
+        "User-Agent",
+        "Connection",
+        "Referer",
+        "Sec-Fetch-Dest",
+        "Sec-Fetch-Mode",
+        "Sec-Fetch-Site",
+        "X-Refresh-Token"
+      ],
+      "max_age": "12h",
+      "debug": true
+    }
+  },
+  "endpoints": [
+    {
+      "endpoint": "/api/auth/version",
+      "method": "GET",
+      "output_encoding": "json",
+      "input_headers": ["Content-Type"],
+      "backend": [
+        {
+          "url_pattern": "/api/v1",
+          "method": "GET",
+          "encoding": "json",
+          "sd": "static",
+          "host": ["http://auth:8000"]
+        }
+      ]
+    },
+    {
+      "endpoint": "/api/auth/register",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/register",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://auth:8000"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/login",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Content-Type", "Cookie"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/login",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://auth:8000"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        },
+        "modifier/martian": {
+          "header.Blacklist": {
+            "scope": ["response"],
+            "names": ["Access-Control-Allow-Credentials"]
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/user",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/user",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://auth:8000"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/accounts",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/accounts",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://auth:8000"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/refresh",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Authorization",
+        "Content-Type",
+        "Cookie",
+        "X-Refresh-Token"
+      ],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/refresh",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://auth:8000"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        },
+        "modifier/martian": {
+          "header.Blacklist": {
+            "scope": ["response"],
+            "names": ["Access-Control-Allow-Credentials"]
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/auth/logout",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": [
+        "Authorization",
+        "Content-Type",
+        "Cookie",
+        "X-Refresh-Token"
+      ],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/logout",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://auth:8000"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        },
+        "modifier/martian": {
+          "header.Blacklist": {
+            "scope": ["response"],
+            "names": ["Access-Control-Allow-Credentials"]
+          }
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/version",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/customers",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/customers",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/customers",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/customers",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/customers/{customerid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/customers/{customerid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/bookings",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/bookings",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/bookings",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/bookings",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/bookings/{bookingid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/bookings/{bookingid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/roomtypes",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/types",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/roomtypes",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/types",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/rooms",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/rooms/{roomtypeid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/{roomtypeid}",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/invoices",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/invoices",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/invoices/{invoiceid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/invoices/{invoiceid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/mpesa-payment/{invoiceid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/mpesa-payment/{invoiceid}",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/sms/{invoiceid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sms/{invoiceid}",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://hotel:8003"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/version",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/version",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/drinks",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/drinks",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/drinks/{drinkid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks/{drinkid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/drinks/{drinkid}",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks/{drinkid}",
+          "method": "PUT",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/drinks/{drinkid}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks/{drinkid}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/purchases",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/purchases",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/purchases",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/purchases",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/purchases/{purchaseid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/purchases/{purchaseid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/purchases/{purchaseid}",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/purchases/{purchaseid}",
+          "method": "PUT",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/purchases/{purchaseid}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/purchases/{purchaseid}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/{salesid}",
+      "method": "GET",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "method": "GET",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/{salesid}",
+      "method": "PUT",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "method": "PUT",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/{salesid}",
+      "method": "DELETE",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "method": "DELETE",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 15,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    },
+    {
+      "endpoint": "/api/bar/sales/lipa-mpesa/{salesid}",
+      "method": "POST",
+      "output_encoding": "no-op",
+      "input_headers": ["Authorization", "Content-Type"],
+      "input_query_strings": [],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/lipa-mpesa/{salesid}",
+          "method": "POST",
+          "encoding": "no-op",
+          "sd": "static",
+          "host": ["http://bar:8004"],
+          "disable_host_sanitize": false,
+          "target": "",
+          "is_collection": false,
+          "group": "",
+          "mapping": {}
+        }
+      ],
+      "extra_config": {
+        "qos/ratelimit/router": {
+          "max_rate": 10,
+          "client_max_rate": 5,
+          "strategy": "ip"
+        }
+      }
+    }
+  ]
+}

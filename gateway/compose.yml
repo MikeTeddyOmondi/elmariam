@@ -1,0 +1,16 @@
+services:
+  gateway:
+    container_name: elmariam-api-gateway
+    image: ranckosolutionsinc/elmariam-api-gateway:1.0.0
+    build: ./
+    restart: always
+    ports:
+      - 8009:8009
+    networks:
+      - elmariam-network
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

@@ -1,0 +1,10 @@
+node_modules/
+bar-service.yml
+Dockerfile
+README.md
+.dockerignore
+.env.sample
+.gitignore
+.justfile
+.snyk
+.git

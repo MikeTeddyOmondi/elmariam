@@ -1,0 +1,21 @@
+services:
+  reverse-proxy:
+    image: traefik:v2.10
+    container_name: elmariam-proxy
+    command: --api.insecure=true --providers.docker
+    restart: always
+    ports:
+      - "7979:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    labels:
+      - "traefik.enable=false"
+    networks:
+      - elmariam-network
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

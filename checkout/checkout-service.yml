@@ -1,0 +1,24 @@
+services:
+  checkout:
+    container_name: elmariam-checkout-svc
+    image: ranckosolutionsinc/elmariam-checkout-service:1.0.0
+    # build: ./
+    restart: always
+    environment:
+      - PORT=8008
+      - RABBITMQ_URL=${RABBITMQ_URL}
+      - INTASEND_API_TOKEN=${INTASEND_API_TOKEN}
+      - INTASEND_PUBLISHABLE_KEY=${INTASEND_PUBLISHABLE_KEY}
+      - INTASEND_TEST_MODE=${INTASEND_TEST_MODE}
+    # env_file:
+    #   - ./.env
+    ports:
+      - "8008:8008"
+    networks:
+      - elmariam-network
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

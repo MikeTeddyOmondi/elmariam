@@ -1,0 +1,45 @@
+version: 3
+timeout: 3000ms
+endpoints:
+  - endpoint: "/api/auth"
+    method: GET
+    output_encoding: json
+    backend:
+      - url_pattern: "/api/v1"
+        host:
+          - "http://localhost:5050"
+        encoding: json
+        sd: dns
+        healthcheck:
+          path: "/healthcheck"
+          interval: 10s
+          timeout: 2s
+          strategy: http
+  # - endpoint: "/products"
+  #   method: GET
+  #   output_encoding: json
+  #   backend:
+  #     - url_pattern: "/products"
+  #       host:
+  #         - "http://products-service:8080"
+  #       encoding: json
+  #       sd: dns
+  #       healthcheck:
+  #         path: "/healthcheck"
+  #         interval: 10s
+  #         timeout: 2s
+  #         strategy: http
+  # - endpoint: "/orders"
+  #   method: GET
+  #   output_encoding: json
+  #   backend:
+  #     - url_pattern: "/orders"
+  #       host:
+  #         - "http://orders-service:8080"
+  #       encoding: json
+  #       sd: dns
+  #       healthcheck:
+  #         path: "/healthcheck"
+  #         interval: 10s
+  #         timeout: 2s
+  #         strategy: http

@@ -1,0 +1,22 @@
+services:
+  web:
+    container_name: elmariam-website
+    image: ranckosolutionsinc/elmariam-website:1.0.0
+    # build: ./
+    restart: always
+    environment:
+      - PORT=4000
+    ports:
+      - "4000:3000"
+    networks:
+      - elmariam-network
+    labels:
+      # - "traefik.enable=true"
+      - "traefik.http.routers.web.rule=Host(`www.rancko.labs`)"
+      - "traefik.http.services.web.loadbalancer.server.port=3000"
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

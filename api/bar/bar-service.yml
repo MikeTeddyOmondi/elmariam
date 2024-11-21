@@ -1,0 +1,38 @@
+services:
+  bar:
+    container_name: elmariam-bar-svc
+    image: ranckosolutionsinc/elmariam-bar-service:1.0.0
+    # build: ./
+    restart: always
+    environment:
+      - PORT=8004
+    env_file:
+      - ./.env
+    # ports:
+    #   - "8004:8004"
+    networks:
+      - elmariam-network
+    depends_on:
+      - minio
+
+  minio:
+    container_name: elmariam-object-store
+    image: minio/minio
+    restart: always
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio_password
+    ports:
+      - 9003:9000
+      - 9001:9001
+    volumes:
+      - ./uploads:/data
+    networks:
+      - elmariam-network
+    command: server /data --console-address ":9001"
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

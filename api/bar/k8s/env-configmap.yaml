@@ -1,0 +1,24 @@
+apiVersion: v1
+data:
+  ACCESS_SECRET: 327c1a84897deda06f95d446c0a9a7fcfada4feae345a5423ae39b58e466a149
+  AUTH_API_URL: http://auth:8000
+  CLOUDINARY_API_KEY: ""
+  CLOUDINARY_API_SECRET: ""
+  CLOUDINARY_CLOUDNAME: ""
+  DB_URL: mongodb://mongo:27017/bar
+  MINIO_ACCESS_KEY: 0joCewmv6b9t7ZXbj7kl
+  MINIO_API_HOST: cdn.rancko.labs
+  MINIO_SECRET_KEY: QEtnOp437A51S9vOKn409OdEdalNKkiSk0ril4fN
+  NODE_ENV: development
+  PORT: "8004"
+  RABBITMQ_HOST: 172.17.0.1
+  RABBITMQ_PASSWORD: password
+  RABBITMQ_PORT: "5672"
+  RABBITMQ_USERNAME: user
+  RABBITMQ_VHOST: hotel-elmiriam
+  REFRESH_SECRET: a6f5766e51d763b274cbce32a4b3da25b051df887667d356ebd1d4ea47bbb81329bf91c6711c55ae86f15ada5d4f456560ff5b658d8df033b860669eac065f80
+kind: ConfigMap
+metadata:
+  labels:
+    io.kompose.service: bar-env
+  name: env

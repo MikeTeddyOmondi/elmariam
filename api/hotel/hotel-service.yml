@@ -1,0 +1,22 @@
+services:
+  hotel:
+    container_name: elmariam-hotel-svc
+    image: ranckosolutionsinc/elmariam-hotel-service:1.0.0
+    # build: ./
+    restart: always
+    environment:
+      - PORT=8003
+    env_file:
+      - ./src/.env
+    ports:
+      - "8003:8003"
+    networks:
+      - elmariam-network
+    # depends_on:
+    #   - mongo
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

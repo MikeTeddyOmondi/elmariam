@@ -1,0 +1,20 @@
+services:
+  mail:
+    container_name: hotel-elmariam-mail-svc
+    image: ranckosolutionsinc/hotel-elmariam-mail-service:v1.0
+    # build: ./
+    restart: always
+    ports:
+      - 3300:3300
+    environment:
+      - PORT=${PORT}
+      - NODE_ENV=${NODE_ENV}
+      - ACCESS_SECRET=${ACCESS_SECRET}
+      - REFRESH_SECRET=${REFRESH_SECRET}
+    networks:
+      - hotel-elmariam-network
+
+networks:
+  hotel-elmariam-network:
+    name: hotel-elmariam
+    driver: bridge

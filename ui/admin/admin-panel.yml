@@ -1,0 +1,25 @@
+services:
+  admin_panel:
+    container_name: elmariam-admin-panel
+    image: ranckosolutionsinc/elmariam-admin-panel:1.0.0
+    # build: ./
+    restart: always
+    # environment:
+    #   - PORT=5000
+    # env_file:
+    #   - ./src/.env
+    ports:
+      - "3000:3000"
+    networks:
+      - elmariam-network
+    labels:
+      - "traefik.http.routers.admin_panel.rule=Host(`admin-panel.rancko.labs`)"
+      - "traefik.http.services.admin_panel.loadbalancer.server.port=3000"
+    # depends_on:
+    #   - mongo
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true

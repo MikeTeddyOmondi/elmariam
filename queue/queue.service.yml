@@ -1,0 +1,20 @@
+services:
+
+  mongo:
+    container_name: elmariam-queue
+    image: rabbitmq:3.12-management
+    restart: always
+    ports:
+     - 5672:5672
+     - 15672:15672 
+    environment:
+     - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}     
+     - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+    networks:
+      - elmariam-network   
+
+networks:
+  elmariam-network:
+    name: elmariam-network
+    driver: bridge
+    external: true

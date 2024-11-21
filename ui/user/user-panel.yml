@@ -1,0 +1,25 @@
+services:
+  user_panel:
+    container_name: elmariam-user-panel
+    image: ranckosolutionsinc/elmariam-user-panel:1.0.0
+    # build: ./
+    restart: always
+    # environment:
+    #   - PORT=5000
+    # env_file:
+    #   - ./src/.env
+    ports:
+      - "5000:5000"
+    networks:
+      - elmariam-network
+    labels:
+      - "traefik.http.routers.user_panel.rule=Host(`user-panel.rancko.labs`)"
+      - "traefik.http.services.user_panel.loadbalancer.server.port=5000"
+    # depends_on:
+    #   - reverse-proxy
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge
+    external: true
