@@ -7,6 +7,7 @@ const morgan = require("morgan");
 
 const { DB_URL, PORT, NODE_ENV } = require("./config/config.js");
 const { verifyStaff } = require("./utils/verifyToken");
+const { createError } = require("./utils/error.js");
 
 mongoose.set("strictQuery", true);
 
@@ -39,13 +40,19 @@ mongoose
       : app.use(morgan("dev"));
 
     // routes(app);
-    app.use("/api/v1", router);
-    app.use("/", verifyStaff, (req, res) => {
+    app.get("/", verifyStaff, (req, res) => {
       res.status(200).json({
         success: true,
         message: "Bar API",
         description: "Bar API | Version 1",
       });
+    });
+
+    app.use("/api/v1", router);
+
+    // 404 route
+    app.get("*", verifyStaff, (req, res) => {
+      return createError(404, "Resource Not Found");
     });
 
     // Error Middleware

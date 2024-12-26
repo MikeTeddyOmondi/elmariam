@@ -9,6 +9,7 @@ const BarSaleSchema = new mongoose.Schema(
     },
     drinks: [
       {
+        _id: false,
         productID: {
           type: mongoose.Schema.Types.ObjectId,
           required: true,

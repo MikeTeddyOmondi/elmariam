@@ -68,21 +68,31 @@ module.exports = {
   },
   findDrink: async (objectID) => {
     // Searching for drink given the unique Object ID
-    let drink = {};
+    // let drink = {};
 
-    await Drink.findById(objectID)
-      .then(({ _doc }) => {
-        console.log(`> Drink found: ${_doc._id}`);
-        drink = { ..._doc };
-      })
-      .catch((err) => {
-        console.log(
-          `> [Bar Service] An error occurred while finding the single drink - ${err.message}`
-        );
-        drink = {};
-      });
+    // await Drink.findById(objectID)
+    //   .then(({ _doc }) => {
+    //     console.log(`> Drink found: ${_doc._id}`);
+    //     drink = { ..._doc };
+    //   })
+    //   .catch((err) => {
+    //     console.log(
+    //       `> [Bar Service] An error occurred while finding the single drink - ${err.message}`
+    //     );
+    //     drink = {};
+    //   });
 
-    return drink;
+    // return drink;
+
+    try {
+      const { _doc: drinkDoc } = await Drink.findById(objectID);
+      return drinkDoc;
+    } catch (err) {
+      console.log(
+        `> [Bar Service] An error occurred while finding the single drink - ${err.message}`
+      );
+      return { error: err };
+    }
   },
   fetchAllDrinks: async () => {
     // Logic here
@@ -219,24 +229,35 @@ module.exports = {
   },
   fetchAllBarSales: async () => {
     // Logic here
-    let sales = [];
+    // let sales = [];
 
-    await BarSale.find()
-      .populate("customer")
-      .populate("drinks.productID", "Drink")
-      .then((barSales) => {
-        console.log({ barSales });
-        sales = barSales;
-      })
-      .catch((err) => {
-        console.log(
-          `> [Bar Service] An error occurred while fetching the sale data - ${err.message}`
-        );
-        sales = [];
-        return err;
-      });
+    // await BarSale.find()
+    //   .populate("customer")
+    //   .populate("drinks.productID", "Drink")
+    //   .then((barSales) => {
+    //     console.log({ barSales });
+    //     sales = barSales;
+    //   })
+    //   .catch((err) => {
+    //     console.log(
+    //       `> [Bar Service] An error occurred while fetching the sale data - ${err.message}`
+    //     );
+    //     return sales = [];
+    //   });
 
-    return sales;
+    // return sales;
+
+    try {
+      const barSales = await BarSale.find({})
+        .populate("customer")
+        .populate("drinks.productID", "Drink");
+      return barSales;
+    } catch (err) {
+      console.log(
+        `> [Bar Service] An error occurred while fetching the sale data - ${err.message}`
+      );
+      return { error: err };
+    }
   },
   fetchBarSale: async (salesId) => {
     // Logic here

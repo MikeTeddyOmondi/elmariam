@@ -7,10 +7,10 @@ build-image:
   docker build -t ranckosolutionsinc/elmariam-auth-service:1.0.0 . 	  
 
 # Docker compose 
-run-compose:
+compose:
   docker compose -f auth-service.yml up -d
 
 # Docker compose down
-run-compose-down:
+compose-down:
   docker compose -f auth-service.yml down
 

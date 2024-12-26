@@ -82,7 +82,7 @@ exports.getOneCustomer = async (req, res, next) => {
     return next(createError(500, `Invalid  ID: ${customerid}`));
   } catch (error) {
     console.log(`> Error: ${error.message}`);
-    return next(createError(404, `Booking not found!`));
+    return next(createError(404, `Customer not found!`));
   }
 };
 

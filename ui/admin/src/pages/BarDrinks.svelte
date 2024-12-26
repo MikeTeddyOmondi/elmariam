@@ -23,6 +23,7 @@
     drinkCode = "",
     typeOfDrink = null,
     uom = null,
+    packageQty = null,
     file = "";
 
   onMount(async () => {
@@ -42,6 +43,7 @@
       typeOfDrink === "" ||
       uom === null ||
       uom === "" ||
+      packageQty === null ||
       buyingPrice === "" ||
       sellingPrice === "" ||
       // @ts-ignore
@@ -186,43 +188,85 @@
                   <option value="water">Water</option>
                 </select>
               </div>
-              <div class="form-group">
-                <label for="uom">Unit of Measurement:</label>
-                <select
-                  class="w-100 form-control"
-                  name="uom"
-                  bind:value={uom}
-                  on:focus={() => (toastProps.isErr = false)}
-                >
-                  <option value={null}>Select unit of measurement</option>
-                  <option value="bottles">Bottles</option>
-                  <option value="crates">Crates</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label for="buyingPrice">Buying Price:</label>
-                <input
-                  type="number"
-                  class="w-100 form-control"
-                  name="buyingPrice"
-                  id="buyingPrice"
-                  autocomplete="off"
-                  bind:value={buyingPrice}
-                  on:focus={() => (toastProps.isErr = false)}
-                />
-              </div>
-              <div class="form-group">
-                <label for="sellingPrice">Selling Price:</label>
-                <input
-                  type="number"
-                  class="w-100 form-control"
-                  name="sellingPrice"
-                  id="sellingPrice"
-                  autocomplete="off"
-                  bind:value={sellingPrice}
-                  on:focus={() => (toastProps.isErr = false)}
-                />
-              </div>
+              {#if typeOfDrink !== null}
+                <div class="form-group">
+                  <label for="uom">Unit of Measurement:</label>
+                  <select
+                    class="w-100 form-control"
+                    name="uom"
+                    bind:value={uom}
+                    on:focus={() => (toastProps.isErr = false)}
+                  >
+                    <option value={null}>Select unit of measurement</option>
+                    <option value="bottles">Bottles</option>
+                    <option value="crates">Crates</option>
+                    <option value="pack">Pack</option>
+                  </select>
+                </div>
+                {#if uom !== null}
+                  <div class="form-group">
+                    <label for="uom">Package Quantity:</label>
+                    <select
+                      class="w-100 form-control"
+                      name="packageQty"
+                      bind:value={packageQty}
+                      on:focus={() => (toastProps.isErr = false)}
+                    >
+                      <option value={null}
+                        >Select package quantity after selecting the unit of
+                        measurement</option
+                      >
+                      {#if uom === "pack"}
+                        <option class="" value="6"> 6 </option>
+                      {/if}
+                      {#if uom === "crates"}
+                        <option value="24">24</option>
+                      {/if}
+                      {#if uom === "bottles"}
+                        <option value="12">12</option>
+                        <option value="24">24</option>
+                        <option value="40">40</option>
+                      {/if}
+                    </select>
+                  </div>
+                {/if}
+                <div class="form-group">
+                  {#if uom}
+                    <label for="buyingPrice"
+                      >Buying Price ({`Total price of ${uom}`}):</label
+                    >
+                  {:else}
+                    <label for="buyingPrice">Buying Price:</label>
+                  {/if}
+                  <input
+                    type="number"
+                    class="w-100 form-control"
+                    name="buyingPrice"
+                    id="buyingPrice"
+                    autocomplete="off"
+                    bind:value={buyingPrice}
+                    on:focus={() => (toastProps.isErr = false)}
+                  />
+                </div>
+                <div class="form-group">
+                  {#if uom}
+                    <label for="sellingPrice"
+                      >Selling Price ({`Total price of ${uom}`}):</label
+                    >
+                  {:else}
+                    <label for="sellingPrice">Selling Price:</label>
+                  {/if}
+                  <input
+                    type="number"
+                    class="w-100 form-control"
+                    name="sellingPrice"
+                    id="sellingPrice"
+                    autocomplete="off"
+                    bind:value={sellingPrice}
+                    on:focus={() => (toastProps.isErr = false)}
+                  />
+                </div>
+              {/if}
               <div class="form-group">
                 <label for="file">File:</label>
                 <input
@@ -277,8 +321,16 @@
                       <td>{drink.drinkCode}</td>
                       <td>{drink.typeOfDrink}</td>
                       <td>{drink.uom}</td>
-                      <td>{drink.buyingPrice}</td>
-                      <td>{drink.sellingPrice}</td>
+                      <td>
+                        <div class="float-right">
+                          {Number(drink.buyingPrice).toFixed(2)}
+                        </div>
+                      </td>
+                      <td>
+                        <div class="float-right">
+                          {Number(drink.sellingPrice).toFixed(2)}
+                        </div>
+                      </td>
                       <td>
                         <a
                           class="small"

@@ -1,134 +1,58 @@
 <script>
   import { onMount } from "svelte";
-  import { link } from "svelte-spa-router";
-  import { usersStore } from "../stores/defaultStore";
-  import { axiosInstance } from "../interceptors/axios";
+  import html2pdf from "html2pdf.js";
+  import { writable } from "svelte/store";
+  import { editCustomerDetails, getOneCustomer } from "../stores/defaultStore";
   import BaseLayout from "../layouts/baseLayout.svelte";
   import Toast from "../components/Toast.svelte";
+  export let params = {};
 
-  let numEntries = $usersStore.length;
+  // @ts-ignore
+  let customerId = String(params.id);
+  let customerDetails = writable();
+
   let toastProps = {
     isErr: false,
     isSucc: false,
     toastMsg: "",
   };
 
-  let userType;
-  let isAdmin = false;
-  let isActive = false;
-  let isVerified = false;
-  let username = "",
+  let firstname = "",
+    lastname = "",
     email = "",
     id_number = "",
-    password = "";
+    phone_number = "";
 
   onMount(async () => {
-    const response = await axiosInstance.get("/auth/accounts");
-    console.log({ allAccounts: response.data.data });
-    let users = response.data.data.users;
-    usersStore.update(() => [...users]);
+    // const customer = await getOneCustomer(customerId);
+    // customerDetails.update(() => customer);
+    $customerDetails = await getOneCustomer(customerId);
+    // console.log({ $customerDetails });
   });
 
-  $: submit = async () => {
-    console.log({
-      username,
-      email,
+  // function savePdf() {
+  //   let elementToPrint = document.getElementById("customer-info");
+  //   let timestamp = new Date().getTime();
+  //   var options = {
+  //     margin: 0.5,
+  //     filename: `customer-info-${customerId}-${timestamp}.pdf`,
+  //     enableLinks: true,
+  //     image: { type: "jpeg", quality: 0.98 },
+  //     html2canvas: { scale: 1 },
+  //     jsPDF: { unit: "in", format: "letter", orientation: "portrait" },
+  //   };
+  //   html2pdf().set(options).from(elementToPrint).save();
+  // }
+
+  $: saveChanges = async () => {
+    let formData = {
       id_number,
-      password,
-      userType,
-      isAdmin,
-      isActive,
-      isVerified,
-    });
-    if (
-      username === "" ||
-      email === "" ||
-      id_number === "" ||
-      password === "" ||
-      userType === ""
-    ) {
-      toastProps = {
-        isErr: true,
-        isSucc: false,
-        toastMsg: "Please enter all the fields!",
-      };
+      firstname,
+      lastname,
+      phone_number,
+    };
 
-      // Delay for 5sec to autoremove the toast
-      setTimeout(() => {
-        toastProps = {
-          isErr: false,
-          isSucc: false,
-          toastMsg: "",
-        };
-      }, 5000);
-      return;
-    }
-
-    const response = await axiosInstance.post("/auth/register", {
-      username,
-      email,
-      id_number,
-      password,
-      userType,
-    });
-    console.log({ response });
-
-    // @ts-ignore
-    if (response.name) {
-      // @ts-ignore
-      let responseData = await response.response.data;
-      console.log(responseData);
-
-      toastProps = {
-        isErr: true,
-        isSucc: false,
-        toastMsg: responseData.message,
-      };
-      return;
-    }
-
-    if (response.status === 201) {
-      try {
-        console.log({ resData: await response.data.data });
-        let user = await response.data.data.user;
-
-        toastProps = {
-          isErr: false,
-          isSucc: true,
-          toastMsg: `User: ${user} created successfully!`,
-        };
-
-        const usersFetchResponse = await axiosInstance.get("/auth/accounts");
-
-        let users = usersFetchResponse.data.data.users;
-        console.log({ users });
-        usersStore.update(() => [...users]);
-
-        username = "";
-        email = "";
-        password = "";
-        id_number = "";
-
-        // Delay for 5sec to autoremove the toast
-        setTimeout(() => {
-          toastProps = {
-            isErr: false,
-            isSucc: false,
-            toastMsg: "",
-          };
-        }, 5000);
-
-        return;
-      } catch (error) {
-        console.log(error);
-        console.log(error.message);
-        toastProps = {
-          isErr: true,
-          isSucc: false,
-          toastMsg: `${error.message}!`,
-        };
-      }
-    }
+    $customerDetails = await editCustomerDetails(customerId, formData);
   };
 </script>
 
@@ -137,62 +61,107 @@
     <!-- Page Heading -->
     <div class="d-sm-flex align-items-center justify-content-between mb-4">
       <h1 class="h3 mb-0 text-gray-800">Customer Profile</h1>
-      <button class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm">
+      <!-- <button
+        class="d-none d-sm-inline-block btn btn-sm btn-primary shadow-sm"
+        on:click={savePdf}
+      >
         <i class="fas fa-download fa-sm text-white-50" />
         Export
-      </button>
+      </button> -->
     </div>
 
-    <!-- Add Users Form -->
+    <!-- Edit Customer Details Form -->
     <Toast {toastProps} />
 
-    <div class="row">
-
-    <div class="rounded bg-white m-5">
+    <div class="row" id="customer-info">
+      <div class="rounded bg-white m-5 border">
         <div class="row">
-            <div class="col-md-4 border-right">
-                <div class="d-flex flex-column align-items-center text-center p-3 py-5">
-                    <img class="rounded-circle mt-5" width="150px" src="https://st3.depositphotos.com/15648834/17930/v/600/depositphotos_179308454-stock-illustration-unknown-person-silhouette-glasses-profile.jpg">
-                    <span class="font-weight-bold">Edogaru</span>
-                    <span class="text-black-50">edogaru@mail.com.my</span>
-                    <span> </span>
-                </div>
+          <div class="col-md-12">
+            <div
+              class="d-flex flex-column align-items-center text-center p-3 py-5"
+            >
+              <!-- svelte-ignore a11y-img-redundant-alt -->
+              <img
+                class="rounded-circle mt-5"
+                width="150px"
+                src="img/undraw_profile.svg"
+                alt="profile image"
+              />
+              <span class="font-weight-bold my-2"
+                >{$customerDetails?.firstname ?? ""}
+                {$customerDetails?.lastname ?? ""}</span
+              >
+              <span class="text-black-50">{$customerDetails?.email ?? ""}</span>
+              <span> </span>
             </div>
-            <div class="col-md-8 border-right">
-                <div class="p-3 py-2">
-                    <div class="d-flex justify-content-between align-items-center mb-3">
-                        <h4 class="text-right">Profile Settings</h4>
-                    </div>
-                    <div class="row mt-2">
-                        <div class="col-md-6">
-                            <label class="labels">Name</label>
-                            <input type="text" class="form-control" placeholder="first name" value="">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="labels">Surname</label>
-                            <input type="text" class="form-control" value="" placeholder="surname">
-                        </div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-12"><label class="labels">Mobile Number</label><input type="text" class="form-control" placeholder="enter phone number" value=""></div>
-                        <div class="col-md-12"><label class="labels">Address Line 1</label><input type="text" class="form-control" placeholder="enter address line 1" value=""></div>
-                        <div class="col-md-12"><label class="labels">Address Line 2</label><input type="text" class="form-control" placeholder="enter address line 2" value=""></div>
-                        <div class="col-md-12"><label class="labels">Postcode</label><input type="text" class="form-control" placeholder="enter address line 2" value=""></div>
-                        <div class="col-md-12"><label class="labels">State</label><input type="text" class="form-control" placeholder="enter address line 2" value=""></div>
-                        <div class="col-md-12"><label class="labels">Area</label><input type="text" class="form-control" placeholder="enter address line 2" value=""></div>
-                        <div class="col-md-12"><label class="labels">Email ID</label><input type="text" class="form-control" placeholder="enter email id" value=""></div>
-                        <div class="col-md-12"><label class="labels">Education</label><input type="text" class="form-control" placeholder="education" value=""></div>
-                    </div>
-                    <div class="row mt-3">
-                        <div class="col-md-6"><label class="labels">Country</label><input type="text" class="form-control" placeholder="country" value=""></div>
-                        <div class="col-md-6"><label class="labels">State/Region</label><input type="text" class="form-control" value="" placeholder="state"></div>
-                    </div>
-                    <div class="mt-5 text-center"><button class="btn btn-primary profile-button" type="button">Save Profile</button></div>
+          </div>
+          <div class="col-md-12">
+            <div class="p-3 py-2">
+              <div
+                class="d-flex justify-content-between align-items-center mb-3"
+              >
+                <h4 class="text-right">Customer Information</h4>
+              </div>
+              <div class="row mt-2">
+                <div class="col-md-6">
+                  <label for="firstname" class="labels">Firstname</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder={$customerDetails?.firstname ?? ""}
+                    bind:value={firstname}
+                  />
                 </div>
+                <div class="col-md-6">
+                  <label for="lastname" class="labels">Lastname</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    placeholder={$customerDetails?.lastname ?? ""}
+                    bind:value={lastname}
+                  />
+                </div>
+              </div>
+              <div class="row">
+                <div class="col-md-12 my-2">
+                  <label for="email" class="labels">Email</label><input
+                    type="text"
+                    class="form-control"
+                    placeholder={$customerDetails?.email ?? ""}
+                    bind:value={email}
+                  />
+                </div>
+                <div class="col-md-12 my-2">
+                  <label for="phoneNumber" class="labels">Phone Number</label
+                  ><input
+                    type="text"
+                    class="form-control"
+                    placeholder={$customerDetails?.phone_number ?? ""}
+                    bind:value={phone_number}
+                  />
+                </div>
+                <div class="col-md-12 my-2">
+                  <label for="idNumber" class="labels">Id Number</label><input
+                    type="text"
+                    class="form-control"
+                    placeholder={$customerDetails?.id_number ?? ""}
+                    bind:value={id_number}
+                  />
+                </div>
+              </div>
+              <div class="mt-5 text-center">
+                <button
+                  class="btn btn-primary profile-button"
+                  type="button"
+                  on:click={saveChanges}
+                >
+                  Save Changes
+                </button>
+              </div>
             </div>
+          </div>
         </div>
-    </div>
-
+      </div>
     </div>
   </div>
 </BaseLayout>

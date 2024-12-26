@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
 // Load User model
@@ -7,7 +8,7 @@ const Drink = require("../models/Drink");
 
 // Utils
 const { createError } = require("../utils/error");
-const { MINIO_API_HOST } = require("../config/config.js");
+const { S3_HOSTNAME } = require("../config/config.js");
 
 // Import Bar Service
 const {
@@ -23,7 +24,7 @@ const {
   fetchBarSale,
 } = require("../services/bar.service");
 
-const BUCKET_NAME = String("hotel-elmariam");
+const BUCKET_NAME = String("hotel-elmiriam");
 
 exports.apiInfo = (req, res) => {
   res.status(200).json({
@@ -157,10 +158,10 @@ exports.addBarDrinks = async (req, res, next) => {
 
   let imageUrl = "";
 
-  if (MINIO_API_HOST == undefined) {
+  if (S3_HOSTNAME == undefined) {
     return next(createError(500, `[#] Minio configuration required!`));
   } else {
-    imageUrl = `https://${MINIO_API_HOST}/${BUCKET_NAME}/${path}`;
+    imageUrl = `https://${S3_HOSTNAME}/${BUCKET_NAME}/${path}`;
   }
 
   if (imageUrl.includes(undefined) || imageUrl === "") {
@@ -331,23 +332,26 @@ exports.postBarPurchases = async (req, res, next) => {
 // ADD BAR SALES INFORMATION
 // ______________________________________
 
-exports.getBarSales = async (res, req, next) => {
+exports.getBarSales = async (req, res, next) => {
   try {
     const sales = await fetchAllBarSales();
-    res.status(200).json({
+    console.log({ sales });
+    return res.status(200).json({
       success: true,
       data: { sales },
     });
   } catch (error) {
+    console.log({ error });
     return next(createError(500, "Error fetching drinks"));
   }
 };
 
-exports.getOneBarSale = async (res, req, next) => {
+exports.getOneBarSale = async (req, res, next) => {
   const objectID = req.params.id;
   try {
     const sale = await fetchBarSale(objectID);
-    res.status(200).json({
+    console.log({ sale });
+    return res.status(200).json({
       success: true,
       data: { sale },
     });
@@ -356,7 +360,145 @@ exports.getOneBarSale = async (res, req, next) => {
   }
 };
 
-exports.postBarSales = async () => {};
+exports.postBarSales = async (req, res, next) => {
+  let { checkoutDrinkItems } = req.body;
+  console.log({ checkoutDrinkItems });
+
+  async function getDrinkDetails() {
+    let barItems = await Promise.all(
+      checkoutDrinkItems.map(async (item) => {
+        const barItem = await findDrink(item.drinkId);
+        return barItem;
+      })
+    );
+    return barItems;
+  }
+
+  async function calculateBarBill() {
+    let barSaleDetails = { drinks: [] };
+    const barItems = await getDrinkDetails();
+    // console.log({ barItems });
+
+    // Calculate the total checkout price and check stock availability
+    let totalCheckoutPrice = 0;
+    let stockIssues = [];
+
+    for (const checkoutItem of checkoutDrinkItems) {
+      const drinkFound = barItems.find(
+        (drinkItem) => drinkItem._id.toString() === checkoutItem.drinkId
+      );
+
+      if (drinkFound) {
+        if (drinkFound.stockQty >= checkoutItem.quantity) {
+          totalCheckoutPrice += drinkFound.sellingPrice * checkoutItem.quantity;
+        } else {
+          // If stock is insufficient, record the issue
+          stockIssues.push({
+            drinkId: checkoutItem.drinkId,
+            requestedQty: checkoutItem.quantity,
+            availableQty: drinkFound.stockQty,
+          });
+        }
+
+        barSaleDetails.drinks.push({
+          productID: mongoose.Types.ObjectId(drinkFound._id),
+          qtyBought: checkoutItem.quantity,
+          stockValue:
+            Number(drinkFound.sellingPrice) * Number(checkoutItem.quantity),
+        });
+      } else {
+        // Handle case where drink is not found
+        console.warn("Drink not found for ID:", checkoutItem.drinkId);
+        return next(
+          createError(404, `Drink not found for ID ${checkoutItem.drinkId}`)
+        );
+      }
+    }
+
+    if (stockIssues.length > 0) {
+      return {
+        totalCheckoutPrice: 0,
+        stockIssues,
+      };
+    }
+
+    return {
+      totalCheckoutPrice,
+      barSaleDetails,
+      stockIssues: [],
+    };
+  }
+
+  try {
+    const { totalCheckoutPrice, barSaleDetails, stockIssues } =
+      await calculateBarBill();
+
+    if (stockIssues.length > 0) {
+      console.log("Stock issues found:", stockIssues);
+      // Send a response indicating stock issues
+      // return res.status(500).json({
+      //   success: false,
+      //   message: "Out of stock or insufficient stock!",
+      //   data: { stockIssues },
+      // });
+      return next(createError(500, "Out of stock or insufficient stock!"));
+    }
+
+    async function updateDrinkStockQty(drinkId, quantity) {
+      // Update the stock quantity for the drink in the database
+      const res = await Drink.updateOne(
+        { _id: drinkId },
+        { $inc: { stockQty: -quantity } }
+      );
+
+      console.log(`MatchCount ${res.matchedCount}`); // Number of documents matched
+      console.log(`Modified Count ${res.modifiedCount}`); // Number of documents modified
+      console.log(`Acknowledged ${res.acknowledged}`); // Boolean indicating everything went smoothly.
+      console.log(`UpsertedId ${res.upsertedId}`); // null or an id containing a document that had to be upserted.
+      console.log(`Upserted Count ${res.upsertedCount}`); // Number indicating how many documents had to be upserted. Will either be 0 or 1.
+    }
+
+    // Proceed the bar sale in order to initiate checkout
+    console.log({ totalCheckoutPrice });
+    // Update stock quantities in the database and proceed with payment
+    async function updateStockQuantities(checkoutItems) {
+      for (const item of checkoutItems) {
+        await updateDrinkStockQty(item.drinkId, item.quantity);
+      }
+    }
+
+    console.log(`barSaleDetails: ${JSON.stringify(barSaleDetails)}`);
+    // create and save the bar sale
+    const barSale = new BarSale();
+    barSale.drinks.push(...barSaleDetails.drinks);
+    barSale.totalStockValue = totalCheckoutPrice;
+    console.log(`barSale: ${barSale}`);
+
+    // save & update stock quantities
+    await Promise.all([
+      barSale.save(),
+      updateStockQuantities(checkoutDrinkItems),
+    ]);
+
+    return res.status(201).json({
+      success: true,
+      data: {
+        message:
+          "Bar sale created successfully. You can now initiate a checkout",
+        totalStockValue: barSale.totalStockValue,
+        salesId: barSale._id,
+      },
+    });
+  } catch (err) {
+    console.error({ barSaleError: err });
+    return next(
+      createError(500, "An error occurred during creating the bar sale!")
+    );
+  }
+};
 
 // Lipa na Mpesa
-exports.lipaNaMpesa = async () => {};
+exports.lipaNaMpesa = async (req, res, next) => {
+  const salesId = req.params.id;
+  console.log({ salesId });
+};

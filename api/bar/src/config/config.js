@@ -18,6 +18,7 @@ const {
   MINIO_API_HOST,
   MINIO_ACCESS_KEY,
   MINIO_SECRET_KEY,
+  S3_HOSTNAME,
 } = process.env;
 
 module.exports = {
@@ -32,4 +33,5 @@ module.exports = {
   MINIO_API_HOST,
   MINIO_ACCESS_KEY,
   MINIO_SECRET_KEY,
+  S3_HOSTNAME,
 };

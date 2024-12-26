@@ -52,8 +52,8 @@ router.get("/purchases/:id", verifyAdmin, getOneBarPurchase);
 // // Get/Post/Put/Delete | Bar Sales
 // ___________________________________________
 router.get("/sales", verifyStaff, getBarSales);
-router.get("/sales", verifyStaff, postBarSales);
-router.post("/sales/lipa-mpesa", verifyStaff, lipaNaMpesa);
+router.post("/sales", verifyStaff, postBarSales);
+router.post("/sales/lipa-mpesa/:id", verifyStaff, lipaNaMpesa);
 
 // Get/Put/Delete | Bar Sales [ONE]
 router.get("/sales/:id", verifyStaff, getOneBarSale);
