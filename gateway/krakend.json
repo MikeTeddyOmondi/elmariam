@@ -18,7 +18,7 @@
       }
     },
     "security/cors": {
-      "allow_origins": ["http*"],
+      "allow_origins": ["https://*.otienoobogeandcompany.com", "http://localhost:*"],
       "allow_methods": ["GET", "HEAD", "POST", "OPTIONS"],
       "expose_headers": ["Content-Length", "Content-Type"],
       "allow_credentials": true,

@@ -29,7 +29,7 @@ const BUCKET_NAME = String("hotel-elmariam");
 // the endpoint and access keys
 const minioClient = new Client({
   endPoint: MINIO_API_HOST,
-  port: 9003,
+  port: 9000,
   useSSL: false,
   accessKey: MINIO_ACCESS_KEY,
   secretKey: MINIO_SECRET_KEY,

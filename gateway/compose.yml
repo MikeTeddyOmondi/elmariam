@@ -6,6 +6,13 @@ services:
     restart: always
     ports:
       - 8009:8009
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=Host(`gateway.otienoobogeandcompany.com`)"
+      # - "traefik.http.routers.api.entrypoints=websecure"
+      # - "traefik.http.routers.api.tls=true"  # if using certresolver
+      - "traefik.http.routers.gateway.service=gateway"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8009"  
     networks:
       - elmariam-network
 

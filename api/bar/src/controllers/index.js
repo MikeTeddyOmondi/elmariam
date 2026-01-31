@@ -24,7 +24,7 @@ const {
   fetchBarSale,
 } = require("../services/bar.service");
 
-const BUCKET_NAME = String("hotel-elmiriam");
+const BUCKET_NAME = String("hotel-elmariam");
 
 exports.apiInfo = (req, res) => {
   res.status(200).json({

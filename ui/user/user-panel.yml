@@ -13,7 +13,7 @@ services:
     networks:
       - elmariam-network
     labels:
-      - "traefik.http.routers.user_panel.rule=Host(`user-panel.rancko.labs`)"
+      - "traefik.http.routers.user_panel.rule=Host(`user-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.user_panel.loadbalancer.server.port=5000"
     # depends_on:
     #   - reverse-proxy

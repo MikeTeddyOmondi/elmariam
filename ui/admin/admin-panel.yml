@@ -1,7 +1,7 @@
 services:
   admin_panel:
     container_name: elmariam-admin-panel
-    image: ranckosolutionsinc/elmariam-admin-panel:1.0.0
+    image: ranckosolutionsinc/elmariam-admin-panel:v1.0.0
     # build: ./
     restart: always
     # environment:
@@ -13,7 +13,7 @@ services:
     networks:
       - elmariam-network
     labels:
-      - "traefik.http.routers.admin_panel.rule=Host(`admin-panel.rancko.labs`)"
+      - "traefik.http.routers.admin_panel.rule=Host(`admin-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.admin_panel.loadbalancer.server.port=3000"
     # depends_on:
     #   - mongo

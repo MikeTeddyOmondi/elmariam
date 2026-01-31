@@ -12,24 +12,24 @@ services:
       - ./src/.env
     networks:
       - elmariam-network
-    depends_on:
-      - mongo
+    # depends_on:
+    #  - mongo
 
-  mongo:
-    container_name: elmariam-mongo-db
-    image: mongo:4.2
-    restart: always
-    ports:
-      - 27017:27017
+  # mongo:
+  #  container_name: elmariam-mongo-db
+  #   image: mongo:4.2
+  #   restart: always
+  #  ports:
+  #     - 27017:27017
     # environment:
     #  - MONGO_INITDB_DATABASE=${MONGO_INITDB_ROOT_DATABASE}
     #  - MONGO_INITDB_ROOT_USERNAME=${MONGO_INITDB_ROOT_USERNAME}
     #  - MONGO_INITDB_ROOT_PASSWORD=${MONGO_INITDB_ROOT_PASSWORD}
-    volumes:
-      - elmariam-mongodb-data:/data/db
+  #   volumes:
+  #     - elmariam-mongodb-data:/data/db
     #  - ./mongo-entrypoint/:/docker-entrypoint-initdb.d/"
-    networks:
-      - elmariam-network
+  #   networks:
+  #     - elmariam-network
 
   # mongo-express:
   #   container_name: elmariam-mongo-compass

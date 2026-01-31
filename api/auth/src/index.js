@@ -26,6 +26,8 @@ mongoose
           "http://localhost:3000",
           "http://localhost:5000",
           "http://localhost:8080",
+          "https://user-panel.otienoobogeandcompany.com",
+          "https://admin-panel.otienoobogeandcompany.com",
         ],
         credentials: true,
       })

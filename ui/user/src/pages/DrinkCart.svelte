@@ -13,22 +13,31 @@
   const initialTotal = 0;
 
   $: subTotal = $drinkCartItems.reduce((accumulator, currentDrink) => {
-    if (currentDrink.uom === "bottles") {
-      return accumulator + currentDrink.sellingPrice * currentDrink.amount;
-    } else if (currentDrink.uom === "crates") {
-      return (
-        accumulator + (currentDrink.sellingPrice / 24) * currentDrink.amount
-      );
-    } else {
-      return accumulator; // ignore other uom values
-    }
+    return (accumulator =
+      accumulator + currentDrink.sellingPrice * currentDrink.amount);
   }, initialTotal);
 
   // Checkout
   async function createBarSale() {
     console.log("Creating bar sale");
+
+    const checkoutDrinkItems = $drinkCartItems.map((item) => {
+      return { drinkId: item._id, quantity: item.amount };
+    });
+
     try {
-      const response = await axiosInstance.post(`bar/sales`);
+      console.log({ cartItems: $drinkCartItems });
+      if ($drinkCartItems.length <= 0) {
+        toastProps = {
+          isErr: true,
+          isSucc: false,
+          toastMsg: `Cart is empty!`,
+        };
+        return;
+      }
+      const response = await axiosInstance.post(`/bar/sales`, {
+        checkoutDrinkItems,
+      });
       // @ts-ignore
       if (!response.name) {
         console.log(response);
@@ -59,13 +68,15 @@
         };
       }, 5000);
     }
-  }  
+  }
 
   // LipaNaMpesa
   async function lipaNaMpesa(barSaleId) {
     console.log("mpesa checkout", barSaleId);
     try {
-      const response = await axiosInstance.post(`bar/sales/lipa-mpesa/{barSaleId}`);
+      const response = await axiosInstance.post(
+        `bar/sales/lipa-mpesa/{barSaleId}`
+      );
       // @ts-ignore
       if (!response.name) {
         console.log(response);
@@ -135,21 +146,11 @@
                         <td>{drink.drinkCode}</td>
                         <td>{drink.drinkName}</td>
                         <td>{drink.amount}</td>
-                        {#if drink.uom === "crates"}
-                          <td
-                            >{Number(drink.sellingPrice / 24).toLocaleString(
-                              "en-US",
-                              { minimumFractionDigits: 2 }
-                            )}</td
-                          >
-                        {:else}
-                          <td
-                            >{drink.sellingPrice.toLocaleString("en-US", {
-                              minimumFractionDigits: 2,
-                            })}</td
-                          >
-                        {/if}
-
+                        <td
+                          >{drink.sellingPrice.toLocaleString("en-US", {
+                            minimumFractionDigits: 2,
+                          })}</td
+                        >
                         <td>
                           <button
                             class="btn btn-outline-danger"
@@ -224,12 +225,21 @@
                     </ul>
                   </div>
 
-                  <button
-                    class="btn btn-primary my-4 w-100 d-flex align-content-center justify-content-center"
-                    on:click={() => createBarSale()}
-                  >
-                    Create Bar Sale
-                  </button>
+                  {#if $drinkCartItems.length <= 0}
+                    <button
+                      class="btn btn-primary my-4 w-100 d-flex align-content-center justify-content-center"
+                      disabled
+                    >
+                      Create Bar Sale
+                    </button>
+                  {:else}
+                    <button
+                      class="btn btn-primary my-4 w-100 d-flex align-content-center justify-content-center"
+                      on:click={() => createBarSale()}
+                    >
+                      Create Bar Sale
+                    </button>
+                  {/if}
                   <!-- <button
                     class="btn btn-outline-success my-4 w-100 d-flex align-content-center justify-content-center"
                     on:click={() => lipaNaMpesa()}

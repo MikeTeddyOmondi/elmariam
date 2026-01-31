@@ -1,6 +1,6 @@
 services:
 
-  mongo:
+  rabbitmq:
     container_name: elmariam-queue
     image: rabbitmq:3.12-management
     restart: always
@@ -10,11 +10,12 @@ services:
     environment:
      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER}     
      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS}
+     - RABBITMQ_DEFAULT_VHOST=default_vhost
     networks:
-      - elmariam-network   
+      - elmariam   
 
 networks:
-  elmariam-network:
-    name: elmariam-network
+  elmariam:
+    name: elmariam
     driver: bridge
     external: true
