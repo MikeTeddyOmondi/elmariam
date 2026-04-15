@@ -21,6 +21,6 @@ FROM nginx:bookworm-slim AS runner
 RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 WORKDIR /usr/share/nginx/html
 RUN rm -rf ./*
-COPY --from=builder /repo/ui/user/dist .
+COPY --from=builder /repo/ui/user/build .
 COPY ui/user/nginx/nginx.conf /etc/nginx/conf.d/default.conf
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

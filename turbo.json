@@ -1,7 +1,17 @@
 {
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
-  "pipeline": {
+  "tasks": {
+    "admin-panel#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**"],
+      "env": ["NODE_ENV"]
+    },
+    "user-panel#build": {
+      "dependsOn": ["^build"],
+      "outputs": ["build/**"],
+      "env": ["NODE_ENV"]
+    },
     "build": {
       "dependsOn": ["^build"],
       "outputs": ["dist/**"],
