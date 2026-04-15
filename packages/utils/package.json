@@ -1,0 +1,23 @@
+{
+  "name": "@elmariam/utils",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pino": "^8.19.0",
+    "pino-pretty": "^11.0.0",
+    "http-errors": "^2.0.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "@types/http-errors": "^2.0.4",
+    "@types/node": "^20.0.0",
+    "@types/express": "^4.17.21",
+    "typescript": "*"
+  }
+}

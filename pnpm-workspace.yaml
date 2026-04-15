@@ -1,0 +1,7 @@
+packages:
+  - 'api/*'
+  - 'ui/*'
+  - 'sms'
+  - 'smtp'
+  - 'packages/*'
+  # checkout is intentionally excluded — it uses Bun

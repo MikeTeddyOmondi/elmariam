@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  # Trigger on version tags: v1.0.0, v2.3.1-rc1, etc.
+  push:
+    tags:
+      - 'v*'
+
+  # Manual trigger with optional fine-grained control
+  workflow_dispatch:
+    inputs:
+      services:
+        description: >
+          Comma-separated services to build.
+          Leave empty to build ALL services.
+          Valid values: auth, hotel, bar, sms, smtp, checkout,
+                        ui-admin, ui-user, ui-web, gateway
+        required: false
+        default: ''
+      tag:
+        description: >
+          Image tag to apply (e.g. 1.2.0).
+          Defaults to the git tag name on tag pushes,
+          or the short SHA on manual runs.
+        required: false
+        default: ''
+
+jobs:
+  # ── Resolve which services to build ──────────────────────────
+  resolve:
+    name: Resolve services
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.resolve.outputs.matrix }}
+      tag: ${{ steps.resolve.outputs.tag }}
+    steps:
+      - id: resolve
+        run: |
+          ALL='["auth","hotel","bar","sms","smtp","checkout","ui-admin","ui-user","ui-web","gateway"]'
+          INPUT="${{ github.event.inputs.services }}"
+
+          if [ -z "$INPUT" ]; then
+            echo "matrix=$ALL" >> "$GITHUB_OUTPUT"
+          else
+            # Convert "auth, hotel, bar" → ["auth","hotel","bar"]
+            JSON=$(echo "$INPUT" | tr -d ' ' | jq -Rc 'split(",")')
+            echo "matrix=$JSON" >> "$GITHUB_OUTPUT"
+          fi
+
+          # Resolve tag: explicit input > git tag > short SHA
+          TAG="${{ github.event.inputs.tag }}"
+          if [ -z "$TAG" ] && [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${GITHUB_REF_NAME}"   # e.g. v1.2.0
+          fi
+          [ -z "$TAG" ] && TAG="${GITHUB_SHA::8}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+  # ── Fan-out: build each resolved service ─────────────────────
+  release:
+    name: Release / ${{ matrix.service }}
+    needs: resolve
+    strategy:
+      fail-fast: false
+      matrix:
+        service: ${{ fromJson(needs.resolve.outputs.matrix) }}
+    uses: ./.github/workflows/_service-build.yml
+    with:
+      service: ${{ matrix.service }}
+      push_image: true
+      tag: ${{ needs.resolve.outputs.tag }}
+    secrets: inherit

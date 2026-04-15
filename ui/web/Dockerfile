@@ -1,9 +1,25 @@
-FROM node:18.18.2-alpine AS build
-WORKDIR /app
-COPY . .
-RUN npm i --silent
-RUN npm run build
+FROM node:22-bookworm-slim AS base
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+RUN corepack enable && corepack prepare pnpm@latest --activate
 
-FROM lipanski/docker-static-website:2.4.0 as release
-COPY --from=build /app/build .
+# ── Stage 1: install from pruned lockfile ────────────────────
+FROM base AS deps
+WORKDIR /repo
+COPY out/json/ .
+COPY out/pnpm-lock.yaml ./pnpm-lock.yaml
+RUN pnpm install --frozen-lockfile
 
+# ── Stage 2: vite build ───────────────────────────────────────
+FROM base AS builder
+WORKDIR /repo
+COPY --from=deps /repo/node_modules ./node_modules
+COPY out/full/ .
+RUN pnpm turbo run build --filter=web
+
+# ── Stage 3: nginx runtime ────────────────────────────────────
+FROM nginx:bookworm-slim AS runner
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
+WORKDIR /usr/share/nginx/html
+RUN rm -rf ./*
+COPY --from=builder /repo/ui/web/dist .
+ENTRYPOINT ["nginx", "-g", "daemon off;"]

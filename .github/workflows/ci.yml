@@ -1,0 +1,90 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ── Step 1: detect which services have changed ───────────────
+  detect-changes:
+    name: Detect changed services
+    runs-on: ubuntu-latest
+    outputs:
+      services: ${{ steps.filter.outputs.changes }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          # A change to packages/** triggers every service that imports workspace packages.
+          # Checkout and gateway are standalone — they only rebuild on their own changes.
+          filters: |
+            auth:
+              - 'api/auth/**'
+              - 'packages/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            hotel:
+              - 'api/hotel/**'
+              - 'packages/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            bar:
+              - 'api/bar/**'
+              - 'packages/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            sms:
+              - 'sms/**'
+              - 'packages/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            smtp:
+              - 'smtp/**'
+              - 'packages/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            checkout:
+              - 'checkout/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            ui-admin:
+              - 'ui/admin/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            ui-user:
+              - 'ui/user/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            ui-web:
+              - 'ui/web/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+            gateway:
+              - 'gateway/**'
+              - '.github/workflows/ci.yml'
+              - '.github/workflows/_service-build.yml'
+
+  # ── Step 2: fan-out — build only changed services ────────────
+  build:
+    name: Build / ${{ matrix.service }}
+    needs: detect-changes
+    # Only run when at least one service changed
+    if: ${{ needs.detect-changes.outputs.services != '[]' && needs.detect-changes.outputs.services != '' }}
+    strategy:
+      fail-fast: false   # don't cancel other services if one fails
+      matrix:
+        service: ${{ fromJson(needs.detect-changes.outputs.services) }}
+    uses: ./.github/workflows/_service-build.yml
+    with:
+      service: ${{ matrix.service }}
+      # Only push images when merging to main, not on PRs
+      push_image: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
+    secrets: inherit

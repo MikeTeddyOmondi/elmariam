@@ -1,100 +1,144 @@
-# Info
-repository := "https://github.com/MikeTeddyOmondi/elmariam.git"
-version := "1.0.0"
-auth_service_version := "1.0.0"
-hotel_service_version := "1.0.0"
-bar_service_version := "1.0.0"
-restaurant_service_version := "1.0.0"
-checkout_service_version := "1.0.0"
-sms_service_version := "1.0.0"
-admin_panel_version := "1.0.0"
-user_panel_version := "1.0.0"
-website_version := "1.0.0"
+# ── Config ───────────────────────────────────────────────────
+registry := "ranckosolutionsinc"
+version  := "1.0.0"
 
-# Directories
-ui := "./ui/"
-api := "./api/"
-sms := "./sms/"
-smtp := "./smtp/"
-proxy := "./proxy/"
-gateway := "./gateway/"
-checkout := "./checkout/"
-
-# Default
 default:
   just --list
 
-# Clone Project Git Repository
-clone-repo:
-  git clone {{repository}} elmariam
+# ── Install ──────────────────────────────────────────────────
 
-# Install Project Dependencies
+# Install all workspace deps (pnpm) + checkout (bun)
 install:
-  cd "{{api}}auth" && npm install # Auth API Installation
-  cd "{{api}}hotel" && npm install # Hotel API Installation
-  cd "{{api}}bar" && npm install # Bar API Installation  
+  pnpm install
+  cd checkout && bun install
 
-  cd "{{ui}}admin" && npm install # Admin UI Installation
-  cd "{{ui}}user" && npm install # User Panel UI Installation
-  cd "{{ui}}web" && npm install # Website Installation
-  
-  cd "{{checkout}}" && bun install # Checkout Service Installation
-  cd "{{smtp}}" && npm install # SMTP Service Installation
-  cd "{{sms}}" && npm install # SMS Service Installation
+# ── Build ────────────────────────────────────────────────────
 
-# Build docker image
-build-image:
-  docker build -t ranckosolutionsinc/elmariam-auth-service:{{auth_service_version}} "{{api}}auth"
-  docker build -t ranckosolutionsinc/elmariam-hotel-service:{{hotel_service_version}} "{{api}}hotel"
-  docker build -t ranckosolutionsinc/elmariam-bar-service:{{bar_service_version}} "{{api}}bar"
-  docker build -t ranckosolutionsinc/elmariam-checkout-service:{{checkout_service_version}} "{{checkout}}"
-  docker build -t ranckosolutionsinc/elmariam-sms-service:{{sms_service_version}} "{{sms}}"
-  docker build -t ranckosolutionsinc/elmariam-admin-panel:{{admin_panel_version}} "{{ui}}admin"
-  docker build -t ranckosolutionsinc/elmariam-user-panel:{{user_panel_version}} "{{ui}}user"
-  docker build -t ranckosolutionsinc/elmariam-website:{{website_version}} "{{ui}}web"
+# Compile TypeScript for all workspace packages
+build:
+  pnpm turbo run build
 
-# Create Docker Network
+# Compile a single service
+build-service service:
+  pnpm turbo run build --filter={{service}}
+
+# ── Lint & Test ──────────────────────────────────────────────
+
+lint:
+  pnpm turbo run lint
+
+test:
+  pnpm turbo run test
+
+# ── Docker: internal helpers ──────────────────────────────────
+
+# Prune workspace and build Docker image for an API service
+_prune-and-build service tag:
+  pnpm turbo prune --scope={{service}} --docker
+  docker build \
+    -t {{registry}}/elmariam-{{service}}:{{tag}} \
+    -f api/{{service}}/Dockerfile \
+    out/
+  rm -rf out/
+
+# Same but for sms/smtp which live at root level (not under api/)
+_prune-and-build-root service tag:
+  pnpm turbo prune --scope={{service}} --docker
+  docker build \
+    -t {{registry}}/elmariam-{{service}}:{{tag}} \
+    -f {{service}}/Dockerfile \
+    out/
+  rm -rf out/
+
+# ── Docker: API services ─────────────────────────────────────
+
+build-auth    tag=version: (_prune-and-build "auth"    tag)
+build-hotel   tag=version: (_prune-and-build "hotel"   tag)
+build-bar     tag=version: (_prune-and-build "bar"     tag)
+build-sms     tag=version: (_prune-and-build-root "sms"    tag)
+build-smtp    tag=version: (_prune-and-build-root "smtp"   tag)
+
+# ── Docker: UI panels ────────────────────────────────────────
+# UI services use turbo prune for consistent pnpm-lock.yaml handling.
+# Dockerfiles expect to be built from the out/ pruned context.
+
+_prune-and-build-ui panel image-name tag:
+  pnpm turbo prune --scope={{panel}} --docker
+  docker build \
+    -t {{registry}}/{{image-name}}:{{tag}} \
+    -f ui/{{panel}}/Dockerfile \
+    out/
+  rm -rf out/
+
+build-ui-admin tag=version: (_prune-and-build-ui "admin-panel" "elmariam-admin-panel" tag)
+build-ui-user  tag=version: (_prune-and-build-ui "user-panel"  "elmariam-user-panel"  tag)
+build-ui-web   tag=version: (_prune-and-build-ui "web"         "elmariam-website"     tag)
+
+# ── Docker: Checkout (Bun — standalone, not in pnpm workspace) ──
+build-checkout tag=version:
+  docker build -t {{registry}}/elmariam-checkout:{{tag}} checkout/
+
+# ── Docker: Gateway ──────────────────────────────────────────
+build-gateway tag=version:
+  docker build -t {{registry}}/elmariam-api-gateway:{{tag}} gateway/
+
+# ── Docker: Build everything ─────────────────────────────────
+build-all tag=version: \
+  (build-auth       tag) \
+  (build-hotel      tag) \
+  (build-bar        tag) \
+  (build-sms        tag) \
+  (build-smtp       tag) \
+  (build-ui-admin   tag) \
+  (build-ui-user    tag) \
+  (build-ui-web     tag) \
+  (build-checkout   tag) \
+  (build-gateway    tag)
+
+# ── Docker: Push ─────────────────────────────────────────────
+push service tag=version:
+  docker push {{registry}}/elmariam-{{service}}:{{tag}}
+
+push-all tag=version:
+  just push auth         {{tag}}
+  just push hotel        {{tag}}
+  just push bar          {{tag}}
+  just push sms          {{tag}}
+  just push smtp         {{tag}}
+  just push admin-panel  {{tag}}
+  just push user-panel   {{tag}}
+  just push website      {{tag}}
+  just push checkout     {{tag}}
+  just push api-gateway  {{tag}}
+
+# ── Compose ───────────────────────────────────────────────────
+
+compose-up:
+  cd proxy     && docker compose -f proxy-service.yml up -d
+  cd gateway   && docker compose up -d
+  cd api/auth  && docker compose -f auth-service.yml up -d
+  cd api/hotel && docker compose -f hotel-service.yml up -d
+  cd api/bar   && docker compose -f bar-service.yml up -d
+  cd ui/admin  && docker compose -f admin-panel.yml up -d
+  cd ui/user   && docker compose -f user-panel.yml up -d
+  cd ui/web    && docker compose up -d
+  cd checkout  && docker compose -f checkout-service.yml up -d
+  cd sms       && docker compose -f sms-service.yml up -d
+  cd smtp      && docker compose -f smtp-service.yml up -d
+
+compose-down:
+  cd proxy     && docker compose -f proxy-service.yml down
+  cd gateway   && docker compose down
+  cd api/auth  && docker compose -f auth-service.yml down
+  cd api/hotel && docker compose -f hotel-service.yml down
+  cd api/bar   && docker compose -f bar-service.yml down
+  cd ui/admin  && docker compose -f admin-panel.yml down
+  cd ui/user   && docker compose -f user-panel.yml down
+  cd ui/web    && docker compose down
+  cd checkout  && docker compose -f checkout-service.yml down
+  cd sms       && docker compose -f sms-service.yml down
+  cd smtp      && docker compose -f smtp-service.yml down
+
+# ── Network ───────────────────────────────────────────────────
 create-network:
   docker network create elmariam
-
-# Docker compose 
-compose:
-  cd "{{proxy}}" && docker compose -f proxy-service.yml up -d # Proxy Compose Stack
-  cd "{{gateway}}" && docker compose up -d # Gateway Compose Stack
-  
-  cd "{{api}}auth" && docker compose -f auth-service.yml up -d # Auth Compose Stack
-  cd "{{api}}hotel" && docker compose -f hotel-service.yml up -d # Hotel Compose Stack
-  cd "{{api}}bar" && docker compose -f bar-service.yml up -d # Bar Compose Stack
-
-  cd "{{ui}}admin" && docker compose -f admin-panel.yml up -d # Admin UI Compose Stack
-  cd "{{ui}}user" && docker compose -f user-panel.yml up -d # User Panel UI Compose Stack
-  cd "{{ui}}web" && docker compose up -d # Website Compose Stack
-  
-  cd "{{checkout}}" && docker compose -f checkout-service.yml up -d # Checkout Service Compose Stack
-  cd "{{sms}}" && docker compose -f sms-service.yml up -d # SMS Service Compose Stack
-compose-rest:
-  cd "{{smtp}}" &&  docker compose -f smtp-service.yml up -d # SMTP Service Compose Stack
-
-# Docker compose down
-compose-down:
-  cd "{{proxy}}" && docker compose -f proxy-service.yml down # Proxy Compose Stack
-  cd "{{gateway}}" && docker compose down # Gateway Compose Stack
-
-  cd "{{api}}auth" && docker compose -f auth-service.yml down # Auth Compose Stack
-  cd "{{api}}hotel" && docker compose -f hotel-service.yml down # Hotel Compose Stack
-  cd "{{api}}bar" && docker compose -f bar-service.yml down # Bar Compose Stack
-
-  cd "{{ui}}admin" && docker compose -f admin-panel.yml down # Admin UI Compose Stack
-  cd "{{ui}}user" && docker compose -f user-panel.yml down # User Panel UI Compose Stack
-  cd "{{ui}}web" && docker compose down # Website Compose Stack
-  
-  cd "{{checkout}}" && docker compose -f checkout-service.yml down # Checkout Service Compose Stack
-  cd "{{sms}}" && docker compose -f sms-service.yml down # SMS Service Compose Stack
-compose-down-rest:  
-  cd "{{smtp}}" &&  docker compose -f smtp-service.yml down # SMTP Service Compose Stack
-
-
-
-
-
-

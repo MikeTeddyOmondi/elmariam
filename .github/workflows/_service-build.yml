@@ -1,0 +1,138 @@
+name: Service Build (reusable)
+
+on:
+  workflow_call:
+    inputs:
+      service:
+        description: >
+          Service name as detected by dorny/paths-filter.
+          API services: auth | hotel | bar | sms | smtp
+          UI services:  ui-admin | ui-user | ui-web
+          Other:        checkout | gateway
+        required: true
+        type: string
+      push_image:
+        description: Push built image to Docker Hub
+        required: false
+        type: boolean
+        default: false
+      tag:
+        description: Explicit image tag (defaults to short SHA)
+        required: false
+        type: string
+        default: ''
+
+jobs:
+  build:
+    name: ${{ inputs.service }}
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      # ── pnpm + Node (all services except checkout/gateway) ───
+      - uses: pnpm/action-setup@v3
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install workspace dependencies
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
+        run: pnpm install --frozen-lockfile
+
+      # ── Lint + test (API services that have TS source) ────────
+      - name: Lint
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' && !startsWith(inputs.service, 'ui-') }}
+        run: pnpm turbo run lint --filter=${{ inputs.service }}
+        continue-on-error: false
+
+      - name: Test
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' && !startsWith(inputs.service, 'ui-') }}
+        run: pnpm turbo run test --filter=${{ inputs.service }}
+        continue-on-error: false
+
+      # ── Prune workspace (API + UI services) ──────────────────
+      - name: Prune workspace
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
+        run: |
+          # Map filter name → pnpm package name
+          case "${{ inputs.service }}" in
+            auth)      SCOPE="auth" ;;
+            hotel)     SCOPE="hotel" ;;
+            bar)       SCOPE="bar" ;;
+            sms)       SCOPE="sms-service" ;;
+            smtp)      SCOPE="mail-service" ;;
+            ui-admin)  SCOPE="admin-panel" ;;
+            ui-user)   SCOPE="user-panel" ;;
+            ui-web)    SCOPE="web" ;;
+          esac
+          pnpm turbo prune --scope="$SCOPE" --docker
+
+      # ── Resolve image name + tag ──────────────────────────────
+      - name: Resolve image metadata
+        id: meta
+        run: |
+          TAG="${{ inputs.tag }}"
+          [ -z "$TAG" ] && TAG="${GITHUB_SHA::8}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+
+          case "${{ inputs.service }}" in
+            auth)      echo "image=ranckosolutionsinc/elmariam-auth" >> "$GITHUB_OUTPUT" ;;
+            hotel)     echo "image=ranckosolutionsinc/elmariam-hotel" >> "$GITHUB_OUTPUT" ;;
+            bar)       echo "image=ranckosolutionsinc/elmariam-bar" >> "$GITHUB_OUTPUT" ;;
+            sms)       echo "image=ranckosolutionsinc/elmariam-sms" >> "$GITHUB_OUTPUT" ;;
+            smtp)      echo "image=ranckosolutionsinc/elmariam-smtp" >> "$GITHUB_OUTPUT" ;;
+            checkout)  echo "image=ranckosolutionsinc/elmariam-checkout" >> "$GITHUB_OUTPUT" ;;
+            ui-admin)  echo "image=ranckosolutionsinc/elmariam-admin-panel" >> "$GITHUB_OUTPUT" ;;
+            ui-user)   echo "image=ranckosolutionsinc/elmariam-user-panel" >> "$GITHUB_OUTPUT" ;;
+            ui-web)    echo "image=ranckosolutionsinc/elmariam-website" >> "$GITHUB_OUTPUT" ;;
+            gateway)   echo "image=ranckosolutionsinc/elmariam-api-gateway" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+          case "${{ inputs.service }}" in
+            auth|hotel|bar)         echo "dockerfile=api/${{ inputs.service }}/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+            sms|smtp)               echo "dockerfile=${{ inputs.service }}/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+            ui-admin)               echo "dockerfile=ui/admin/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+            ui-user)                echo "dockerfile=ui/user/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+            ui-web)                 echo "dockerfile=ui/web/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+            checkout)               echo "dockerfile=checkout/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+            gateway)                echo "dockerfile=gateway/Dockerfile" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+          # Build context: pruned workspace for workspace services, service dir otherwise
+          case "${{ inputs.service }}" in
+            checkout|gateway)  echo "context=${{ inputs.service == 'gateway' && 'gateway/' || 'checkout/' }}" >> "$GITHUB_OUTPUT" ;;
+            *)                 echo "context=out/" >> "$GITHUB_OUTPUT" ;;
+          esac
+
+      # ── Docker setup ─────────────────────────────────────────
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        if: inputs.push_image
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      # ── Build & push ─────────────────────────────────────────
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: ${{ steps.meta.outputs.context }}
+          file: ${{ steps.meta.outputs.dockerfile }}
+          push: ${{ inputs.push_image }}
+          tags: |
+            ${{ steps.meta.outputs.image }}:${{ steps.meta.outputs.tag }}
+            ${{ inputs.push_image && format('{0}:latest', steps.meta.outputs.image) || '' }}
+          # Scoped layer cache — each service has its own cache bucket
+          cache-from: type=gha,scope=${{ inputs.service }}
+          cache-to: type=gha,mode=max,scope=${{ inputs.service }}
