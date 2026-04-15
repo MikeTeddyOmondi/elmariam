@@ -1,6 +1,6 @@
 // ── User & Auth ───────────────────────────────────────────────
 
-export type UserType = 'admin' | 'staff' | 'customer';
+export type UserType = 'customer' | 'staff' | 'management';
 
 export interface User {
   id: string;
