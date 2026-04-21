@@ -33,8 +33,8 @@ test:
 # ── Docker: internal helpers ──────────────────────────────────
 
 # Prune workspace and build Docker image for an API service
-_prune-and-build service tag:
-  pnpm turbo prune --scope={{service}} --docker
+_prune-and-build scope service tag:
+  pnpm turbo prune --scope={{scope}} --docker
   docker build \
     -t {{registry}}/elmariam-{{service}}:{{tag}} \
     -f api/{{service}}/Dockerfile \
@@ -42,8 +42,8 @@ _prune-and-build service tag:
   rm -rf out/
 
 # Same but for sms/smtp which live at root level (not under api/)
-_prune-and-build-root service tag:
-  pnpm turbo prune --scope={{service}} --docker
+_prune-and-build-root scope service tag:
+  pnpm turbo prune --scope={{scope}} --docker
   docker build \
     -t {{registry}}/elmariam-{{service}}:{{tag}} \
     -f {{service}}/Dockerfile \
@@ -52,27 +52,27 @@ _prune-and-build-root service tag:
 
 # ── Docker: API services ─────────────────────────────────────
 
-build-auth    tag=version: (_prune-and-build "auth"    tag)
-build-hotel   tag=version: (_prune-and-build "hotel"   tag)
-build-bar     tag=version: (_prune-and-build "bar"     tag)
-build-sms     tag=version: (_prune-and-build-root "sms"    tag)
-build-smtp    tag=version: (_prune-and-build-root "smtp"   tag)
+build-auth    tag=version: (_prune-and-build "@elmariam/auth"  "auth"  tag)
+build-hotel   tag=version: (_prune-and-build "@elmariam/hotel" "hotel" tag)
+build-bar     tag=version: (_prune-and-build "@elmariam/bar"   "bar"   tag)
+build-sms     tag=version: (_prune-and-build-root "@elmariam/sms"  "sms"  tag)
+build-smtp    tag=version: (_prune-and-build-root "@elmariam/smtp" "smtp" tag)
 
 # ── Docker: UI panels ────────────────────────────────────────
 # UI services use turbo prune for consistent pnpm-lock.yaml handling.
 # Dockerfiles expect to be built from the out/ pruned context.
 
-_prune-and-build-ui panel image-name tag:
-  pnpm turbo prune --scope={{panel}} --docker
+_prune-and-build-ui scope panel image-name tag:
+  pnpm turbo prune --scope={{scope}} --docker
   docker build \
     -t {{registry}}/{{image-name}}:{{tag}} \
     -f ui/{{panel}}/Dockerfile \
     out/
   rm -rf out/
 
-build-ui-admin tag=version: (_prune-and-build-ui "admin-panel" "elmariam-admin-panel" tag)
-build-ui-user  tag=version: (_prune-and-build-ui "user-panel"  "elmariam-user-panel"  tag)
-build-ui-web   tag=version: (_prune-and-build-ui "web"         "elmariam-website"     tag)
+build-ui-admin tag=version: (_prune-and-build-ui "@elmariam/admin" "admin" "elmariam-admin-panel" tag)
+build-ui-user  tag=version: (_prune-and-build-ui "@elmariam/user"  "user"  "elmariam-user-panel"  tag)
+build-ui-web   tag=version: (_prune-and-build-ui "@elmariam/web"   "web"   "elmariam-website"     tag)
 
 # ── Docker: Checkout (Bun — standalone, not in pnpm workspace) ──
 build-checkout tag=version:

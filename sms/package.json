@@ -1,5 +1,5 @@
 {
-  "name": "sms-service",
+  "name": "@elmariam/sms",
   "version": "1.0.0",
   "description": "An SMS microservice for sending OTP passwords and other phone notifications",
   "main": "index.js",

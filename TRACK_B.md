@@ -219,7 +219,7 @@ export interface User {
   id: string;
   username: string;
   email: string;
-  userType: 'admin' | 'staff' | 'customer';
+  userType: 'management' | 'staff' | 'customer';
   id_number: string;
   createdAt: Date;
 }

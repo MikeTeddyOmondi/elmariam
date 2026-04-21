@@ -18,7 +18,7 @@ FROM base AS builder
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
 COPY out/full/ .
-RUN pnpm turbo run build --filter=bar
+RUN pnpm turbo run build --filter=@elmariam/bar
 
 # ── Stage 3: distroless runtime ──────────────────────────────
 FROM gcr.io/distroless/nodejs22-debian12 AS runner

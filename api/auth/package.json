@@ -1,5 +1,5 @@
 {
-  "name": "auth",
+  "name": "@elmariam/auth",
   "version": "1.0.0",
   "description": "auth server",
   "main": "dist/index.js",
@@ -22,7 +22,8 @@
     "helmet": "^7.1.0",
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.3.0",
-    "morgan": "^1.10.0"
+    "morgan": "^1.10.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",

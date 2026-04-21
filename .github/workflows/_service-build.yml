@@ -49,33 +49,37 @@ jobs:
         if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
         run: pnpm install --frozen-lockfile
 
+      # ── Resolve package scope (filter key → @elmariam/* name) ─
+      - name: Resolve package scope
+        id: scope
+        if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
+        run: |
+          case "${{ inputs.service }}" in
+            auth)     echo "name=@elmariam/auth" >> "$GITHUB_OUTPUT" ;;
+            hotel)    echo "name=@elmariam/hotel" >> "$GITHUB_OUTPUT" ;;
+            bar)      echo "name=@elmariam/bar" >> "$GITHUB_OUTPUT" ;;
+            sms)      echo "name=@elmariam/sms" >> "$GITHUB_OUTPUT" ;;
+            smtp)     echo "name=@elmariam/smtp" >> "$GITHUB_OUTPUT" ;;
+            ui-admin) echo "name=@elmariam/admin" >> "$GITHUB_OUTPUT" ;;
+            ui-user)  echo "name=@elmariam/user" >> "$GITHUB_OUTPUT" ;;
+            ui-web)   echo "name=@elmariam/web" >> "$GITHUB_OUTPUT" ;;
+          esac
+
       # ── Lint + test (API services that have TS source) ────────
       - name: Lint
         if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' && !startsWith(inputs.service, 'ui-') }}
-        run: pnpm turbo run lint --filter=${{ inputs.service }}
+        run: pnpm turbo run lint --filter=${{ steps.scope.outputs.name }}
         continue-on-error: false
 
       - name: Test
         if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' && !startsWith(inputs.service, 'ui-') }}
-        run: pnpm turbo run test --filter=${{ inputs.service }}
+        run: pnpm turbo run test --filter=${{ steps.scope.outputs.name }}
         continue-on-error: false
 
       # ── Prune workspace (API + UI services) ──────────────────
       - name: Prune workspace
         if: ${{ inputs.service != 'checkout' && inputs.service != 'gateway' }}
-        run: |
-          # Map filter name → pnpm package name
-          case "${{ inputs.service }}" in
-            auth)      SCOPE="auth" ;;
-            hotel)     SCOPE="hotel" ;;
-            bar)       SCOPE="bar" ;;
-            sms)       SCOPE="sms-service" ;;
-            smtp)      SCOPE="mail-service" ;;
-            ui-admin)  SCOPE="admin-panel" ;;
-            ui-user)   SCOPE="user-panel" ;;
-            ui-web)    SCOPE="web" ;;
-          esac
-          pnpm turbo prune --scope="$SCOPE" --docker
+        run: pnpm turbo prune --scope="${{ steps.scope.outputs.name }}" --docker
 
       # ── Resolve image name + tag ──────────────────────────────
       - name: Resolve image metadata

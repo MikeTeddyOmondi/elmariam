@@ -2,12 +2,12 @@
   "$schema": "https://turbo.build/schema.json",
   "ui": "tui",
   "tasks": {
-    "admin-panel#build": {
+    "@elmariam/admin#build": {
       "dependsOn": ["^build"],
       "outputs": ["build/**"],
       "env": ["NODE_ENV"]
     },
-    "user-panel#build": {
+    "@elmariam/user#build": {
       "dependsOn": ["^build"],
       "outputs": ["build/**"],
       "env": ["NODE_ENV"]

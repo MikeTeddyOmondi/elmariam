@@ -1,5 +1,5 @@
 {
-  "name": "mail-service",
+  "name": "@elmariam/smtp",
   "version": "1.0.0",
   "description": "A mail service built on Express(Node.js)",
   "main": "index.js",

@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm install --no-frozen-lockfile)",
+      "Bash(pnpm turbo run build)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}

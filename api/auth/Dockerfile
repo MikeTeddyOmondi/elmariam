@@ -18,7 +18,7 @@ FROM base AS builder
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
 COPY out/full/ .
-RUN pnpm turbo run build --filter=auth
+RUN pnpm turbo run build --filter=@elmariam/auth
 
 # ── Stage 3: distroless runtime (minimal CVE surface) ────────
 # Build stages above are never deployed — only this stage ships.

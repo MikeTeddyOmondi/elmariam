@@ -12,7 +12,7 @@ import {
 import { verifyAdmin } from '../utils/verifyAdmin.js';
 import { registerSchema, loginSchema } from '../schemas/auth.schemas.js';
 
-const router = Router();
+const router: Router = Router();
 
 router.get('/', ApiInfo);
 router.post('/register', validateBody(registerSchema), Register);

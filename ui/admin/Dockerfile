@@ -14,7 +14,7 @@ FROM base AS builder
 WORKDIR /repo
 COPY --from=deps /repo/node_modules ./node_modules
 COPY out/full/ .
-RUN pnpm turbo run build --filter=admin-panel
+RUN pnpm turbo run build --filter=@elmariam/admin
 
 # ── Stage 3: nginx runtime ────────────────────────────────────
 FROM nginx:bookworm-slim AS runner
