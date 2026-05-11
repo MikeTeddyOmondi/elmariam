@@ -2,6 +2,13 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [Unreleased] feat: Task 18 — integration smoke test script
+
+- scripts/smoke-test.sh: verifies service reachability (gateway, OpenAuth, 3 apps), public endpoints return success, protected endpoints reject 401, OpenAuth JWKS + OIDC config present
+- Includes e2e flow instructions for manual token-based verification
+- Run with: ./scripts/smoke-test.sh (after docker compose up -d)
+- Implements: REWRITE_SPEC.md integration verification
+
 ## [Unreleased] feat: Task 17 — migration tooling
 
 - scripts/migrations/migrate-staff-roles.ts: updates userType "staff" → receptionist|barista|waiter|management; supports ROLE_MAP for per-user overrides

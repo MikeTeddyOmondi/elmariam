@@ -95,7 +95,7 @@
   - OpenAuth user registration migration script
   - Migration README
 
-- [ ] **Task 18** — Integration smoke test
+- [x] **Task 18** — Integration smoke test
   - docker compose up builds and starts all 14 services
   - KrakenD routes resolve to correct backends
   - OpenAuth issues tokens, KrakenD validates them
