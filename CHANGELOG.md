@@ -2,6 +2,14 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [648b064] feat: Tasks 7-10 — restaurant, checkout, SMS, and SMTP services
+
+- Task 7: Restaurant service — 11 endpoints (menu CRUD + order lifecycle pending→preparing→ready→served→cancelled), port 8005
+- Task 8: Checkout service — Hono/Bun, subscribes to "mpesa" queue, calls IntaSend STK push, port 8008
+- Task 9: SMS service — subscribes to "sms" queue, calls UjumbeSMS API with email+X-Authorization headers, port 7879
+- Task 10: SMTP service — subscribes to "mails" queue, Gmail OAuth2 + Nodemailer + Handlebars email.hbs template, port 3300
+- Implements: REWRITE_SPEC.md Parts 8, 9, 10, 11
+
 ## [a2f4e91] feat: Task 6 — services/bar with 11 endpoints, Multer+MinIO upload, bug fix fetchBarSale
 
 - Added 11 Express routes: drinks (3), purchases (3), sales (3), lipa-mpesa (1), API info (1)

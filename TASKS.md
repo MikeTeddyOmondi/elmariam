@@ -32,21 +32,21 @@
   - Fix fetchBarSale bug (saleID → salesId)
   - Dockerfile
 
-- [ ] **Task 7** — Restaurant service (Part 8)
+- [x] **Task 7** — Restaurant service (Part 8)
   - 11 Express endpoints (NEW), menu CRUD, order lifecycle (pending→preparing→ready→served)
   - Dockerfile
 
-- [ ] **Task 8** — Checkout service (Part 9)
+- [x] **Task 8** — Checkout service (Part 9)
   - Hono/Bun, IntaSend STK push consumer on "mpesa" queue
   - Uses @elmariam/queue
   - Dockerfile
 
-- [ ] **Task 9** — SMS service (Part 10)
+- [x] **Task 9** — SMS service (Part 10)
   - UjumbeSMS consumer on "sms" queue
   - Uses @elmariam/queue
   - Dockerfile
 
-- [ ] **Task 10** — SMTP service (Part 11)
+- [x] **Task 10** — SMTP service (Part 11)
   - Gmail OAuth2 + Nodemailer + Handlebars consumer on "mails" queue
   - Uses @elmariam/queue
   - Dockerfile
