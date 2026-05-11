@@ -22,7 +22,7 @@
 
 ## Phase 2: Backend Services
 
-- [ ] **Task 5** — Hotel service (Part 6)
+- [x] **Task 5** — Hotel service (Part 6)
   - 17 Express endpoints, booking creation flow (14 steps), getDatesInRange, M-Pesa publish, SMS publish
   - Uses @elmariam/db, @elmariam/auth, @elmariam/queue
   - Dockerfile

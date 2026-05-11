@@ -2,6 +2,15 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [c092348] feat: Task 5 — services/hotel with 17 Express endpoints and 14-step booking flow
+
+- Added 17 Express routes: customers (4), bookings (3), invoices (2), rooms (5), M-Pesa/SMS (2), API info (1)
+- Implemented full 14-step addBookings flow: validation, customer/roomType lookup, room availability, invoice calc (16% VAT), booking create, room marking
+- Added getDatesInRange utility, initiateMpesaPayment and initiateSmsNotification RabbitMQ publishers
+- Added createRoom with RoomType.rooms $push, createRoomType
+- No CORS on service — KrakenD handles gateway-level CORS
+- Implements: REWRITE_SPEC.md Part 6
+
 ## [5f1b706] feat: Task 4 — packages/queue with RabbitMQConfig and rabbitMQEnvFromProcess
 
 - Added RabbitMQConfig class with exponential backoff retry (maxRetries, initialDelay, maxDelay, factor)
