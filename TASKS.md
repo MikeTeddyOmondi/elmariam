@@ -5,7 +5,7 @@
 
 ## Phase 1: Foundation
 
-- [ ] **Task 1** — Monorepo scaffold (Part 2)
+- [x] **Task 1** — Monorepo scaffold (Part 2)
   - pnpm-workspace.yaml, turbo.json, root package.json, tsconfig presets
   - Empty app/service/package directories with placeholder package.json files
 

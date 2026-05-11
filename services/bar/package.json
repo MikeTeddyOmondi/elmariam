@@ -1,0 +1,23 @@
+{
+  "name": "@elmariam/bar",
+  "version": "1.0.0",
+  "main": "src/index.ts",
+  "scripts": {
+    "dev": "ts-node src/index.ts",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@elmariam/auth": "workspace:*",
+    "@elmariam/db": "workspace:*",
+    "@elmariam/queue": "workspace:*",
+    "express": "^4.18.0",
+    "multer": "^1.4.5",
+    "minio": "^7.1.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.0",
+    "@types/multer": "^1.4.0",
+    "typescript": "^5.0.0"
+  }
+}
