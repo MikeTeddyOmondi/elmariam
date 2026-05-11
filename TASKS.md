@@ -9,7 +9,7 @@
   - pnpm-workspace.yaml, turbo.json, root package.json, tsconfig presets
   - Empty app/service/package directories with placeholder package.json files
 
-- [ ] **Task 2** — Mongoose schemas & connection (Part 3: packages/db)
+- [x] **Task 2** — Mongoose schemas & connection (Part 3: packages/db)
   - All 11 models: User, Customer, RoomType, Room, Booking, Invoice, Drink, BarPurchase, BarSale, MenuItem, RestaurantOrder
   - Connection helper, barrel exports, @elmariam/db package.json
 

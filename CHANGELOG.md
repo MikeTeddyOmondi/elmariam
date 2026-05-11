@@ -2,6 +2,15 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [97a84f6] feat: Task 2 — packages/db with all 11 Mongoose schemas and connection helper
+
+- Added 11 Mongoose models: User, Customer, RoomType, Room, Booking, Invoice, Drink, BarPurchase, BarSale, MenuItem, RestaurantOrder
+- User schema: expanded userType enum, removed password/resetLink/isAdmin, added openauth_subject_id
+- MenuItem and RestaurantOrder are new schemas for restaurant domain
+- Added connectDB helper with strictQuery=false and debug support
+- Added barrel exports via src/index.ts and src/models/index.ts
+- Implements: REWRITE_SPEC.md Part 3
+
 ## [c80578e] feat: Task 1 — monorepo scaffold with root config and placeholder packages
 
 - Added pnpm-workspace.yaml covering apps/*, services/*, packages/*, infra/openauth
