@@ -2,6 +2,16 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [74391d9] feat: Task 3 — packages/auth middleware + infra/openauth server
+
+- Added infra/openauth/src/subjects.ts with valibot user subject shape
+- Added infra/openauth/src/index.ts: PasswordProvider + MongoDB user lookup, Bun entry
+- Added infra/openauth/Dockerfile (oven/bun:1.1-alpine, port 3100)
+- Added packages/auth/src/subjects.ts (standalone copy, no circular dep on infra/)
+- Added packages/auth/src/verify.ts: createClient + verifyAuth for SvelteKit apps
+- Added packages/auth/src/middleware.ts: extractUser, requireAuth, requireUserType, requireReceptionist, requireBarista, requireWaiter, requireAdmin
+- Implements: REWRITE_SPEC.md Part 4
+
 ## [97a84f6] feat: Task 2 — packages/db with all 11 Mongoose schemas and connection helper
 
 - Added 11 Mongoose models: User, Customer, RoomType, Room, Booking, Invoice, Drink, BarPurchase, BarSale, MenuItem, RestaurantOrder

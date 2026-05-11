@@ -13,7 +13,7 @@
   - All 11 models: User, Customer, RoomType, Room, Booking, Invoice, Drink, BarPurchase, BarSale, MenuItem, RestaurantOrder
   - Connection helper, barrel exports, @elmariam/db package.json
 
-- [ ] **Task 3** — Auth package & OpenAuth server (Part 4)
+- [x] **Task 3** — Auth package & OpenAuth server (Part 4)
   - infra/openauth: subjects.ts, index.ts (Bun entry), Dockerfile
   - packages/auth: verify.ts, middleware.ts (requireAuth, requireReceptionist, requireBarista, requireWaiter, requireAdmin), barrel exports
 
