@@ -2,6 +2,14 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [5f1b706] feat: Task 4 — packages/queue with RabbitMQConfig and rabbitMQEnvFromProcess
+
+- Added RabbitMQConfig class with exponential backoff retry (maxRetries, initialDelay, maxDelay, factor)
+- Added connect, createQueue, publishToQueue, subscribeToQueue, close methods
+- Added reconnect logic on connection close event
+- Added rabbitMQEnvFromProcess helper to read env vars
+- Implements: REWRITE_SPEC.md Part 5
+
 ## [74391d9] feat: Task 3 — packages/auth middleware + infra/openauth server
 
 - Added infra/openauth/src/subjects.ts with valibot user subject shape

@@ -1,0 +1,13 @@
+{
+  "extends": "../../packages/config/tsconfig.node.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@elmariam/db": ["../../packages/db/src/index.ts"],
+      "@elmariam/auth": ["../../packages/auth/src/index.ts"],
+      "@elmariam/queue": ["../../packages/queue/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

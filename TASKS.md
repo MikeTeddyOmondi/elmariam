@@ -17,7 +17,7 @@
   - infra/openauth: subjects.ts, index.ts (Bun entry), Dockerfile
   - packages/auth: verify.ts, middleware.ts (requireAuth, requireReceptionist, requireBarista, requireWaiter, requireAdmin), barrel exports
 
-- [ ] **Task 4** — Queue package (Part 5: packages/queue)
+- [x] **Task 4** — Queue package (Part 5: packages/queue)
   - RabbitMQConfig class with retry, rabbitMQEnvFromProcess helper
 
 ## Phase 2: Backend Services
