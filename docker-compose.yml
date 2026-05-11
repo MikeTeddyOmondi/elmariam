@@ -1,0 +1,288 @@
+services:
+  # ──── Infrastructure ────
+  mongo:
+    container_name: elmariam-mongo
+    image: mongo:4.2
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - elmariam-mongodb-data:/data/db
+    networks:
+      - elmariam-network
+
+  rabbitmq:
+    container_name: elmariam-queue
+    image: rabbitmq:3.12-management
+    restart: always
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-user}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-password}
+      - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+    networks:
+      - elmariam-network
+
+  minio:
+    container_name: elmariam-object-store
+    image: minio/minio:latest
+    restart: always
+    environment:
+      - MINIO_ROOT_USER=minio
+      - MINIO_ROOT_PASSWORD=minio_password
+      - MINIO_SERVER_URL=https://s3.otienoobogeandcompany.com
+      - MINIO_BROWSER_REDIRECT_URL=https://minio.otienoobogeandcompany.com
+    ports:
+      - "9003:9000"
+      - "9001:9001"
+    volumes:
+      - elmariam-minio-data:/data
+    command: server /data --console-address ":9001"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.s3.rule=Host(`s3.otienoobogeandcompany.com`)"
+      - "traefik.http.routers.s3.service=s3"
+      - "traefik.http.services.s3.loadbalancer.server.port=9000"
+      - "traefik.http.routers.minio.rule=Host(`minio.otienoobogeandcompany.com`)"
+      - "traefik.http.routers.minio.service=minio"
+      - "traefik.http.services.minio.loadbalancer.server.port=9001"
+    networks:
+      - elmariam-network
+
+  # ──── Reverse Proxy ────
+  reverse-proxy:
+    image: traefik:v2.11
+    container_name: elmariam-proxy
+    command:
+      - --api.insecure=true
+      - --providers.docker=true
+      - --providers.docker.endpoint=unix:///var/run/docker.sock
+    restart: always
+    ports:
+      - "7979:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - elmariam-network
+
+  # ──── Auth ────
+  openauth:
+    container_name: elmariam-openauth
+    build: ./infra/openauth
+    restart: always
+    environment:
+      - PORT=3100
+      - DB_URL=mongodb://mongo:27017/auth
+      - OPENAUTH_ISSUER=https://auth.otienoobogeandcompany.com
+    ports:
+      - "3100:3100"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.auth.rule=Host(`auth.otienoobogeandcompany.com`)"
+      - "traefik.http.services.auth.loadbalancer.server.port=3100"
+    depends_on:
+      - mongo
+    networks:
+      - elmariam-network
+
+  # ──── Backend Services ────
+  hotel:
+    container_name: elmariam-hotel-svc
+    build: ./services/hotel
+    restart: always
+    environment:
+      - PORT=8003
+      - DB_URL=mongodb://mongo:27017/hotel
+      - NODE_ENV=development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
+      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+    depends_on:
+      - mongo
+      - rabbitmq
+    networks:
+      - elmariam-network
+
+  bar:
+    container_name: elmariam-bar-svc
+    build: ./services/bar
+    restart: always
+    environment:
+      - PORT=8004
+      - DB_URL=mongodb://mongo:27017/bar
+      - NODE_ENV=development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
+      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+      - MINIO_API_HOST=minio
+      - MINIO_ACCESS_KEY=minio
+      - MINIO_SECRET_KEY=minio_password
+      - S3_HOSTNAME=s3.otienoobogeandcompany.com
+    depends_on:
+      - mongo
+      - minio
+      - rabbitmq
+    networks:
+      - elmariam-network
+
+  restaurant:
+    container_name: elmariam-restaurant-svc
+    build: ./services/restaurant
+    restart: always
+    environment:
+      - PORT=8005
+      - DB_URL=mongodb://mongo:27017/restaurant
+      - NODE_ENV=development
+    depends_on:
+      - mongo
+    networks:
+      - elmariam-network
+
+  checkout:
+    container_name: elmariam-checkout-svc
+    build: ./services/checkout
+    restart: always
+    environment:
+      - PORT=8008
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
+      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+      - INTASEND_API_TOKEN=${INTASEND_API_TOKEN}
+      - INTASEND_PUBLISHABLE_KEY=${INTASEND_PUBLISHABLE_KEY}
+      - INTASEND_TEST_MODE=${INTASEND_TEST_MODE:-true}
+    depends_on:
+      - rabbitmq
+    networks:
+      - elmariam-network
+
+  sms:
+    container_name: elmariam-sms-svc
+    build: ./services/sms
+    restart: always
+    environment:
+      - PORT=7879
+      - NODE_ENV=development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
+      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+      - UJUMBESMS_API_KEY=${UJUMBESMS_API_KEY}
+      - UJUMBESMS_API_URL=${UJUMBESMS_API_URL:-https://ujumbesms.co.ke}
+      - UJUMBESMS_ACCOUNT_EMAIL=${UJUMBESMS_ACCOUNT_EMAIL}
+    depends_on:
+      - rabbitmq
+    networks:
+      - elmariam-network
+
+  smtp:
+    container_name: elmariam-smtp-svc
+    build: ./services/smtp
+    restart: always
+    environment:
+      - PORT=3300
+      - NODE_ENV=development
+      - RABBITMQ_HOST=rabbitmq
+      - RABBITMQ_PORT=5672
+      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
+      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
+      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+      - EMAIL_SENDER=${EMAIL_SENDER}
+      - CLIENT_ID=${GMAIL_CLIENT_ID}
+      - CLIENT_SECRET=${GMAIL_CLIENT_SECRET}
+      - G_RFR_TKN=${GMAIL_REFRESH_TOKEN}
+      - G_ACC_TKN=${GMAIL_ACCESS_TOKEN}
+    depends_on:
+      - rabbitmq
+    networks:
+      - elmariam-network
+
+  # ──── Gateway ────
+  gateway:
+    container_name: elmariam-api-gateway
+    build: ./infra/gateway
+    restart: always
+    ports:
+      - "8009:8009"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.gateway.rule=Host(`gateway.otienoobogeandcompany.com`)"
+      - "traefik.http.services.gateway.loadbalancer.server.port=8009"
+    depends_on:
+      - openauth
+      - hotel
+      - bar
+      - restaurant
+    networks:
+      - elmariam-network
+
+  # ──── Frontend Apps ────
+  admin:
+    container_name: elmariam-admin-app
+    build: ./apps/admin
+    restart: always
+    environment:
+      - GATEWAY_URL=http://gateway:8009
+      - OPENAUTH_ISSUER=http://openauth:3100
+    ports:
+      - "3000:3000"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.admin.rule=Host(`admin-panel.otienoobogeandcompany.com`)"
+      - "traefik.http.services.admin.loadbalancer.server.port=3000"
+    depends_on:
+      - gateway
+    networks:
+      - elmariam-network
+
+  staff:
+    container_name: elmariam-staff-app
+    build: ./apps/staff
+    restart: always
+    environment:
+      - GATEWAY_URL=http://gateway:8009
+      - OPENAUTH_ISSUER=http://openauth:3100
+    ports:
+      - "3001:3001"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.staff.rule=Host(`staff-panel.otienoobogeandcompany.com`)"
+      - "traefik.http.services.staff.loadbalancer.server.port=3001"
+    depends_on:
+      - gateway
+    networks:
+      - elmariam-network
+
+  website:
+    container_name: elmariam-website
+    build: ./apps/website
+    restart: always
+    environment:
+      - GATEWAY_URL=http://gateway:8009
+      - OPENAUTH_ISSUER=http://openauth:3100
+    ports:
+      - "3002:3002"
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.website.rule=Host(`otienoobogeandcompany.com`)"
+      - "traefik.http.services.website.loadbalancer.server.port=3002"
+    networks:
+      - elmariam-network
+
+volumes:
+  elmariam-mongodb-data:
+  elmariam-minio-data:
+
+networks:
+  elmariam-network:
+    name: elmariam
+    driver: bridge

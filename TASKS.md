@@ -53,7 +53,7 @@
 
 ## Phase 3: Gateway & Infrastructure
 
-- [ ] **Task 11** — KrakenD gateway config (Part 12)
+- [x] **Task 11** — KrakenD gateway config (Part 12)
   - krakend.json with all 35+ endpoints
   - JWT validator pointing to OpenAuth JWKS
   - propagate_claims with dot notation, input_headers synced

@@ -2,6 +2,16 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [a2261dc] feat: Task 11 — infra/gateway KrakenD config with 37 endpoints, JWT validation, CORS
+
+- Added krakend.json: global config (port 8009, 30s timeout, CORS for *.otienoobogeandcompany.com)
+- Added 15 hotel endpoints, 13 bar endpoints, 11 restaurant endpoints (all protected)
+- Added 2 public endpoints: /api/public/roomtypes and /api/public/menu (no auth/validator)
+- JWT validator: ES256, OpenAuth JWKS, propagate_claims with dot notation (properties.email, properties.userType)
+- CRITICAL: every protected endpoint has input_headers ["x-user-id","x-user-email","x-user-type"]
+- Added KrakenD Dockerfile (devopsfaith/krakend:2)
+- Implements: REWRITE_SPEC.md Part 12
+
 ## [648b064] feat: Tasks 7-10 — restaurant, checkout, SMS, and SMTP services
 
 - Task 7: Restaurant service — 11 endpoints (menu CRUD + order lifecycle pending→preparing→ready→served→cancelled), port 8005
