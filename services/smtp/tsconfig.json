@@ -1,0 +1,11 @@
+{
+  "extends": "../../packages/config/tsconfig.node.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "paths": {
+      "@elmariam/queue": ["../../packages/queue/src/index.ts"]
+    }
+  },
+  "include": ["src"]
+}

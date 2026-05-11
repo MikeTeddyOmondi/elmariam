@@ -2,6 +2,16 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [a2f4e91] feat: Task 6 — services/bar with 11 endpoints, Multer+MinIO upload, bug fix fetchBarSale
+
+- Added 11 Express routes: drinks (3), purchases (3), sales (3), lipa-mpesa (1), API info (1)
+- Implemented addBarDrinks with Multer+MinIO upload, per-unit price calc (crates/pack ÷ packageQty)
+- Implemented postBarPurchases with stock value calc and $set stockQty update
+- Implemented postBarSales multi-item checkout with stock validation and $inc decrement
+- Fixed fetchBarSale bug: was referencing undefined `saleID`, now correctly uses `salesId` param
+- Added lipaNaMpesa stub that publishes to "mpesa" queue
+- Implements: REWRITE_SPEC.md Part 7
+
 ## [c092348] feat: Task 5 — services/hotel with 17 Express endpoints and 14-step booking flow
 
 - Added 17 Express routes: customers (4), bookings (3), invoices (2), rooms (5), M-Pesa/SMS (2), API info (1)

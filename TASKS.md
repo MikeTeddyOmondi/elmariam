@@ -27,7 +27,7 @@
   - Uses @elmariam/db, @elmariam/auth, @elmariam/queue
   - Dockerfile
 
-- [ ] **Task 6** — Bar service (Part 7)
+- [x] **Task 6** — Bar service (Part 7)
   - 11 Express endpoints, Multer+MinIO image upload, per-unit price calc, multi-item checkout with stock validation
   - Fix fetchBarSale bug (saleID → salesId)
   - Dockerfile
