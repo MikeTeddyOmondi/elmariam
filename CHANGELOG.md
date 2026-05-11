@@ -2,6 +2,16 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [Unreleased] feat: Task 16 — apps/website SvelteKit customer-facing website
+
+- svelte.config.js (adapter-node, port 3002), vite.config.js, tsconfig.json
+- Public pages: / (homepage), /rooms (SSR +page.server.ts → /api/public/roomtypes), /restaurant (SSR +page.server.ts → /api/public/menu), /about, /contact
+- Auth: /login (PKCE), /login/callback/+page.server.ts (exchange code, set auth_token, verify userType===customer), /register
+- Customer portal: /portal, /portal/bookings (list), /portal/bookings/new (create with room rates), /portal/bookings/[id] (detail), /portal/invoices, /portal/profile
+- Remote functions: booking.remote.ts, account.remote.ts
+- Dockerfile (port 3002)
+- Implements: REWRITE_SPEC.md Part 15
+
 ## [Unreleased] feat: Task 15 — apps/staff SvelteKit role-based staff portal
 
 - svelte.config.js (adapter-node, port 3001), vite.config.js, tsconfig.json

@@ -82,7 +82,7 @@
   - Remote functions per workspace
   - Dockerfile
 
-- [ ] **Task 16** — SvelteKit Website (Part 15)
+- [x] **Task 16** — SvelteKit Website (Part 15)
   - 5 public pages (SSR via +page.server.ts for public endpoints)
   - 7 customer self-service pages behind auth
   - OpenAuth PKCE login for customers
