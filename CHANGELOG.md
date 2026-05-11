@@ -2,6 +2,24 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [Unreleased] feat: Task 14 — apps/admin SvelteKit management portal
+
+- svelte.config.js (adapter-node), vite.config.js (port 3000), tsconfig.json
+- src/lib/server/auth.ts: requireManagement helper (verifies token + userType===management)
+- Remote functions: hotel.remote.ts, bar.remote.ts, restaurant.remote.ts, users.remote.ts, analytics.remote.ts
+- PKCE login flow: login/+page.svelte (initiates authorize), login/callback/+page.server.ts (exchanges code, sets auth_token cookie)
+- 11 route pages: dashboard (analytics), users, customers, bookings, rooms, room-types, bar-drinks, bar-purchases, bar-sales, menu-items, restaurant-orders
+- Sidebar layout (non-login routes), Dockerfile
+- Implements: REWRITE_SPEC.md Part 13
+
+## [879bb23] feat: Tasks 12-13 — docker-compose.yml (14 services), .env.sample, Justfile
+
+- docker-compose.yml: mongo, rabbitmq, minio, reverse-proxy (Traefik), openauth, hotel, bar, restaurant, checkout, sms, smtp, gateway, admin, staff, website
+- All services on elmariam-network bridge, Traefik labels for host-based routing
+- .env.sample: RabbitMQ, IntaSend, UjumbeSMS, Gmail OAuth2, OpenAuth variables
+- .justfile: dev, docker, database, utility, and production commands
+- Implements: REWRITE_SPEC.md Parts 16, 17
+
 ## [a2261dc] feat: Task 11 — infra/gateway KrakenD config with 37 endpoints, JWT validation, CORS
 
 - Added krakend.json: global config (port 8009, 30s timeout, CORS for *.otienoobogeandcompany.com)

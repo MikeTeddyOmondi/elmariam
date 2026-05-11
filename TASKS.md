@@ -60,17 +60,17 @@
   - 2 public unauthenticated endpoints
   - Dockerfile
 
-- [ ] **Task 12** — Docker Compose & Traefik (Part 16)
+- [x] **Task 12** — Docker Compose & Traefik (Part 16)
   - docker-compose.yml with all 14 services
   - Traefik labels, volumes, network
   - .env.sample with all variables
 
-- [ ] **Task 13** — Justfile (Part 17)
+- [x] **Task 13** — Justfile (Part 17)
   - Dev, docker, database, utility commands
 
 ## Phase 4: Frontend Apps
 
-- [ ] **Task 14** — SvelteKit Admin app (Part 13)
+- [x] **Task 14** — SvelteKit Admin app (Part 13)
   - 14 pages, remote functions (hotel.remote.ts, bar.remote.ts, restaurant.remote.ts, users.remote.ts, analytics.remote.ts)
   - OpenAuth PKCE login, cookie-based token storage
   - shadcn-svelte components
