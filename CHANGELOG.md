@@ -2,6 +2,18 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [Unreleased] feat: Task 15 — apps/staff SvelteKit role-based staff portal
+
+- svelte.config.js (adapter-node, port 3001), vite.config.js, tsconfig.json
+- Root +page.svelte reads user_type cookie and redirects to /receptionist|/barista|/waiter
+- PKCE login flow (login/+page.svelte, login/callback/+page.server.ts sets auth_token + user_type cookies)
+- Receptionist workspace (8 pages): dashboard, customers (list+new), bookings (list+new), rooms, invoices
+- Barista workspace (7 pages): dashboard, drinks (list+new), purchases (list+new), sales (list+new)
+- Waiter workspace (5 pages): dashboard, menu, orders (list+new)
+- Remote functions: hotel.remote.ts, bar.remote.ts, restaurant.remote.ts
+- Dockerfile
+- Implements: REWRITE_SPEC.md Part 14
+
 ## [Unreleased] feat: Task 14 — apps/admin SvelteKit management portal
 
 - svelte.config.js (adapter-node), vite.config.js (port 3000), tsconfig.json

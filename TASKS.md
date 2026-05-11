@@ -76,7 +76,7 @@
   - shadcn-svelte components
   - Dockerfile
 
-- [ ] **Task 15** — SvelteKit Staff app (Part 14)
+- [x] **Task 15** — SvelteKit Staff app (Part 14)
   - Role-based redirect (receptionist/barista/waiter workspaces)
   - Receptionist: 8 pages, Barista: 7 pages, Waiter: 5 pages
   - Remote functions per workspace
