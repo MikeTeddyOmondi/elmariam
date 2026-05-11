@@ -1,4 +1,4 @@
-import amqp, { Channel, Connection } from "amqplib";
+import amqp, { Channel, ChannelModel } from "amqplib";
 
 interface RabbitMQRetryOptions {
   maxRetries?: number;
@@ -17,7 +17,7 @@ interface RabbitMQEnv {
 
 export class RabbitMQConfig {
   private url: string;
-  private connection: Connection | null = null;
+  private connection: ChannelModel | null = null;
   private channel: Channel | null = null;
   private retryOptions: Required<RabbitMQRetryOptions>;
 
@@ -107,7 +107,7 @@ export class RabbitMQConfig {
 
   async subscribeToQueue(
     queueName: string,
-    handler: (message: object) => Promise<void>
+    handler: (message: any) => Promise<void>
   ): Promise<void> {
     if (!this.channel) throw new Error("RabbitMQ channel not initialized");
     await this.channel.prefetch(1);

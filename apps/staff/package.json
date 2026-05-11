@@ -1,6 +1,7 @@
 {
   "name": "@elmariam/staff",
   "version": "1.0.0",
+  "type": "module",
   "private": true,
   "scripts": {
     "dev": "vite dev",
@@ -11,7 +12,7 @@
   "dependencies": {
     "@elmariam/auth": "workspace:*",
     "@openauthjs/openauth": "^0.3.0",
-    "valibot": "^0.36.0"
+    "valibot": "^1.0.0"
   },
   "devDependencies": {
     "@sveltejs/adapter-node": "^5.0.0",

@@ -17,7 +17,7 @@ export const minioClient = new Client({
   secretKey: MINIO_SECRET_KEY,
 });
 
-const storage = new MinioStorage({
+const storage = new (MinioStorage as any)({
   minio: minioClient,
   path: "photos",
   region: "us-east-1",

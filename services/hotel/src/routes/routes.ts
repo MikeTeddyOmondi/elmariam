@@ -29,7 +29,7 @@ import {
   createRoom,
 } from "../controllers/roomController";
 
-const router = Router();
+const router: Router = Router();
 
 // API info
 router.get("/", requireAuth, (req, res) => {

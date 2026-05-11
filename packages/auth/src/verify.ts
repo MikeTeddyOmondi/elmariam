@@ -10,7 +10,8 @@ const client = createClient({
 });
 
 export async function verifyAuth(token: string) {
-  const result = await client.verify(subjects, token);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const result = await client.verify(subjects as any, token);
   if (result.err) {
     throw new Error("Invalid token");
   }

@@ -5,7 +5,7 @@ import { getBarDrinks, getOneBarDrink, addBarDrinks } from "../controllers/drink
 import { getBarPurchases, getOneBarPurchase, postBarPurchases } from "../controllers/purchaseController";
 import { getBarSales, getOneBarSale, postBarSales, lipaNaMpesa } from "../controllers/saleController";
 
-const router = Router();
+const router: Router = Router();
 
 // API info
 router.get("/", requireBarista, (_req, res) => {
