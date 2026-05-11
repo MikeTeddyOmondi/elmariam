@@ -90,7 +90,7 @@
 
 ## Phase 5: Finalization
 
-- [ ] **Task 17** — Migration tooling (Part 18)
+- [x] **Task 17** — Migration tooling (Part 18)
   - Staff role migration script (staff → receptionist/barista/waiter)
   - OpenAuth user registration migration script
   - Migration README

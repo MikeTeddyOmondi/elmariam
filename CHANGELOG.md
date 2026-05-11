@@ -2,6 +2,13 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [Unreleased] feat: Task 17 — migration tooling
+
+- scripts/migrations/migrate-staff-roles.ts: updates userType "staff" → receptionist|barista|waiter|management; supports ROLE_MAP for per-user overrides
+- scripts/migrations/migrate-openauth-users.ts: registers existing MongoDB users with OpenAuth PasswordProvider, backfills openauth_subject_id
+- scripts/migrations/README.md: prerequisites, usage, env vars, order of operations
+- Implements: REWRITE_SPEC.md Part 18
+
 ## [Unreleased] feat: Task 16 — apps/website SvelteKit customer-facing website
 
 - svelte.config.js (adapter-node, port 3002), vite.config.js, tsconfig.json
