@@ -1,2 +1,0 @@
-# Hotel Elmiriam | Admin Panel
-

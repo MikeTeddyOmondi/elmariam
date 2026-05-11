@@ -1,6 +1,0 @@
-# Logs
-logs
-*.log
-
-# Env variables
-.env
