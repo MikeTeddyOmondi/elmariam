@@ -13,5 +13,6 @@ RUN pnpm --filter @elmariam/admin build
 FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /monorepo/apps/admin/build ./build
+ENV PORT=3000
 EXPOSE 3000
 CMD ["node", "build"]
