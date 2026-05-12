@@ -1,7 +1,7 @@
 import { Client } from "minio";
 import multer from "multer";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const MinioStorage = require("@namatery/multer-minio");
+const { MinioStorageEngine: MinioStorage } = require("@namatery/multer-minio");
 
 const MINIO_API_HOST = process.env.MINIO_API_HOST || "localhost";
 const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || "minioadmin";
