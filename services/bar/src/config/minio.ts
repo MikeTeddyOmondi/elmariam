@@ -1,7 +1,6 @@
 import { Client } from "minio";
 import multer from "multer";
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { MinioStorageEngine: MinioStorage } = require("@namatery/multer-minio");
+import { MinioStorageEngine } from "@namatery/multer-minio";
 
 const MINIO_API_HOST = process.env.MINIO_API_HOST || "localhost";
 const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || "minioadmin";
@@ -17,16 +16,8 @@ export const minioClient = new Client({
   secretKey: MINIO_SECRET_KEY,
 });
 
-const storage = new MinioStorage({
-  minio: minioClient,
-  path: "photos",
-  region: "us-east-1",
-  bucket: { init: true, versioning: false, forceDelete: false },
-  object: {
-    name: (_req: any, file: any) => file.originalname,
-    useOriginalFilename: false,
-  },
-  bucketName: BUCKET_NAME,
+const storage = new MinioStorageEngine(minioClient, BUCKET_NAME, {
+  bucket: { init: true, versioning: false as const, forceDelete: false },
 });
 
 export const upload = multer({
