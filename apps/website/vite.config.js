@@ -3,5 +3,5 @@ import { defineConfig } from 'vite';
 
 export default defineConfig({
   plugins: [sveltekit()],
-  server: { port: 3002 },
+  server: { host: "0.0.0.0", port: 3002 },
 });
