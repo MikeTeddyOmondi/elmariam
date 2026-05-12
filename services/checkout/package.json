@@ -4,7 +4,7 @@
   "main": "src/index.ts",
   "scripts": {
     "dev": "bun run src/index.ts",
-    "build": "bun build src/index.ts --outdir dist --target bun",
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

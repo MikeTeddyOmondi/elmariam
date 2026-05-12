@@ -71,7 +71,9 @@ services:
   # ──── Auth ────
   openauth:
     container_name: elmariam-openauth
-    build: ./infra/openauth
+    build:
+      context: .
+      dockerfile: infra/openauth/Dockerfile
     restart: always
     environment:
       - PORT=3100
@@ -91,7 +93,9 @@ services:
   # ──── Backend Services ────
   hotel:
     container_name: elmariam-hotel-svc
-    build: ./services/hotel
+    build:
+      context: .
+      dockerfile: services/hotel/Dockerfile
     restart: always
     environment:
       - PORT=8003
@@ -110,7 +114,9 @@ services:
 
   bar:
     container_name: elmariam-bar-svc
-    build: ./services/bar
+    build:
+      context: .
+      dockerfile: services/bar/Dockerfile
     restart: always
     environment:
       - PORT=8004
@@ -134,7 +140,9 @@ services:
 
   restaurant:
     container_name: elmariam-restaurant-svc
-    build: ./services/restaurant
+    build:
+      context: .
+      dockerfile: services/restaurant/Dockerfile
     restart: always
     environment:
       - PORT=8005
@@ -147,7 +155,9 @@ services:
 
   checkout:
     container_name: elmariam-checkout-svc
-    build: ./services/checkout
+    build:
+      context: .
+      dockerfile: services/checkout/Dockerfile
     restart: always
     environment:
       - PORT=8008
@@ -166,7 +176,9 @@ services:
 
   sms:
     container_name: elmariam-sms-svc
-    build: ./services/sms
+    build:
+      context: .
+      dockerfile: services/sms/Dockerfile
     restart: always
     environment:
       - PORT=7879
@@ -186,7 +198,9 @@ services:
 
   smtp:
     container_name: elmariam-smtp-svc
-    build: ./services/smtp
+    build:
+      context: .
+      dockerfile: services/smtp/Dockerfile
     restart: always
     environment:
       - PORT=3300
@@ -228,7 +242,9 @@ services:
   # ──── Frontend Apps ────
   admin:
     container_name: elmariam-admin-app
-    build: ./apps/admin
+    build:
+      context: .
+      dockerfile: apps/admin/Dockerfile
     restart: always
     environment:
       - GATEWAY_URL=http://gateway:8009
@@ -246,7 +262,9 @@ services:
 
   staff:
     container_name: elmariam-staff-app
-    build: ./apps/staff
+    build:
+      context: .
+      dockerfile: apps/staff/Dockerfile
     restart: always
     environment:
       - GATEWAY_URL=http://gateway:8009
@@ -264,7 +282,9 @@ services:
 
   website:
     container_name: elmariam-website
-    build: ./apps/website
+    build:
+      context: .
+      dockerfile: apps/website/Dockerfile
     restart: always
     environment:
       - GATEWAY_URL=http://gateway:8009

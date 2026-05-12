@@ -1,17 +1,19 @@
 {
   "name": "@elmariam/openauth",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "bun run --watch src/index.ts",
     "start": "bun run src/index.ts",
+    "build": "tsc",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@elmariam/db": "workspace:*",
     "@openauthjs/openauth": "^0.3.0",
     "bcryptjs": "^2.4.3",
-    "valibot": "^0.36.0"
+    "valibot": "^0.36.0",
+    "mongodb": "7.2.0"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.0",
