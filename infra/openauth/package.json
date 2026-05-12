@@ -12,7 +12,7 @@
     "@elmariam/db": "workspace:*",
     "@openauthjs/openauth": "^0.3.0",
     "bcryptjs": "^2.4.3",
-    "valibot": "^1.0.0",
+    "valibot": "^1.1.0",
     "mongodb": "7.2.0"
   },
   "devDependencies": {
