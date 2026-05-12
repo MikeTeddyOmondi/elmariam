@@ -1,30 +1,36 @@
 <script lang="ts">
-  const OPENAUTH_ISSUER = import.meta.env.VITE_OPENAUTH_ISSUER || 'http://localhost:3100';
-  const CLIENT_ID = 'website';
-  const REDIRECT_URI = import.meta.env.VITE_BASE_URL
-    ? `${import.meta.env.VITE_BASE_URL}/login/callback`
-    : 'http://localhost:3002/login/callback';
+  import { authClient } from '$lib/auth-client';
+  import { browser } from '$app/environment';
 
-  async function login() {
-    const codeVerifier = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '');
-    const encoder = new TextEncoder();
-    const data = encoder.encode(codeVerifier);
-    const digest = await crypto.subtle.digest('SHA-256', data);
-    const codeChallenge = btoa(String.fromCharCode(...new Uint8Array(digest)))
-      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+  let loading = $state(false);
+  let error = $state('');
 
-    sessionStorage.setItem('pkce_verifier', codeVerifier);
-    document.cookie = `pkce_verifier=${codeVerifier}; path=/; SameSite=Lax; max-age=600`;
+  async function handleLogin() {
+    if (!browser) return;
+    loading = true;
+    error = '';
+    try {
+      const redirectUri = `${window.location.origin}/login/callback`;
+      const { challenge, url } = await authClient.authorize(redirectUri, 'code', { pkce: true });
+      document.cookie = `pkce_verifier=${challenge.verifier}; path=/; max-age=600; SameSite=Lax`;
+      window.location.href = url;
+    } catch (err) {
+      console.error('Login error:', err);
+      error = 'Failed to initiate login. Please try again.';
+      loading = false;
+    }
+  }
 
-    const params = new URLSearchParams({
-      response_type: 'code',
-      client_id: CLIENT_ID,
-      redirect_uri: REDIRECT_URI,
-      code_challenge: codeChallenge,
-      code_challenge_method: 'S256',
-    });
-
-    window.location.href = `${OPENAUTH_ISSUER}/authorize?${params}`;
+  if (browser) {
+    const errorParam = new URLSearchParams(window.location.search).get('error');
+    if (errorParam) {
+      error = ({
+        no_code: 'No authorization code received',
+        no_verifier: 'Session expired, please try again',
+        exchange_failed: 'Failed to exchange authorization code',
+        unauthorized: 'Access restricted to customer accounts',
+      } as Record<string, string>)[errorParam] ?? decodeURIComponent(errorParam);
+    }
   }
 </script>
 
@@ -32,7 +38,12 @@
   <div class="card">
     <h1>Sign In</h1>
     <p>Access your bookings and manage your stay.</p>
-    <button onclick={login}>Continue with El'Mariam Account</button>
+    {#if error}
+      <p class="error">{error}</p>
+    {/if}
+    <button onclick={handleLogin} disabled={loading}>
+      {loading ? 'Redirecting…' : 'Continue with El\'Mariam Account'}
+    </button>
     <p class="register">Don't have an account? <a href="/register">Register</a></p>
   </div>
 </div>
@@ -55,6 +66,7 @@
   }
   h1 { margin: 0 0 0.5rem; color: #1a1a2e; }
   p { color: #666; margin-bottom: 1.5rem; }
+  .error { color: #c0392b; font-size: 0.875rem; margin-bottom: 1rem; }
   button {
     background: #1a1a2e;
     color: #fff;
@@ -65,6 +77,8 @@
     font-size: 1rem;
     width: 100%;
   }
+  button:disabled { opacity: 0.6; cursor: not-allowed; }
+  button:hover:not(:disabled) { background: #16213e; }
   .register { margin-top: 1rem; font-size: 0.9rem; }
   .register a { color: #c0392b; }
 </style>
