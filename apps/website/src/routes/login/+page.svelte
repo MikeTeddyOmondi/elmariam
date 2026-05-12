@@ -14,6 +14,7 @@
       .replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
 
     sessionStorage.setItem('pkce_verifier', codeVerifier);
+    document.cookie = `pkce_verifier=${codeVerifier}; path=/; SameSite=Lax; max-age=600`;
 
     const params = new URLSearchParams({
       response_type: 'code',
