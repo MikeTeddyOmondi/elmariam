@@ -33,11 +33,11 @@ const app = issuer({
     if (value.provider === "password") {
       const email = value.email;
 
-      // Look up user in MongoDB
-      const user = await User.findOne({ email });
+      // Look up user — auto-create as customer if signing up via website
+      let user = await User.findOne({ email });
 
       if (!user) {
-        throw new Error(`User not found: ${email}`);
+        user = await User.create({ email, userType: "customer" });
       }
 
       return ctx.subject("user", {
