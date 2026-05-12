@@ -1,7 +1,7 @@
 import { Client } from "minio";
 import multer from "multer";
-// @ts-ignore — no types for this package
-import MinioStorage from "@namatery/multer-minio";
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const MinioStorage = require("@namatery/multer-minio");
 
 const MINIO_API_HOST = process.env.MINIO_API_HOST || "localhost";
 const MINIO_ACCESS_KEY = process.env.MINIO_ACCESS_KEY || "minioadmin";
@@ -17,7 +17,7 @@ export const minioClient = new Client({
   secretKey: MINIO_SECRET_KEY,
 });
 
-const storage = new (MinioStorage as any)({
+const storage = new MinioStorage({
   minio: minioClient,
   path: "photos",
   region: "us-east-1",
