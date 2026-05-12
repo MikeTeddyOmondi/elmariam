@@ -11,9 +11,9 @@ RUN pnpm --filter @elmariam/queue build
 RUN pnpm --filter @elmariam/checkout build
 RUN pnpm --filter @elmariam/checkout deploy --prod /standalone
 
-FROM node:20-alpine
+FROM oven/bun:1-alpine
 WORKDIR /app
 COPY --from=builder /standalone .
 ENV PORT=8008
 EXPOSE 8008
-CMD ["node", "dist/index.js"]
+CMD ["bun", "dist/index.js"]

@@ -11,9 +11,9 @@ RUN pnpm --filter @elmariam/db build
 RUN pnpm --filter @elmariam/openauth build
 RUN pnpm --filter @elmariam/openauth deploy --prod /standalone
 
-FROM node:20-alpine
+FROM oven/bun:1-alpine
 WORKDIR /app
 COPY --from=builder /standalone .
 ENV PORT=3100
 EXPOSE 3100
-CMD ["node", "dist/index.js"]
+CMD ["bun", "dist/index.js"]
