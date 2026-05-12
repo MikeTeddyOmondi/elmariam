@@ -1,5 +1,3 @@
-export { subjects } from "./subjects";
-export { verifyAuth, client } from "./verify";
 export {
   extractUser,
   requireAuth,

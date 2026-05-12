@@ -8,7 +8,7 @@ RUN npm install -g pnpm && pnpm install --frozen-lockfile
 COPY packages/ packages/
 COPY services/smtp/ services/smtp/
 RUN pnpm --filter @elmariam/queue build
-RUN pnpm --filter @elmariam/smtp build
+RUN pnpm --filter @elmariam/smtp build && cp -r services/smtp/src/templates services/smtp/dist/
 RUN pnpm --filter @elmariam/smtp deploy --prod /standalone
 
 FROM node:20-alpine

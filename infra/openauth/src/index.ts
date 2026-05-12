@@ -1,17 +1,24 @@
-import { authorizer } from "@openauthjs/openauth";
+import { issuer } from "@openauthjs/openauth";
 import { PasswordProvider } from "@openauthjs/openauth/provider/password";
 import { PasswordUI } from "@openauthjs/openauth/ui/password";
-import { subjects } from "./subjects";
+import { subjects } from "./subjects.js";
 import { connectDB } from "@elmariam/db";
 import { User } from "@elmariam/db";
+import { MongoStorage } from "./mongo-storage.js";
 
 const PORT = process.env.PORT || 3100;
-const DB_URL = process.env.DB_URL || "mongodb://mongo:27017/auth";
+// const DB_URL = process.env.DB_URL || "mongodb://mongo:27017/auth";
 
-await connectDB({ url: DB_URL });
+// await connectDB({ url: DB_URL });
+const mongoStorage = MongoStorage({
+  uri: "mongodb://localhost:27017",
+  database: "openauth",
+  collection: "sessions",
+});
 
-const app = authorizer({
+const app = issuer({
   subjects,
+  storage: mongoStorage,
   providers: {
     password: PasswordProvider(
       PasswordUI({

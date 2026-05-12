@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from "@elmariam/queue";
-import checkout from "./utils/checkout";
+import checkout from "./utils/checkout.js";
 
 const app = new Hono();
 const rabbitMQ = new RabbitMQConfig(rabbitMQEnvFromProcess(), {
