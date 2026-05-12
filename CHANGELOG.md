@@ -2,21 +2,21 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
-## [Unreleased] feat: Task 18 — integration smoke test script
+## [c73bc78] feat: Task 18 — integration smoke test script
 
 - scripts/smoke-test.sh: verifies service reachability (gateway, OpenAuth, 3 apps), public endpoints return success, protected endpoints reject 401, OpenAuth JWKS + OIDC config present
 - Includes e2e flow instructions for manual token-based verification
 - Run with: ./scripts/smoke-test.sh (after docker compose up -d)
 - Implements: REWRITE_SPEC.md integration verification
 
-## [Unreleased] feat: Task 17 — migration tooling
+## [77b8703] feat: Task 17 — migration tooling
 
 - scripts/migrations/migrate-staff-roles.ts: updates userType "staff" → receptionist|barista|waiter|management; supports ROLE_MAP for per-user overrides
 - scripts/migrations/migrate-openauth-users.ts: registers existing MongoDB users with OpenAuth PasswordProvider, backfills openauth_subject_id
 - scripts/migrations/README.md: prerequisites, usage, env vars, order of operations
 - Implements: REWRITE_SPEC.md Part 18
 
-## [Unreleased] feat: Task 16 — apps/website SvelteKit customer-facing website
+## [ff29fa5] feat: Task 16 — apps/website SvelteKit customer-facing website
 
 - svelte.config.js (adapter-node, port 3002), vite.config.js, tsconfig.json
 - Public pages: / (homepage), /rooms (SSR +page.server.ts → /api/public/roomtypes), /restaurant (SSR +page.server.ts → /api/public/menu), /about, /contact
@@ -26,7 +26,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Dockerfile (port 3002)
 - Implements: REWRITE_SPEC.md Part 15
 
-## [Unreleased] feat: Task 15 — apps/staff SvelteKit role-based staff portal
+## [96cdcbf] feat: Task 15 — apps/staff SvelteKit role-based staff portal
 
 - svelte.config.js (adapter-node, port 3001), vite.config.js, tsconfig.json
 - Root +page.svelte reads user_type cookie and redirects to /receptionist|/barista|/waiter
@@ -38,7 +38,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Dockerfile
 - Implements: REWRITE_SPEC.md Part 14
 
-## [Unreleased] feat: Task 14 — apps/admin SvelteKit management portal
+## [92129f6] feat: Task 14 — apps/admin SvelteKit management portal
 
 - svelte.config.js (adapter-node), vite.config.js (port 3000), tsconfig.json
 - src/lib/server/auth.ts: requireManagement helper (verifies token + userType===management)
@@ -48,7 +48,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Sidebar layout (non-login routes), Dockerfile
 - Implements: REWRITE_SPEC.md Part 13
 
-## [879bb23] feat: Tasks 12-13 — docker-compose.yml (14 services), .env.sample, Justfile
+## [652bf61] feat: Tasks 12-13 — docker-compose.yml (14 services), .env.sample, Justfile
 
 - docker-compose.yml: mongo, rabbitmq, minio, reverse-proxy (Traefik), openauth, hotel, bar, restaurant, checkout, sms, smtp, gateway, admin, staff, website
 - All services on elmariam-network bridge, Traefik labels for host-based routing
@@ -56,7 +56,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - .justfile: dev, docker, database, utility, and production commands
 - Implements: REWRITE_SPEC.md Parts 16, 17
 
-## [a2261dc] feat: Task 11 — infra/gateway KrakenD config with 37 endpoints, JWT validation, CORS
+## [61efcf7] feat: Task 11 — infra/gateway KrakenD config with 37 endpoints, JWT validation, CORS
 
 - Added krakend.json: global config (port 8009, 30s timeout, CORS for *.otienoobogeandcompany.com)
 - Added 15 hotel endpoints, 13 bar endpoints, 11 restaurant endpoints (all protected)
@@ -66,7 +66,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Added KrakenD Dockerfile (devopsfaith/krakend:2)
 - Implements: REWRITE_SPEC.md Part 12
 
-## [648b064] feat: Tasks 7-10 — restaurant, checkout, SMS, and SMTP services
+## [3ce8644] feat: Tasks 7-10 — restaurant, checkout, SMS, and SMTP services
 
 - Task 7: Restaurant service — 11 endpoints (menu CRUD + order lifecycle pending→preparing→ready→served→cancelled), port 8005
 - Task 8: Checkout service — Hono/Bun, subscribes to "mpesa" queue, calls IntaSend STK push, port 8008
@@ -74,7 +74,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Task 10: SMTP service — subscribes to "mails" queue, Gmail OAuth2 + Nodemailer + Handlebars email.hbs template, port 3300
 - Implements: REWRITE_SPEC.md Parts 8, 9, 10, 11
 
-## [a2f4e91] feat: Task 6 — services/bar with 11 endpoints, Multer+MinIO upload, bug fix fetchBarSale
+## [0fe024f] feat: Task 6 — services/bar with 11 endpoints, Multer+MinIO upload, bug fix fetchBarSale
 
 - Added 11 Express routes: drinks (3), purchases (3), sales (3), lipa-mpesa (1), API info (1)
 - Implemented addBarDrinks with Multer+MinIO upload, per-unit price calc (crates/pack ÷ packageQty)
@@ -84,7 +84,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Added lipaNaMpesa stub that publishes to "mpesa" queue
 - Implements: REWRITE_SPEC.md Part 7
 
-## [c092348] feat: Task 5 — services/hotel with 17 Express endpoints and 14-step booking flow
+## [185576d] feat: Task 5 — services/hotel with 17 Express endpoints and 14-step booking flow
 
 - Added 17 Express routes: customers (4), bookings (3), invoices (2), rooms (5), M-Pesa/SMS (2), API info (1)
 - Implemented full 14-step addBookings flow: validation, customer/roomType lookup, room availability, invoice calc (16% VAT), booking create, room marking
@@ -93,7 +93,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - No CORS on service — KrakenD handles gateway-level CORS
 - Implements: REWRITE_SPEC.md Part 6
 
-## [5f1b706] feat: Task 4 — packages/queue with RabbitMQConfig and rabbitMQEnvFromProcess
+## [ec7cb58] feat: Task 4 — packages/queue with RabbitMQConfig and rabbitMQEnvFromProcess
 
 - Added RabbitMQConfig class with exponential backoff retry (maxRetries, initialDelay, maxDelay, factor)
 - Added connect, createQueue, publishToQueue, subscribeToQueue, close methods
@@ -101,7 +101,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Added rabbitMQEnvFromProcess helper to read env vars
 - Implements: REWRITE_SPEC.md Part 5
 
-## [74391d9] feat: Task 3 — packages/auth middleware + infra/openauth server
+## [7c704a9] feat: Task 3 — packages/auth middleware + infra/openauth server
 
 - Added infra/openauth/src/subjects.ts with valibot user subject shape
 - Added infra/openauth/src/index.ts: PasswordProvider + MongoDB user lookup, Bun entry
@@ -111,7 +111,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Added packages/auth/src/middleware.ts: extractUser, requireAuth, requireUserType, requireReceptionist, requireBarista, requireWaiter, requireAdmin
 - Implements: REWRITE_SPEC.md Part 4
 
-## [97a84f6] feat: Task 2 — packages/db with all 11 Mongoose schemas and connection helper
+## [a031ee1] feat: Task 2 — packages/db with all 11 Mongoose schemas and connection helper
 
 - Added 11 Mongoose models: User, Customer, RoomType, Room, Booking, Invoice, Drink, BarPurchase, BarSale, MenuItem, RestaurantOrder
 - User schema: expanded userType enum, removed password/resetLink/isAdmin, added openauth_subject_id
@@ -120,7 +120,7 @@ All notable changes to the El'Mariam rewrite are documented here.
 - Added barrel exports via src/index.ts and src/models/index.ts
 - Implements: REWRITE_SPEC.md Part 3
 
-## [c80578e] feat: Task 1 — monorepo scaffold with root config and placeholder packages
+## [d94a27d] feat: Task 1 — monorepo scaffold with root config and placeholder packages
 
 - Added pnpm-workspace.yaml covering apps/*, services/*, packages/*, infra/openauth
 - Added turbo.json with build/dev/lint/typecheck/db:migrate tasks per spec
