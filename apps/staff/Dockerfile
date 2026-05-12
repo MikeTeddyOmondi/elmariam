@@ -9,10 +9,11 @@ COPY packages/ packages/
 COPY apps/staff/ apps/staff/
 RUN pnpm --filter @elmariam/auth build
 RUN pnpm --filter @elmariam/staff build
+RUN pnpm --filter @elmariam/staff deploy --prod /standalone
 
 FROM node:20-alpine
 WORKDIR /app
-COPY --from=builder /monorepo/apps/staff/build ./build
+COPY --from=builder /standalone .
 ENV PORT=3001
 EXPOSE 3001
 CMD ["node", "build"]
