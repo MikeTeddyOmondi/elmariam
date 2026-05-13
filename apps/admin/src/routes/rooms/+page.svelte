@@ -27,7 +27,10 @@
 </script>
 
 <div class="space-y-6">
-  <h1 class="text-2xl font-bold text-foreground">Rooms</h1>
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Rooms</h1>
+    <p class="text-sm text-muted-foreground mt-1">Manage individual hotel rooms</p>
+  </div>
 
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
@@ -48,6 +51,8 @@
             <option value="">Select type</option>
             {#each types as t}<option value={t._id}>{t.title} ({t.roomType})</option>{/each}
           </select>
+        {:catch}
+          <select disabled class={selectCls}><option>Failed to load types</option></select>
         {/await}
       </div>
       <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add Room'}</Button>
