@@ -13,6 +13,7 @@
       const redirectUri = `${window.location.origin}/login/callback`;
       const { challenge, url } = await authClient.authorize(redirectUri, 'code', { pkce: true });
       document.cookie = `pkce_verifier=${challenge.verifier}; path=/; max-age=600; SameSite=Lax`;
+      document.cookie = `oauth_redirect_uri=${encodeURIComponent(redirectUri)}; path=/; max-age=600; SameSite=Lax`;
       window.location.href = url;
     } catch (err) {
       console.error('Login error:', err);

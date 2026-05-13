@@ -1,8 +1,7 @@
 import { dev } from '$app/environment';
-import { redirect } from '@sveltejs/kit';
+import { redirect, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@openauthjs/openauth/client';
 import { subjects } from '$lib/subjects';
-import type { RequestHandler } from './$types';
 
 const STAFF_TYPES = ['receptionist', 'barista', 'waiter', 'management'];
 
@@ -21,11 +20,20 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   const verifier = cookies.get('pkce_verifier');
   if (!verifier) throw redirect(302, '/login?error=no_verifier');
 
-  const redirectUri = `${url.origin}/login/callback`;
-  const result = await client.exchange(code, redirectUri, verifier);
+  const storedRedirectUri = cookies.get('oauth_redirect_uri');
+  if (!storedRedirectUri) throw redirect(302, '/login?error=no_redirect_uri');
+  const redirectUri = decodeURIComponent(storedRedirectUri);
+
+  let result;
+  try {
+    result = await client.exchange(code, redirectUri, verifier);
+  } catch (err) {
+    console.error('[staff callback] exchange threw:', err);
+    throw redirect(302, '/login?error=exchange_failed');
+  }
 
   if (result.err) {
-    console.error('Token exchange error:', result.err);
+    console.error('[staff callback] exchange error:', result.err);
     throw redirect(302, '/login?error=exchange_failed');
   }
 
@@ -42,6 +50,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
     path: '/', httpOnly: false, secure: !dev, sameSite: 'lax' as const, maxAge: 60 * 60 * 24 * 7,
   });
   cookies.delete('pkce_verifier', { path: '/' });
+  cookies.delete('oauth_redirect_uri', { path: '/' });
 
   throw redirect(302, '/');
 };
