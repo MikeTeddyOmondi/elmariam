@@ -9,7 +9,7 @@ const client = createClient({ clientID: 'staff', issuer: OPENAUTH_ISSUER });
 export type StaffUserType = 'receptionist' | 'barista' | 'waiter' | 'management';
 
 export async function requireStaffAuth(cookies: Cookies): Promise<{ id: string; email: string; userType: StaffUserType }> {
-  const token = cookies.get('auth_token');
+  const token = cookies.get('access_token');
   if (!token) redirect(302, '/login');
   try {
     const verified = await client.verify(token as any, token);

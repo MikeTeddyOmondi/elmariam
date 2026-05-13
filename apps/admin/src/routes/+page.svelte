@@ -1,50 +1,56 @@
 <script lang="ts">
   import { getDashboardStats } from '$lib/remote/analytics.remote';
+  import { Card, CardContent, CardHeader, CardTitle } from '@elmariam/ui';
+  import { BedDouble, Receipt, GlassWater, ClipboardList } from 'lucide-svelte';
 
   const stats = getDashboardStats();
+
+  const statDefs = [
+    { key: 'bookings',  label: 'Bookings',           icon: BedDouble,     color: 'text-blue-400' },
+    { key: 'invoices',  label: 'Invoices',            icon: Receipt,       color: 'text-green-400' },
+    { key: 'sales',     label: 'Bar Sales',           icon: GlassWater,    color: 'text-purple-400' },
+    { key: 'orders',    label: 'Restaurant Orders',   icon: ClipboardList, color: 'text-orange-400' },
+  ] as const;
 </script>
 
-<h1>Dashboard</h1>
-
-{#await stats}
-  <p>Loading stats…</p>
-{:then data}
-  <div class="grid">
-    <div class="card">
-      <h3>Bookings</h3>
-      <p class="number">{Array.isArray(data.bookings) ? data.bookings.length : 0}</p>
-    </div>
-    <div class="card">
-      <h3>Invoices</h3>
-      <p class="number">{Array.isArray(data.invoices) ? data.invoices.length : 0}</p>
-    </div>
-    <div class="card">
-      <h3>Bar Sales</h3>
-      <p class="number">{Array.isArray(data.sales) ? data.sales.length : 0}</p>
-    </div>
-    <div class="card">
-      <h3>Restaurant Orders</h3>
-      <p class="number">{Array.isArray(data.orders) ? data.orders.length : 0}</p>
-    </div>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Dashboard</h1>
+    <p class="text-sm text-muted-foreground mt-1">Overview of hotel activity</p>
   </div>
-{:catch err}
-  <p class="error">Failed to load stats: {err.message}</p>
-{/await}
 
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1rem;
-  }
-  .card {
-    background: #fff;
-    border-radius: 8px;
-    padding: 1.5rem;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.1);
-  }
-  h3 { margin: 0 0 0.5rem; font-size: 0.9rem; color: #666; text-transform: uppercase; }
-  .number { margin: 0; font-size: 2rem; font-weight: 700; color: #1a1a2e; }
-  .error { color: red; }
-</style>
+  {#await stats}
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {#each Array(4) as _}
+        <Card>
+          <CardHeader class="pb-2">
+            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
+          </CardHeader>
+          <CardContent>
+            <div class="h-8 w-12 bg-secondary animate-pulse rounded"></div>
+          </CardContent>
+        </Card>
+      {/each}
+    </div>
+  {:then data}
+    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      {#each statDefs as def}
+        <Card>
+          <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+            <CardTitle class="text-sm font-medium text-muted-foreground">{def.label}</CardTitle>
+            <def.icon class="size-4 {def.color}" />
+          </CardHeader>
+          <CardContent>
+            <div class="text-3xl font-bold text-foreground">
+              {Array.isArray(data[def.key]) ? data[def.key].length : 0}
+            </div>
+          </CardContent>
+        </Card>
+      {/each}
+    </div>
+  {:catch err}
+    <div class="rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+      Failed to load stats: {err.message}
+    </div>
+  {/await}
+</div>

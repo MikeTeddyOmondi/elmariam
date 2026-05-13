@@ -10,7 +10,7 @@ export const client = createClient({
 });
 
 export async function requireManagement(cookies: any) {
-  const token = cookies.get('auth_token');
+  const token = cookies.get('access_token');
   if (!token) throw redirect(302, '/login');
 
   const result = await client.verify(subjects, token);
