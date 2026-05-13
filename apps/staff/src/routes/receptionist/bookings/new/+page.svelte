@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createBooking, getCustomers } from '$lib/remote/hotel.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const customers = getCustomers();
 
@@ -26,55 +27,68 @@
   }
 </script>
 
-<a href="/receptionist/bookings" class="back">← Back</a>
-<h1>New Booking</h1>
+<div class="space-y-6 max-w-lg">
+  <div>
+    <a href="/receptionist/bookings" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
+    <h1 class="text-2xl font-bold text-foreground mt-2">New Booking</h1>
+  </div>
 
-{#if success}<p class="success">{success}</p>{/if}
-{#if error}<p class="error">{error}</p>{/if}
+  {#if success}
+    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
+  {/if}
+  {#if error}
+    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+  {/if}
 
-<form onsubmit={submit} class="form">
-  <label>
-    Customer
-    {#await customers}
-      <select disabled><option>Loading…</option></select>
-    {:then data}
-      <select bind:value={customerId} required>
-        <option value="">Select customer</option>
-        {#each data as c}
-          <option value={c._id}>{c.firstname} {c.lastname} — {c.id_number}</option>
-        {/each}
+  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="customer">Customer</label>
+      {#await customers}
+        <select id="customer" disabled class="bg-background border border-input rounded-md px-3 py-2 text-sm text-muted-foreground"><option>Loading…</option></select>
+      {:then data}
+        <select id="customer" bind:value={customerId} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+          <option value="">Select customer</option>
+          {#each data as c}
+            <option value={c._id}>{c.firstname} {c.lastname} — {c.id_number}</option>
+          {/each}
+        </select>
+      {/await}
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="adults">Adults</label>
+        <input id="adults" type="number" bind:value={numberAdults} min="1" required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="kids">Kids</label>
+        <input id="kids" type="number" bind:value={numberKids} min="0" required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="roomType">Room Type</label>
+      <select id="roomType" bind:value={roomType} class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+        <option value="single">Single</option>
+        <option value="double">Double</option>
       </select>
-    {/await}
-  </label>
-  <label>Adults <input type="number" bind:value={numberAdults} min="1" required /></label>
-  <label>Kids <input type="number" bind:value={numberKids} min="0" required /></label>
-  <label>
-    Room Type
-    <select bind:value={roomType}>
-      <option value="single">Single</option>
-      <option value="double">Double</option>
-    </select>
-  </label>
-  <label>Check In <input type="date" bind:value={checkInDate} required /></label>
-  <label>Check Out <input type="date" bind:value={checkOutDate} required /></label>
-  <label>
-    Payment Method
-    <select bind:value={paymentMethod}>
-      <option value="cash">Cash</option>
-      <option value="mpesa">M-Pesa</option>
-      <option value="bank">Bank</option>
-    </select>
-  </label>
-  <button type="submit">Create Booking</button>
-</form>
-
-<style>
-  .back { color: #0f3460; text-decoration: none; font-size: 0.9rem; }
-  h1 { margin: 1rem 0 1.5rem; }
-  .form { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); max-width: 480px; display: flex; flex-direction: column; gap: 1rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; color: #555; }
-  input, select { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-  button { background: #0f3460; color: #fff; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-  .success { color: #27ae60; }
-  .error { color: red; }
-</style>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="checkin">Check In</label>
+        <input id="checkin" type="date" bind:value={checkInDate} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="checkout">Check Out</label>
+        <input id="checkout" type="date" bind:value={checkOutDate} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="payment">Payment Method</label>
+      <select id="payment" bind:value={paymentMethod} class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
+        <option value="cash">Cash</option>
+        <option value="mpesa">M-Pesa</option>
+        <option value="bank">Bank</option>
+      </select>
+    </div>
+    <Button type="submit" class="w-full">Create Booking</Button>
+  </form>
+</div>

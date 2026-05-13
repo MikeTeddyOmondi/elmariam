@@ -1,5 +1,6 @@
 <script lang="ts">
   import { createCustomer } from '$lib/remote/hotel.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   let firstname = $state('');
   let lastname = $state('');
@@ -23,28 +24,42 @@
   }
 </script>
 
-<a href="/receptionist/customers" class="back">← Back</a>
-<h1>New Customer</h1>
+<div class="space-y-6 max-w-lg">
+  <div>
+    <a href="/receptionist/customers" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
+    <h1 class="text-2xl font-bold text-foreground mt-2">New Customer</h1>
+  </div>
 
-{#if success}<p class="success">{success}</p>{/if}
-{#if error}<p class="error">{error}</p>{/if}
+  {#if success}
+    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
+  {/if}
+  {#if error}
+    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+  {/if}
 
-<form onsubmit={submit} class="form">
-  <label>First Name <input bind:value={firstname} required /></label>
-  <label>Last Name <input bind:value={lastname} required /></label>
-  <label>ID Number <input bind:value={id_number} required /></label>
-  <label>Email <input type="email" bind:value={email} required /></label>
-  <label>Phone <input bind:value={phone_number} /></label>
-  <button type="submit">Create Customer</button>
-</form>
-
-<style>
-  .back { color: #0f3460; text-decoration: none; font-size: 0.9rem; }
-  h1 { margin: 1rem 0 1.5rem; }
-  .form { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); max-width: 480px; display: flex; flex-direction: column; gap: 1rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; color: #555; }
-  input { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-  button { background: #0f3460; color: #fff; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-  .success { color: #27ae60; }
-  .error { color: red; }
-</style>
+  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="first">First Name</label>
+        <input id="first" bind:value={firstname} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="last">Last Name</label>
+        <input id="last" bind:value={lastname} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="idnum">ID Number</label>
+      <input id="idnum" bind:value={id_number} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="email">Email</label>
+      <input id="email" type="email" bind:value={email} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="phone">Phone <span class="text-xs">(optional)</span></label>
+      <input id="phone" bind:value={phone_number} class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
+    </div>
+    <Button type="submit" class="w-full">Create Customer</Button>
+  </form>
+</div>

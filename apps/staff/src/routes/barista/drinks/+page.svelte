@@ -1,48 +1,56 @@
 <script lang="ts">
   import { getDrinks } from '$lib/remote/bar.remote';
+  import { Alert, AlertDescription } from '@elmariam/ui';
 
   const drinks = getDrinks();
 </script>
 
-<div class="header">
-  <h1>Drinks</h1>
-  <a href="/barista/drinks/new" class="btn">+ Add Drink</a>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-foreground">Drinks</h1>
+      <p class="text-sm text-muted-foreground mt-1">Bar inventory catalog</p>
+    </div>
+    <a href="/barista/drinks/new"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
+      + Add Drink
+    </a>
+  </div>
+
+  {#await drinks}
+    <p class="text-sm text-muted-foreground">Loading…</p>
+  {:then data}
+    <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
+      <table class="w-full text-sm">
+        <thead class="bg-secondary/50">
+          <tr>
+            {#each ['Code','Name','Type','UOM','Pkg Qty','Stock Qty','Selling Price','In Stock'] as h}
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">{h}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as drink}
+            <tr class="border-t border-border hover:bg-secondary/30 transition-colors">
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{drink.drinkCode}</td>
+              <td class="px-4 py-3 text-foreground font-medium">{drink.drinkName}</td>
+              <td class="px-4 py-3 text-muted-foreground">{drink.typeOfDrink}</td>
+              <td class="px-4 py-3 text-muted-foreground capitalize">{drink.uom}</td>
+              <td class="px-4 py-3 text-muted-foreground">{drink.packageQty}</td>
+              <td class="px-4 py-3 text-muted-foreground">{drink.stockQty}</td>
+              <td class="px-4 py-3 text-muted-foreground">KES {drink.sellingPrice?.toLocaleString()}</td>
+              <td class="px-4 py-3">
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
+                  {drink.inStock ? 'bg-green-400/10 text-green-400' : 'bg-red-400/10 text-red-400'}">
+                  {drink.inStock ? 'Yes' : 'No'}
+                </span>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {:catch err}
+    <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
+  {/await}
 </div>
-
-{#await drinks}
-  <p>Loading…</p>
-{:then data}
-  <table>
-    <thead>
-      <tr><th>Code</th><th>Name</th><th>Type</th><th>UOM</th><th>Pkg Qty</th><th>Stock Qty</th><th>Selling Price</th><th>In Stock</th></tr>
-    </thead>
-    <tbody>
-      {#each data as drink}
-        <tr>
-          <td>{drink.drinkCode}</td>
-          <td>{drink.drinkName}</td>
-          <td>{drink.typeOfDrink}</td>
-          <td>{drink.uom}</td>
-          <td>{drink.packageQty}</td>
-          <td>{drink.stockQty}</td>
-          <td>KES {drink.sellingPrice?.toLocaleString()}</td>
-          <td><span class:yes={drink.inStock} class:no={!drink.inStock}>{drink.inStock ? 'Yes' : 'No'}</span></td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  h1 { margin: 0; }
-  .btn { background: #2c3e50; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .yes { color: #27ae60; font-weight: 600; }
-  .no { color: #c0392b; font-weight: 600; }
-  .error { color: red; }
-</style>

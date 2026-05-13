@@ -1,66 +1,78 @@
 <script lang="ts">
   import { getRooms, getRoomTypes } from '$lib/remote/hotel.remote';
+  import { Alert, AlertDescription } from '@elmariam/ui';
 
   const rooms = getRooms();
   const roomTypes = getRoomTypes();
 </script>
 
-<h1>Rooms</h1>
+<div class="space-y-8">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Rooms</h1>
+    <p class="text-sm text-muted-foreground mt-1">Room status and type configuration</p>
+  </div>
 
-<div class="sections">
-  <section>
-    <h2>All Rooms</h2>
+  <section class="space-y-3">
+    <h2 class="text-base font-semibold text-foreground">All Rooms</h2>
     {#await rooms}
-      <p>Loading…</p>
+      <p class="text-sm text-muted-foreground">Loading…</p>
     {:then data}
-      <table>
-        <thead><tr><th>Room #</th><th>Status</th></tr></thead>
-        <tbody>
-          {#each data as room}
+      <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
+        <table class="w-full text-sm">
+          <thead class="bg-secondary/50">
             <tr>
-              <td>{room.number}</td>
-              <td><span class:booked={room.isBooked} class:available={!room.isBooked}>{room.isBooked ? 'Booked' : 'Available'}</span></td>
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Room #</th>
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">Status</th>
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each data as room}
+              <tr class="border-t border-border hover:bg-secondary/30 transition-colors">
+                <td class="px-4 py-3 text-foreground font-medium">{room.number}</td>
+                <td class="px-4 py-3">
+                  <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
+                    {room.isBooked ? 'bg-red-400/10 text-red-400' : 'bg-green-400/10 text-green-400'}">
+                    {room.isBooked ? 'Booked' : 'Available'}
+                  </span>
+                </td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     {:catch err}
-      <p class="error">{err.message}</p>
+      <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
     {/await}
   </section>
 
-  <section>
-    <h2>Room Types</h2>
+  <section class="space-y-3">
+    <h2 class="text-base font-semibold text-foreground">Room Types</h2>
     {#await roomTypes}
-      <p>Loading…</p>
+      <p class="text-sm text-muted-foreground">Loading…</p>
     {:then data}
-      <table>
-        <thead><tr><th>Title</th><th>Type</th><th>Rate</th><th>Capacity</th></tr></thead>
-        <tbody>
-          {#each data as rt}
+      <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
+        <table class="w-full text-sm">
+          <thead class="bg-secondary/50">
             <tr>
-              <td>{rt.title}</td>
-              <td>{rt.roomType}</td>
-              <td>KES {rt.rate?.toLocaleString()}</td>
-              <td>{rt.capacity}</td>
+              {#each ['Title','Type','Rate','Capacity'] as h}
+                <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">{h}</th>
+              {/each}
             </tr>
-          {/each}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {#each data as rt}
+              <tr class="border-t border-border hover:bg-secondary/30 transition-colors">
+                <td class="px-4 py-3 text-foreground font-medium">{rt.title}</td>
+                <td class="px-4 py-3 text-muted-foreground capitalize">{rt.roomType}</td>
+                <td class="px-4 py-3 text-muted-foreground">KES {rt.rate?.toLocaleString()}</td>
+                <td class="px-4 py-3 text-muted-foreground">{rt.capacity}</td>
+              </tr>
+            {/each}
+          </tbody>
+        </table>
+      </div>
     {:catch err}
-      <p class="error">{err.message}</p>
+      <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
     {/await}
   </section>
 </div>
-
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  h2 { margin: 0 0 1rem; font-size: 1.1rem; }
-  .sections { display: flex; flex-direction: column; gap: 2rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .booked { color: #c0392b; font-weight: 600; }
-  .available { color: #27ae60; font-weight: 600; }
-  .error { color: red; }
-</style>

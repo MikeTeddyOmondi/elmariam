@@ -1,28 +1,46 @@
 <script lang="ts">
   import { getMenuItems, getOrders } from '$lib/remote/restaurant.remote';
+  import { Card, CardContent, CardHeader, CardTitle } from '@elmariam/ui';
+  import { UtensilsCrossed, ClipboardList, CheckCheck } from 'lucide-svelte';
 
   const menuItems = getMenuItems();
   const orders = getOrders();
 </script>
 
-<h1>Dashboard</h1>
-
-<div class="grid">
-  {#await menuItems then data}
-    <div class="card"><h3>Menu Items</h3><p class="number">{data.length}</p></div>
-  {/await}
-  {#await orders then data}
-    <div class="card"><h3>Active Orders</h3><p class="number">{data.filter((o: any) => !['served','cancelled'].includes(o.status)).length}</p></div>
-  {/await}
-  {#await orders then data}
-    <div class="card"><h3>Total Orders</h3><p class="number">{data.length}</p></div>
-  {/await}
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Waiter Dashboard</h1>
+    <p class="text-sm text-muted-foreground mt-1">Restaurant orders overview</p>
+  </div>
+  <div class="grid gap-4 sm:grid-cols-3">
+    {#await menuItems then data}
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle class="text-sm font-medium text-muted-foreground">Menu Items</CardTitle>
+          <UtensilsCrossed class="size-4 text-blue-400" />
+        </CardHeader>
+        <CardContent><div class="text-3xl font-bold text-foreground">{data.length}</div></CardContent>
+      </Card>
+    {/await}
+    {#await orders then data}
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle class="text-sm font-medium text-muted-foreground">Active Orders</CardTitle>
+          <ClipboardList class="size-4 text-orange-400" />
+        </CardHeader>
+        <CardContent>
+          <div class="text-3xl font-bold text-foreground">
+            {data.filter((o: any) => !['served', 'cancelled'].includes(o.status)).length}
+          </div>
+        </CardContent>
+      </Card>
+      <Card>
+        <CardHeader class="flex flex-row items-center justify-between pb-2 space-y-0">
+          <CardTitle class="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
+          <CheckCheck class="size-4 text-green-400" />
+        </CardHeader>
+        <CardContent><div class="text-3xl font-bold text-foreground">{data.length}</div></CardContent>
+      </Card>
+    {/await}
+  </div>
 </div>
-
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 1rem; }
-  .card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  h3 { margin: 0 0 0.5rem; font-size: 0.85rem; color: #666; text-transform: uppercase; }
-  .number { margin: 0; font-size: 2rem; font-weight: 700; color: #1a5276; }
-</style>

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { checkoutBarSale, getDrinks } from '$lib/remote/bar.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const drinks = getDrinks();
 
@@ -8,13 +9,8 @@
   let error = $state('');
   let success = $state('');
 
-  function addItem() {
-    items = [...items, { drinkId: '', quantity: 1 }];
-  }
-
-  function removeItem(i: number) {
-    items = items.filter((_, idx) => idx !== i);
-  }
+  function addItem() { items = [...items, { drinkId: '', quantity: 1 }]; }
+  function removeItem(i: number) { items = items.filter((_, idx) => idx !== i); }
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
@@ -30,44 +26,44 @@
       error = err.message;
     }
   }
+
+  const selectCls = 'flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring';
+  const inputCls = 'w-20 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring';
 </script>
 
-<a href="/barista/sales" class="back">← Back</a>
-<h1>New Sale</h1>
+<div class="space-y-6 max-w-xl">
+  <div>
+    <a href="/barista/sales" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
+    <h1 class="text-2xl font-bold text-foreground mt-2">New Sale</h1>
+  </div>
 
-{#if success}<p class="success">{success}</p>{/if}
-{#if error}<p class="error">{error}</p>{/if}
+  {#if success}
+    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
+  {/if}
+  {#if error}
+    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+  {/if}
 
-<form onsubmit={submit} class="form">
-  {#await drinks then drinkList}
-    {#each items as item, i}
-      <div class="line">
-        <select bind:value={item.drinkId} required>
-          <option value="">Select drink</option>
-          {#each drinkList as d}
-            <option value={d._id}>{d.drinkName} ({d.drinkCode}) — stock: {d.stockQty}</option>
-          {/each}
-        </select>
-        <input type="number" bind:value={item.quantity} min="1" placeholder="Qty" required />
-        <button type="button" onclick={() => removeItem(i)} class="remove">✕</button>
-      </div>
-    {/each}
-  {/await}
-  <button type="button" onclick={addItem} class="add">+ Add Item</button>
-  <button type="submit">Checkout</button>
-</form>
-
-<style>
-  .back { color: #2c3e50; text-decoration: none; font-size: 0.9rem; }
-  h1 { margin: 1rem 0 1.5rem; }
-  .form { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); max-width: 560px; display: flex; flex-direction: column; gap: 1rem; }
-  .line { display: flex; gap: 0.5rem; align-items: center; }
-  .line select { flex: 1; }
-  .line input { width: 80px; }
-  select, input { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-  .remove { background: #c0392b; color: #fff; border: none; padding: 0.4rem 0.6rem; border-radius: 4px; cursor: pointer; }
-  .add { background: #7f8c8d; color: #fff; border: none; padding: 0.5rem 1rem; border-radius: 4px; cursor: pointer; }
-  button[type="submit"] { background: #2c3e50; color: #fff; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-  .success { color: #27ae60; }
-  .error { color: red; }
-</style>
+  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
+    {#await drinks then drinkList}
+      {#each items as item, i}
+        <div class="flex gap-2 items-center">
+          <select bind:value={item.drinkId} required class={selectCls}>
+            <option value="">Select drink</option>
+            {#each drinkList as d}
+              <option value={d._id}>{d.drinkName} ({d.drinkCode}) — stock: {d.stockQty}</option>
+            {/each}
+          </select>
+          <input type="number" bind:value={item.quantity} min="1" placeholder="Qty" required class={inputCls} />
+          <button type="button" onclick={() => removeItem(i)}
+            class="px-2 py-2 rounded-md text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">✕</button>
+        </div>
+      {/each}
+    {/await}
+    <button type="button" onclick={addItem}
+      class="text-sm text-muted-foreground hover:text-foreground border border-border rounded-md px-3 py-2 transition-colors">
+      + Add Item
+    </button>
+    <Button type="submit" class="w-full">Checkout</Button>
+  </form>
+</div>

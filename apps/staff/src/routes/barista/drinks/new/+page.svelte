@@ -1,4 +1,6 @@
 <script lang="ts">
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+
   const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8009';
 
   let drinkName = $state('');
@@ -21,7 +23,7 @@
     e.preventDefault();
     error = '';
     success = '';
-    const token = document.cookie.split('; ').find((c) => c.startsWith('auth_token='))?.split('=')[1];
+    const token = document.cookie.split('; ').find((c) => c.startsWith('access_token='))?.split('=')[1];
     if (!token) { error = 'Not authenticated.'; return; }
 
     const fd = new FormData();
@@ -42,47 +44,73 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.data?.message || 'API error');
-      success = 'Drink added.';
+      success = 'Drink added successfully.';
       drinkName = drinkCode = typeOfDrink = '';
       uom = 'bottles'; packageQty = 1; buyingPrice = sellingPrice = 0; file = null;
     } catch (err: any) {
       error = err.message;
     }
   }
+
+  const inputCls = 'bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-full';
 </script>
 
-<a href="/barista/drinks" class="back">← Back</a>
-<h1>Add Drink</h1>
+<div class="space-y-6 max-w-lg">
+  <div>
+    <a href="/barista/drinks" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
+    <h1 class="text-2xl font-bold text-foreground mt-2">Add Drink</h1>
+  </div>
 
-{#if success}<p class="success">{success}</p>{/if}
-{#if error}<p class="error">{error}</p>{/if}
+  {#if success}
+    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
+  {/if}
+  {#if error}
+    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
+  {/if}
 
-<form onsubmit={submit} class="form">
-  <label>Drink Name <input bind:value={drinkName} required /></label>
-  <label>Drink Code <input bind:value={drinkCode} required /></label>
-  <label>Type <input bind:value={typeOfDrink} required /></label>
-  <label>
-    UOM
-    <select bind:value={uom}>
-      <option value="bottles">Bottles</option>
-      <option value="crates">Crates</option>
-      <option value="pack">Pack</option>
-    </select>
-  </label>
-  <label>Package Qty <input type="number" bind:value={packageQty} min="1" required /></label>
-  <label>Buying Price (KES) <input type="number" bind:value={buyingPrice} min="0" required /></label>
-  <label>Selling Price (KES) <input type="number" bind:value={sellingPrice} min="0" required /></label>
-  <label>Image <input type="file" accept="image/*" onchange={onFileChange} /></label>
-  <button type="submit">Add Drink</button>
-</form>
-
-<style>
-  .back { color: #2c3e50; text-decoration: none; font-size: 0.9rem; }
-  h1 { margin: 1rem 0 1.5rem; }
-  .form { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); max-width: 480px; display: flex; flex-direction: column; gap: 1rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; color: #555; }
-  input, select { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-  button { background: #2c3e50; color: #fff; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-  .success { color: #27ae60; }
-  .error { color: red; }
-</style>
+  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="name">Drink Name</label>
+        <input id="name" bind:value={drinkName} required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="code">Drink Code</label>
+        <input id="code" bind:value={drinkCode} required class={inputCls} />
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="type">Type</label>
+      <input id="type" bind:value={typeOfDrink} required class={inputCls} />
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="uom">UOM</label>
+        <select id="uom" bind:value={uom} class={inputCls}>
+          <option value="bottles">Bottles</option>
+          <option value="crates">Crates</option>
+          <option value="pack">Pack</option>
+        </select>
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="pkgqty">Package Qty</label>
+        <input id="pkgqty" type="number" bind:value={packageQty} min="1" required class={inputCls} />
+      </div>
+    </div>
+    <div class="grid grid-cols-2 gap-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="buy">Buying Price (KES)</label>
+        <input id="buy" type="number" bind:value={buyingPrice} min="0" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="sell">Selling Price (KES)</label>
+        <input id="sell" type="number" bind:value={sellingPrice} min="0" required class={inputCls} />
+      </div>
+    </div>
+    <div class="flex flex-col gap-1.5">
+      <label class="text-sm text-muted-foreground" for="img">Image <span class="text-xs">(optional)</span></label>
+      <input id="img" type="file" accept="image/*" onchange={onFileChange} class="text-sm text-muted-foreground file:mr-3 file:py-1 file:px-3 file:rounded-md file:border-0 file:bg-secondary file:text-sm file:text-foreground hover:file:bg-secondary/80 cursor-pointer" />
+    </div>
+    <Button type="submit" class="w-full">Add Drink</Button>
+  </form>
+</div>

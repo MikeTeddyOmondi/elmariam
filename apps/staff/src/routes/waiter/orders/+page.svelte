@@ -1,75 +1,94 @@
 <script lang="ts">
   import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const orders = getOrders();
 
   const TRANSITIONS: Record<string, string[]> = {
-    pending: ['preparing', 'cancelled'],
+    pending:   ['preparing', 'cancelled'],
     preparing: ['ready', 'cancelled'],
-    ready: ['served'],
+    ready:     ['served'],
+  };
+
+  const statusClass: Record<string, string> = {
+    pending:   'bg-yellow-400/10 text-yellow-400',
+    preparing: 'bg-blue-400/10 text-blue-400',
+    ready:     'bg-purple-400/10 text-purple-400',
+    served:    'bg-green-400/10 text-green-400',
+    cancelled: 'bg-red-400/10 text-red-400',
   };
 
   let msg = $state('');
+  let msgError = $state(false);
 
   async function advance(orderId: string, status: string) {
     msg = '';
+    msgError = false;
     try {
       await updateOrderStatus({ orderId, status });
       msg = `Order marked as ${status}.`;
     } catch (err: any) {
       msg = err.message;
+      msgError = true;
     }
   }
-
-  const statusColor: Record<string, string> = {
-    pending: '#f39c12', preparing: '#2980b9', ready: '#8e44ad', served: '#27ae60', cancelled: '#c0392b',
-  };
 </script>
 
-<div class="header">
-  <h1>Orders</h1>
-  <a href="/waiter/orders/new" class="btn">+ New Order</a>
-</div>
+<div class="space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="text-2xl font-bold text-foreground">Orders</h1>
+      <p class="text-sm text-muted-foreground mt-1">Manage restaurant orders</p>
+    </div>
+    <a href="/waiter/orders/new"
+      class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
+      + New Order
+    </a>
+  </div>
 
-{#if msg}<p class="msg">{msg}</p>{/if}
+  {#if msg}
+    <Alert variant={msgError ? 'destructive' : 'default'}>
+      <AlertDescription>{msg}</AlertDescription>
+    </Alert>
+  {/if}
 
-{#await orders}
-  <p>Loading…</p>
-{:then data}
-  <table>
-    <thead>
-      <tr><th>Order ID</th><th>Table</th><th>Items</th><th>Total</th><th>Status</th><th>Actions</th></tr>
-    </thead>
-    <tbody>
-      {#each data as order}
-        <tr>
-          <td>{order._id}</td>
-          <td>{order.tableNumber ?? '-'}</td>
-          <td>{order.items?.length ?? 0}</td>
-          <td>KES {order.totalAmount?.toLocaleString()}</td>
-          <td><span style="color: {statusColor[order.status] ?? '#333'}; font-weight:600;">{order.status}</span></td>
-          <td class="actions">
-            {#each TRANSITIONS[order.status] ?? [] as next}
-              <button onclick={() => advance(order._id, next)}>{next}</button>
+  {#await orders}
+    <p class="text-sm text-muted-foreground">Loading…</p>
+  {:then data}
+    <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
+      <table class="w-full text-sm">
+        <thead class="bg-secondary/50">
+          <tr>
+            {#each ['Order ID','Table','Items','Total','Status','Actions'] as h}
+              <th class="px-4 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wide">{h}</th>
             {/each}
-          </td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  h1 { margin: 0; }
-  .btn { background: #1a5276; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .actions { display: flex; gap: 0.4rem; flex-wrap: wrap; }
-  button { padding: 0.3rem 0.6rem; border: none; border-radius: 4px; cursor: pointer; font-size: 0.8rem; background: #1a5276; color: #fff; }
-  .msg { color: #27ae60; }
-  .error { color: red; }
-</style>
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as order}
+            <tr class="border-t border-border hover:bg-secondary/30 transition-colors">
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order._id}</td>
+              <td class="px-4 py-3 text-muted-foreground">{order.tableNumber ?? '-'}</td>
+              <td class="px-4 py-3 text-muted-foreground">{order.items?.length ?? 0}</td>
+              <td class="px-4 py-3 text-foreground font-medium">KES {order.totalAmount?.toLocaleString()}</td>
+              <td class="px-4 py-3">
+                <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium {statusClass[order.status] ?? 'bg-secondary text-muted-foreground'}">
+                  {order.status}
+                </span>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex gap-1.5">
+                  {#each TRANSITIONS[order.status] ?? [] as next}
+                    <Button variant="outline" onclick={() => advance(order._id, next)} class="h-7 px-2 text-xs capitalize">{next}</Button>
+                  {/each}
+                </div>
+              </td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    </div>
+  {:catch err}
+    <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
+  {/await}
+</div>
