@@ -1,53 +1,90 @@
 <script lang="ts">
+  import '../app.css';
   import { page } from '$app/stores';
+  import type { Snippet } from 'svelte';
+
+  interface Props { children: Snippet }
+  let { children }: Props = $props();
 
   const navLinks = [
-    { href: '/', label: 'Home' },
-    { href: '/rooms', label: 'Rooms' },
-    { href: '/restaurant', label: 'Restaurant' },
-    { href: '/about', label: 'About' },
-    { href: '/contact', label: 'Contact' },
+    { href: '/',            label: 'Home' },
+    { href: '/rooms',       label: 'Rooms' },
+    { href: '/restaurant',  label: 'Restaurant' },
+    { href: '/about',       label: 'About' },
+    { href: '/contact',     label: 'Contact' },
   ];
 
   const isPortal = $derived($page.url.pathname.startsWith('/portal'));
+  const isLoginPage = $derived($page.url.pathname.startsWith('/login') || $page.url.pathname.startsWith('/register'));
+
+  function isActive(href: string) {
+    return href === '/'
+      ? $page.url.pathname === '/'
+      : $page.url.pathname.startsWith(href);
+  }
 </script>
 
-<header>
-  <nav class="nav">
-    <a href="/" class="brand">El'Mariam</a>
-    <ul class="links">
-      {#each navLinks as link}
-        <li class:active={$page.url.pathname === link.href}>
-          <a href={link.href}>{link.label}</a>
-        </li>
-      {/each}
-      {#if isPortal}
-        <li><a href="/portal">My Portal</a></li>
-      {:else}
-        <li><a href="/login" class="cta">Book Now</a></li>
-      {/if}
-    </ul>
-  </nav>
-</header>
+{#if isLoginPage}
+  {@render children()}
+{:else}
+  <div class="min-h-screen flex flex-col bg-background text-foreground">
+    <!-- Header -->
+    <header class="border-b border-border bg-card sticky top-0 z-50">
+      <div class="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <a href="/" class="text-foreground font-bold text-xl tracking-tight">
+          El'Mariam <span class="text-accent">Hotel</span>
+        </a>
 
-<main>
-  <slot />
-</main>
+        <nav class="hidden md:flex items-center gap-1">
+          {#each navLinks as link}
+            {@const active = isActive(link.href)}
+            <a
+              href={link.href}
+              class="px-3 py-2 rounded-md text-sm transition-colors
+                {active
+                  ? 'text-foreground font-medium'
+                  : 'text-muted-foreground hover:text-foreground hover:bg-accent/10'}"
+            >
+              {link.label}
+            </a>
+          {/each}
+        </nav>
 
-<footer>
-  <p>&copy; {new Date().getFullYear()} El'Mariam Hotel. All rights reserved.</p>
-</footer>
+        <div class="flex items-center gap-2">
+          {#if isPortal}
+            <a
+              href="/portal"
+              class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              My Portal
+            </a>
+          {:else}
+            <a
+              href="/login"
+              class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign In
+            </a>
+            <a
+              href="/register"
+              class="inline-flex items-center justify-center rounded-md text-sm font-medium
+                     bg-accent text-accent-foreground hover:bg-accent/90 px-4 py-2 transition-colors"
+            >
+              Book Now
+            </a>
+          {/if}
+        </div>
+      </div>
+    </header>
 
-<style>
-  :global(*, *::before, *::after) { box-sizing: border-box; }
-  :global(body) { margin: 0; font-family: system-ui, sans-serif; color: #333; }
-  header { background: #1a1a2e; color: #fff; padding: 0 2rem; }
-  .nav { display: flex; align-items: center; justify-content: space-between; height: 64px; max-width: 1100px; margin: 0 auto; }
-  .brand { color: #fff; text-decoration: none; font-size: 1.3rem; font-weight: 700; letter-spacing: 0.05em; }
-  .links { list-style: none; display: flex; gap: 1.5rem; margin: 0; padding: 0; align-items: center; }
-  .links li a { color: #ccc; text-decoration: none; font-size: 0.95rem; }
-  .links li.active a, .links li a:hover { color: #fff; }
-  .cta { background: #c0392b; color: #fff !important; padding: 0.4rem 1rem; border-radius: 4px; }
-  main { min-height: calc(100vh - 64px - 60px); }
-  footer { background: #1a1a2e; color: #666; text-align: center; padding: 1rem; font-size: 0.85rem; }
-</style>
+    <!-- Page content -->
+    <main class="flex-1">
+      {@render children()}
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-border bg-card py-6 text-center text-sm text-muted-foreground">
+      &copy; {new Date().getFullYear()} El'Mariam Hotel. All rights reserved.
+    </footer>
+  </div>
+{/if}

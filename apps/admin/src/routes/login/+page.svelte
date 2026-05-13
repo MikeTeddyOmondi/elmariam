@@ -1,6 +1,8 @@
 <script lang="ts">
   import { authClient } from '$lib/auth-client';
   import { browser } from '$app/environment';
+  import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Alert, AlertDescription } from '@elmariam/ui';
+  import { Loader2 } from 'lucide-svelte';
 
   let loading = $state(false);
   let error = $state('');
@@ -26,56 +28,36 @@
     const errorParam = new URLSearchParams(window.location.search).get('error');
     if (errorParam) {
       error = ({
-        no_code: 'No authorization code received',
-        no_verifier: 'Session expired, please try again',
-        exchange_failed: 'Failed to exchange authorization code',
-        unauthorized: 'Access restricted to management accounts',
+        no_code: 'No authorization code received.',
+        no_verifier: 'Session expired — please try again.',
+        no_redirect_uri: 'Session expired — please try again.',
+        exchange_failed: 'Failed to exchange authorization code.',
+        unauthorized: 'Access restricted to management accounts.',
       } as Record<string, string>)[errorParam] ?? decodeURIComponent(errorParam);
     }
   }
 </script>
 
-<div class="login-page">
-  <div class="card">
-    <h1>El'Mariam Admin</h1>
-    <p>Management portal access only.</p>
-    {#if error}
-      <p class="error">{error}</p>
-    {/if}
-    <button onclick={handleLogin} disabled={loading}>
-      {loading ? 'Redirecting…' : 'Sign In'}
-    </button>
-  </div>
+<div class="min-h-screen flex items-center justify-center bg-background p-4">
+  <Card class="w-full max-w-sm">
+    <CardHeader class="space-y-1 text-center">
+      <CardTitle class="text-2xl">El'Mariam</CardTitle>
+      <CardDescription>Management portal — sign in to continue</CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      {#if error}
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      {/if}
+      <Button onclick={handleLogin} disabled={loading} class="w-full">
+        {#if loading}
+          <Loader2 class="mr-2 size-4 animate-spin" />
+          Redirecting…
+        {:else}
+          Sign In
+        {/if}
+      </Button>
+    </CardContent>
+  </Card>
 </div>
-
-<style>
-  .login-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: #1a1a2e;
-  }
-  .card {
-    background: #fff;
-    padding: 2.5rem;
-    border-radius: 8px;
-    text-align: center;
-    min-width: 300px;
-  }
-  h1 { margin: 0 0 0.5rem; font-size: 1.5rem; }
-  p { color: #666; margin-bottom: 1.5rem; }
-  .error { color: #c0392b; font-size: 0.875rem; margin-bottom: 1rem; }
-  button {
-    background: #1a1a2e;
-    color: #fff;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 100%;
-  }
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
-  button:hover:not(:disabled) { background: #16213e; }
-</style>

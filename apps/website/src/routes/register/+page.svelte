@@ -1,6 +1,8 @@
 <script lang="ts">
   import { authClient } from '$lib/auth-client';
   import { browser } from '$app/environment';
+  import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Alert, AlertDescription } from '@elmariam/ui';
+  import { Loader2 } from 'lucide-svelte';
 
   let loading = $state(false);
   let error = $state('');
@@ -23,58 +25,34 @@
   }
 </script>
 
-<div class="register-page">
-  <div class="card">
-    <h1>Create Account</h1>
-    <p>Register to book rooms and manage your stays.</p>
-    <p class="note">
-      You'll be taken to our secure sign-in page — use "Sign up" there to create
-      a new account with your email and password.
-    </p>
-
-    {#if error}<p class="error">{error}</p>{/if}
-
-    <button onclick={handleRegister} disabled={loading}>
-      {loading ? 'Redirecting…' : 'Continue to Registration'}
-    </button>
-
-    <p class="login">Already have an account? <a href="/login">Sign in</a></p>
-  </div>
+<div class="min-h-screen flex items-center justify-center bg-background p-4">
+  <Card class="w-full max-w-sm">
+    <CardHeader class="space-y-1 text-center">
+      <CardTitle class="text-2xl">Create Account</CardTitle>
+      <CardDescription>Register to book rooms and manage your stays</CardDescription>
+    </CardHeader>
+    <CardContent class="space-y-4">
+      <p class="text-sm text-muted-foreground bg-secondary rounded-md px-3 py-2">
+        You'll be taken to our secure sign-in page — use "Sign up" there to create
+        a new account with your email and password.
+      </p>
+      {#if error}
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      {/if}
+      <Button onclick={handleRegister} disabled={loading} class="w-full">
+        {#if loading}
+          <Loader2 class="mr-2 size-4 animate-spin" />
+          Redirecting…
+        {:else}
+          Continue to Registration
+        {/if}
+      </Button>
+      <p class="text-center text-sm text-muted-foreground">
+        Already have an account?
+        <a href="/login" class="text-accent hover:underline">Sign in</a>
+      </p>
+    </CardContent>
+  </Card>
 </div>
-
-<style>
-  .register-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 60vh;
-    padding: 2rem;
-  }
-  .card {
-    background: #fff;
-    padding: 2.5rem;
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    min-width: 320px;
-    text-align: center;
-  }
-  h1 { margin: 0 0 0.5rem; color: #1a1a2e; }
-  p { color: #666; margin-bottom: 1rem; }
-  .note { font-size: 0.85rem; background: #f8f8f8; padding: 0.75rem; border-radius: 4px; text-align: left; }
-  .error { color: #c0392b; font-size: 0.875rem; }
-  button {
-    background: #1a1a2e;
-    color: #fff;
-    border: none;
-    padding: 0.75rem 2rem;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 1rem;
-    width: 100%;
-    margin-top: 0.5rem;
-  }
-  button:disabled { opacity: 0.6; cursor: not-allowed; }
-  button:hover:not(:disabled) { background: #16213e; }
-  .login { margin-top: 1rem; font-size: 0.9rem; }
-  .login a { color: #c0392b; }
-</style>
