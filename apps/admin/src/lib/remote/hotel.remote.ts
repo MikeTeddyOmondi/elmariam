@@ -21,8 +21,11 @@ async function apiFetch(path: string, options: RequestInit = {}) {
       ...options.headers,
     },
   });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.data?.message || 'API error');
+  const text = await res.text();
+  if (!text) { if (!res.ok) throw new Error(`HTTP ${res.status}`); return null; }
+  let data: any;
+  try { data = JSON.parse(text); } catch { throw new Error(`Non-JSON response (${res.status})`); }
+  if (!data.success) throw new Error(data.message || data.data?.message || 'API error');
   return data.data;
 }
 
@@ -58,6 +61,15 @@ export const createBooking = command(
     paymentMethod: v.picklist(['cash', 'mpesa', 'bank']),
   }),
   async (data) => apiFetch('/api/hotel/bookings', { method: 'POST', body: JSON.stringify(data) })
+);
+
+export const createRoom = command(
+  v.object({
+    roomTypeId: v.string(),
+    number: v.string(),
+  }),
+  async ({ roomTypeId, number }) =>
+    apiFetch(`/api/hotel/rooms/${roomTypeId}`, { method: 'POST', body: JSON.stringify({ number }) })
 );
 
 export const createRoomType = command(

@@ -9,7 +9,6 @@
     { href: '/receptionist',           label: 'Overview' },
     { href: '/receptionist/customers', label: 'Customers' },
     { href: '/receptionist/bookings',  label: 'Bookings' },
-    { href: '/receptionist/rooms',     label: 'Rooms' },
     { href: '/receptionist/invoices',  label: 'Invoices' },
   ];
 

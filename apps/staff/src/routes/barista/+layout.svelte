@@ -6,10 +6,8 @@
   let { children }: Props = $props();
 
   const tabs = [
-    { href: '/barista',           label: 'Overview' },
-    { href: '/barista/drinks',    label: 'Drinks' },
-    { href: '/barista/purchases', label: 'Purchases' },
-    { href: '/barista/sales',     label: 'Sales' },
+    { href: '/barista',        label: 'Overview' },
+    { href: '/barista/sales',  label: 'Sales' },
   ];
 
   function isActive(href: string) {

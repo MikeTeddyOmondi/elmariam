@@ -1,44 +1,89 @@
 <script lang="ts">
-  import { getBarPurchases } from '$lib/remote/bar.remote';
+  import { getBarPurchases, createBarPurchase } from '$lib/remote/bar.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const purchases = getBarPurchases();
+
+  let receiptNumber = $state('');
+  let product = $state('');
+  let quantity = $state(0);
+  let supplier = $state('');
+  let saving = $state(false);
+  let error = $state('');
+  let success = $state(false);
+
+  async function submit(e: SubmitEvent) {
+    e.preventDefault();
+    error = ''; success = false; saving = true;
+    try {
+      await createBarPurchase({ receiptNumber, product, quantity, supplier });
+      success = true; receiptNumber = ''; product = ''; quantity = 0; supplier = '';
+    } catch (err: any) {
+      error = err.message;
+    } finally { saving = false; }
+  }
+
+  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
 </script>
 
-<h1>Bar Purchases</h1>
+<div class="space-y-6">
+  <h1 class="text-2xl font-bold text-foreground">Bar Purchases</h1>
 
-{#await purchases}
-  <p>Loading…</p>
-{:then data}
-  <table>
-    <thead>
-      <tr>
-        <th>Receipt #</th>
-        <th>Product</th>
-        <th>Quantity</th>
-        <th>Supplier</th>
-        <th>Stock Value</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data as p}
-        <tr>
-          <td>{p.receiptNumber}</td>
-          <td>{p.product?.drinkName ?? p.product}</td>
-          <td>{p.quantity}</td>
-          <td>{p.supplier}</td>
-          <td>KES {p.stockValue?.toLocaleString()}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
+  <!-- Create form -->
+  <div class="bg-card border border-border rounded-xl p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4">Record Purchase</h2>
+    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
+    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Purchase recorded.</AlertDescription></Alert>{/if}
+    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="receipt">Receipt #</label>
+        <input id="receipt" bind:value={receiptNumber} placeholder="REC-001" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="product">Product (Drink ID)</label>
+        <input id="product" bind:value={product} placeholder="Drink ID or name" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="qty">Quantity</label>
+        <input id="qty" type="number" min="1" bind:value={quantity} required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="supplier">Supplier</label>
+        <input id="supplier" bind:value={supplier} placeholder="Supplier name" required class={inputCls} />
+      </div>
+      <div class="sm:col-span-2 lg:col-span-4 flex justify-end">
+        <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Record Purchase'}</Button>
+      </div>
+    </form>
+  </div>
 
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .error { color: red; }
-</style>
+  <!-- List -->
+  <div class="bg-card border border-border rounded-xl overflow-hidden">
+    {#await purchases}
+      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
+    {:then data}
+      <table class="w-full text-sm">
+        <thead class="bg-secondary/50 border-b border-border">
+          <tr>
+            {#each ['Receipt #','Product','Qty','Supplier','Stock Value'] as h}
+              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as p}
+            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{p.receiptNumber}</td>
+              <td class="px-4 py-3 text-foreground">{p.product?.drinkName ?? p.product}</td>
+              <td class="px-4 py-3 text-foreground">{p.quantity}</td>
+              <td class="px-4 py-3 text-muted-foreground">{p.supplier}</td>
+              <td class="px-4 py-3 text-foreground">KES {p.stockValue?.toLocaleString() ?? '—'}</td>
+            </tr>
+          {/each}
+        </tbody>
+      </table>
+    {:catch err}
+      <div class="p-6 text-sm text-destructive">{err.message}</div>
+    {/await}
+  </div>
+</div>

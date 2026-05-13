@@ -16,8 +16,11 @@ async function apiFetch(path: string, options: RequestInit = {}) {
       ...options.headers,
     },
   });
-  const data = await res.json();
-  if (!data.success) throw new Error(data.data?.message || 'API error');
+  const text = await res.text();
+  if (!text) { if (!res.ok) throw new Error(`HTTP ${res.status}`); return null; }
+  let data: any;
+  try { data = JSON.parse(text); } catch { throw new Error(`Non-JSON response (${res.status})`); }
+  if (!data.success) throw new Error(data.message || data.data?.message || 'API error');
   return data.data;
 }
 
