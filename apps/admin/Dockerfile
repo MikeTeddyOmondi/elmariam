@@ -3,6 +3,7 @@ WORKDIR /monorepo
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/config/package.json packages/config/
 COPY packages/auth/package.json packages/auth/
+COPY packages/ui/package.json packages/ui/
 COPY apps/admin/package.json apps/admin/
 RUN npm install -g pnpm && pnpm install --frozen-lockfile
 COPY packages/ packages/
