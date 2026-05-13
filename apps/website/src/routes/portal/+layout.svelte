@@ -1,7 +1,7 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
-  import { Separator } from '@elmariam/ui';
+  import { Separator, ThemeToggle } from '@elmariam/ui';
   import { LayoutDashboard, CalendarDays, Receipt, User } from 'lucide-svelte';
 
   interface Props { children: Snippet }
@@ -21,7 +21,7 @@
   }
 </script>
 
-<div class="flex min-h-[calc(100vh-4rem)]">
+<div class="flex min-h-screen bg-background text-foreground">
   <!-- Portal sidebar — flush with header, using sidebar CSS vars -->
   <aside class="w-56 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
     <!-- Brand aligned with the site header logo -->
@@ -51,7 +51,11 @@
 
     <Separator class="bg-sidebar-border" />
 
-    <div class="px-2 py-3">
+    <div class="px-2 py-3 space-y-0.5">
+      <div class="flex items-center justify-between px-3 py-2 rounded-md">
+        <span class="text-xs text-muted-foreground">Theme</span>
+        <ThemeToggle />
+      </div>
       <a
         href="/"
         class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"

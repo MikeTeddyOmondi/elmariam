@@ -1,37 +1,45 @@
 <script lang="ts">
   import { page } from '$app/stores';
+  import type { Snippet } from 'svelte';
 
-  const navLinks = [
-    { href: '/receptionist', label: 'Dashboard' },
+  interface Props { children: Snippet }
+  let { children }: Props = $props();
+
+  const tabs = [
+    { href: '/receptionist',           label: 'Overview' },
     { href: '/receptionist/customers', label: 'Customers' },
-    { href: '/receptionist/bookings', label: 'Bookings' },
-    { href: '/receptionist/rooms', label: 'Rooms' },
-    { href: '/receptionist/invoices', label: 'Invoices' },
+    { href: '/receptionist/bookings',  label: 'Bookings' },
+    { href: '/receptionist/rooms',     label: 'Rooms' },
+    { href: '/receptionist/invoices',  label: 'Invoices' },
   ];
+
+  function isActive(href: string) {
+    return href === '/receptionist'
+      ? $page.url.pathname === '/receptionist'
+      : $page.url.pathname.startsWith(href);
+  }
 </script>
 
-<div class="layout">
-  <nav class="sidebar">
-    <div class="brand">Receptionist</div>
-    <ul>
-      {#each navLinks as link}
-        <li class:active={$page.url.pathname === link.href}>
-          <a href={link.href}>{link.label}</a>
-        </li>
-      {/each}
-    </ul>
-  </nav>
-  <main class="content">
-    <slot />
-  </main>
-</div>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Receptionist</h1>
+    <p class="text-sm text-muted-foreground mt-0.5">Front-desk operations</p>
+  </div>
 
-<style>
-  .layout { display: flex; min-height: 100vh; font-family: system-ui, sans-serif; }
-  .sidebar { width: 200px; background: #0f3460; color: #eee; padding: 1rem; flex-shrink: 0; }
-  .brand { font-size: 1rem; font-weight: 700; padding: 1rem 0; border-bottom: 1px solid #333; margin-bottom: 1rem; }
-  ul { list-style: none; padding: 0; margin: 0; }
-  li a { display: block; padding: 0.5rem 0.75rem; color: #ccc; text-decoration: none; border-radius: 4px; }
-  li.active a, li a:hover { background: #16213e; color: #fff; }
-  .content { flex: 1; padding: 2rem; background: #f5f5f5; }
-</style>
+  <div class="border-b border-border">
+    <nav class="flex gap-0 -mb-px overflow-x-auto">
+      {#each tabs as tab}
+        {@const active = isActive(tab.href)}
+        <a
+          href={tab.href}
+          class="px-4 py-2.5 text-sm font-medium whitespace-nowrap border-b-2 transition-colors
+            {active
+              ? 'border-accent text-foreground'
+              : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'}"
+        >{tab.label}</a>
+      {/each}
+    </nav>
+  </div>
+
+  {@render children()}
+</div>

@@ -71,8 +71,9 @@
 
       <!-- Footer -->
       <div class="px-2 py-3 space-y-0.5">
-        <div class="flex items-center gap-2 px-3 py-2">
-          <ThemeToggle class="size-8" />
+        <div class="flex items-center justify-between px-3 py-2 rounded-md">
+          <span class="text-xs text-muted-foreground">Theme</span>
+          <ThemeToggle />
         </div>
         <a
           href="/login"

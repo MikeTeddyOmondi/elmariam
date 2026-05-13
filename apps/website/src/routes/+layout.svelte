@@ -25,7 +25,7 @@
   }
 </script>
 
-{#if isLoginPage}
+{#if isLoginPage || isPortal}
   {@render children()}
 {:else}
   <div class="min-h-screen flex flex-col bg-background text-foreground">
