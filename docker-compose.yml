@@ -10,6 +10,20 @@ services:
       - elmariam-mongodb-data:/data/db
     networks:
       - elmariam-network
+      
+  compass:
+    container_name: elmariam-mongodb-compass
+    image: haohanyang/compass-web:0.4.1
+    ports:
+      - 8765:8080
+    environment:
+      - CW_MONGO_URI=mongodb://mongo:27017
+      - CW_ENABLE_SHELL=true
+      - CW_ENABLE_EDIT_CONNECTIONS=true
+      - CW_BASIC_AUTH_USERNAME=admin
+      - CW_BASIC_AUTH_PASSWORD=password
+    networks:
+      - elmariam-network  
 
   rabbitmq:
     container_name: elmariam-queue

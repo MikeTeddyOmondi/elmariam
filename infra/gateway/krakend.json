@@ -34,12 +34,16 @@
       "__comment": "=== PUBLIC (no auth) ===",
       "endpoint": "/api/public/roomtypes",
       "method": "GET",
-      "backend": [{ "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }]
+      "backend": [
+        { "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }
+      ]
     },
     {
       "endpoint": "/api/public/menu",
       "method": "GET",
-      "backend": [{ "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }]
+      "backend": [
+        { "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }
+      ]
     },
 
     {
@@ -68,7 +72,9 @@
       "endpoint": "/api/hotel/customers",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/customers", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/customers", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -89,7 +95,9 @@
       "endpoint": "/api/hotel/customers",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/customers", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/customers", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -110,7 +118,12 @@
       "endpoint": "/api/hotel/customers/{customerid}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/customers/{customerid}", "host": ["http://hotel:8003"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/customers/{customerid}",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -131,7 +144,9 @@
       "endpoint": "/api/hotel/bookings",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/bookings", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/bookings", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -152,7 +167,9 @@
       "endpoint": "/api/hotel/bookings",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/bookings", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/bookings", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -173,7 +190,12 @@
       "endpoint": "/api/hotel/bookings/{bookingid}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/bookings/{bookingid}", "host": ["http://hotel:8003"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/bookings/{bookingid}",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -194,7 +216,9 @@
       "endpoint": "/api/hotel/roomtypes",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -215,7 +239,9 @@
       "endpoint": "/api/hotel/roomtypes",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -236,7 +262,9 @@
       "endpoint": "/api/hotel/rooms",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/rooms", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/rooms", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -257,7 +285,12 @@
       "endpoint": "/api/hotel/rooms/{roomtypeid}",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/rooms/{roomtypeid}", "host": ["http://hotel:8003"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/{roomtypeid}",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -278,7 +311,9 @@
       "endpoint": "/api/hotel/invoices",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/invoices", "host": ["http://hotel:8003"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/invoices", "host": ["http://hotel:8003"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -299,7 +334,12 @@
       "endpoint": "/api/hotel/invoices/{invoiceid}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/invoices/{invoiceid}", "host": ["http://hotel:8003"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/invoices/{invoiceid}",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -320,7 +360,12 @@
       "endpoint": "/api/hotel/mpesa-payment/{bookingid}",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/mpesa-payment/{bookingid}", "host": ["http://hotel:8003"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/mpesa-payment/{bookingid}",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -341,7 +386,12 @@
       "endpoint": "/api/hotel/sms/{bookingid}",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/sms/{bookingid}", "host": ["http://hotel:8003"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sms/{bookingid}",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -385,7 +435,9 @@
       "endpoint": "/api/bar/drinks",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/drinks", "host": ["http://bar:8004"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/drinks", "host": ["http://bar:8004"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -406,7 +458,9 @@
       "endpoint": "/api/bar/drinks",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/drinks", "host": ["http://bar:8004"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/drinks", "host": ["http://bar:8004"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -427,7 +481,12 @@
       "endpoint": "/api/bar/drinks/{drinkid}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/drinks/{drinkid}", "host": ["http://bar:8004"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks/{drinkid}",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -448,7 +507,12 @@
       "endpoint": "/api/bar/drinks/{drinkid}",
       "method": "PUT",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/drinks/{drinkid}", "host": ["http://bar:8004"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks/{drinkid}",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -469,7 +533,12 @@
       "endpoint": "/api/bar/drinks/{drinkid}",
       "method": "DELETE",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/drinks/{drinkid}", "host": ["http://bar:8004"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/drinks/{drinkid}",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -490,7 +559,9 @@
       "endpoint": "/api/bar/purchases",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/purchases", "host": ["http://bar:8004"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/purchases", "host": ["http://bar:8004"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -511,7 +582,9 @@
       "endpoint": "/api/bar/purchases",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/purchases", "host": ["http://bar:8004"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/purchases", "host": ["http://bar:8004"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -532,7 +605,12 @@
       "endpoint": "/api/bar/purchases/{purchaseid}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/purchases/{purchaseid}", "host": ["http://bar:8004"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/purchases/{purchaseid}",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -553,7 +631,9 @@
       "endpoint": "/api/bar/sales",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/sales", "host": ["http://bar:8004"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/sales", "host": ["http://bar:8004"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -574,7 +654,9 @@
       "endpoint": "/api/bar/sales",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/sales", "host": ["http://bar:8004"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/sales", "host": ["http://bar:8004"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -595,7 +677,12 @@
       "endpoint": "/api/bar/sales/{salesid}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/sales/{salesid}", "host": ["http://bar:8004"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/{salesid}",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -616,7 +703,12 @@
       "endpoint": "/api/bar/sales/lipa-mpesa/{salesid}",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/sales/lipa-mpesa/{salesid}", "host": ["http://bar:8004"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/sales/lipa-mpesa/{salesid}",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -639,7 +731,9 @@
       "endpoint": "/api/restaurant/version",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/", "host": ["http://restaurant:8005"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -660,7 +754,9 @@
       "endpoint": "/api/restaurant/menu",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -681,7 +777,9 @@
       "endpoint": "/api/restaurant/menu",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -702,7 +800,12 @@
       "endpoint": "/api/restaurant/menu/{id}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/menu/{id}", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/menu/{id}",
+          "host": ["http://restaurant:8005"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -723,7 +826,12 @@
       "endpoint": "/api/restaurant/menu/{id}",
       "method": "PUT",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/menu/{id}", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/menu/{id}",
+          "host": ["http://restaurant:8005"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -744,7 +852,12 @@
       "endpoint": "/api/restaurant/menu/{id}",
       "method": "DELETE",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/menu/{id}", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/menu/{id}",
+          "host": ["http://restaurant:8005"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -765,7 +878,9 @@
       "endpoint": "/api/restaurant/orders",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/orders", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/orders", "host": ["http://restaurant:8005"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -786,7 +901,9 @@
       "endpoint": "/api/restaurant/orders",
       "method": "POST",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/orders", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        { "url_pattern": "/api/v1/orders", "host": ["http://restaurant:8005"] }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -807,7 +924,12 @@
       "endpoint": "/api/restaurant/orders/{id}",
       "method": "GET",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/orders/{id}", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/orders/{id}",
+          "host": ["http://restaurant:8005"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -828,7 +950,12 @@
       "endpoint": "/api/restaurant/orders/{id}/status",
       "method": "PUT",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/orders/{id}/status", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/orders/{id}/status",
+          "host": ["http://restaurant:8005"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -849,7 +976,12 @@
       "endpoint": "/api/restaurant/orders/{id}/payment",
       "method": "PUT",
       "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/orders/{id}/payment", "host": ["http://restaurant:8005"] }],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/orders/{id}/payment",
+          "host": ["http://restaurant:8005"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
