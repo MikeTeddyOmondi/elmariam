@@ -33,6 +33,12 @@
     --sidebar-accent-foreground: 222 47% 11%;
     --sidebar-border: 214 32% 88%;
     --sidebar-ring: 222 47% 50%;
+    /* Chart colors */
+    --chart-1: 217 91% 60%;
+    --chart-2: 142 71% 45%;
+    --chart-3: 271 91% 65%;
+    --chart-4: 32 95% 53%;
+    --chart-5: 346 77% 50%;
   }
 
   .dark {
@@ -65,6 +71,12 @@
     --sidebar-accent-foreground: 210 40% 96%;
     --sidebar-border: 217 33% 16%;
     --sidebar-ring: 215 20% 65%;
+    /* Chart colors */
+    --chart-1: 217 91% 65%;
+    --chart-2: 142 76% 50%;
+    --chart-3: 271 91% 70%;
+    --chart-4: 32 95% 58%;
+    --chart-5: 346 84% 60%;
   }
 }
 
