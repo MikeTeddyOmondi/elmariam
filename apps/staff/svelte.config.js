@@ -10,7 +10,7 @@ const config = {
       remoteFunctions: true,
     },
     csrf: {
-      checkOrigin: false,
+      trustedOrigins: ['*'],
     },
   },
     compilerOptions: {
