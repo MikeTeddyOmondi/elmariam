@@ -4,45 +4,42 @@
   const bookings = getBookings();
 </script>
 
-<h1>Bookings</h1>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Bookings</h1>
+    <p class="text-sm text-muted-foreground mt-1">All hotel bookings</p>
+  </div>
 
-{#await bookings}
-  <p>Loading…</p>
-{:then data}
-  <table>
-    <thead>
-      <tr>
-        <th>Booking ID</th>
-        <th>Customer</th>
-        <th>Room Type</th>
-        <th>Check In</th>
-        <th>Check Out</th>
-        <th>Adults</th>
-        <th>Kids</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data as b}
-        <tr>
-          <td>{b._id}</td>
-          <td>{b.customer?.firstname ?? '-'} {b.customer?.lastname ?? ''}</td>
-          <td>{b.roomType}</td>
-          <td>{new Date(b.checkInDate).toLocaleDateString()}</td>
-          <td>{new Date(b.checkOutDate).toLocaleDateString()}</td>
-          <td>{b.numberAdults}</td>
-          <td>{b.numberKids}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .error { color: red; }
-</style>
+  <div class="bg-card border border-border rounded-xl overflow-hidden">
+    {#await bookings}
+      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
+    {:then data}
+      <table class="w-full text-sm">
+        <thead class="bg-secondary/50 border-b border-border">
+          <tr>
+            {#each ['Booking ID','Customer','Room Type','Check In','Check Out','Adults','Kids'] as h}
+              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as b}
+            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{b._id}</td>
+              <td class="px-4 py-3 text-foreground">{b.customer?.firstname ?? '—'} {b.customer?.lastname ?? ''}</td>
+              <td class="px-4 py-3 text-muted-foreground capitalize">{b.roomType?.roomType ?? b.roomType ?? '—'}</td>
+              <td class="px-4 py-3 text-muted-foreground">{b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '—'}</td>
+              <td class="px-4 py-3 text-muted-foreground">{b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '—'}</td>
+              <td class="px-4 py-3 text-foreground">{b.numberAdults ?? 0}</td>
+              <td class="px-4 py-3 text-foreground">{b.numberKids ?? 0}</td>
+            </tr>
+          {:else}
+            <tr><td colspan="7" class="px-4 py-6 text-center text-sm text-muted-foreground">No bookings found</td></tr>
+          {/each}
+        </tbody>
+      </table>
+    {:catch err}
+      <div class="p-6 text-sm text-destructive">{err.message}</div>
+    {/await}
+  </div>
+</div>

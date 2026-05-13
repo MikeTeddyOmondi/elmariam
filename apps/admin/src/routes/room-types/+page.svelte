@@ -4,41 +4,40 @@
   const roomTypes = getRoomTypes();
 </script>
 
-<h1>Room Types</h1>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Room Types</h1>
+    <p class="text-sm text-muted-foreground mt-1">Available room categories and rates</p>
+  </div>
 
-{#await roomTypes}
-  <p>Loading…</p>
-{:then data}
-  <table>
-    <thead>
-      <tr>
-        <th>Title</th>
-        <th>Type</th>
-        <th>Rate (KES)</th>
-        <th>Capacity</th>
-        <th>Description</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data as rt}
-        <tr>
-          <td>{rt.title}</td>
-          <td>{rt.roomType}</td>
-          <td>{rt.rate.toLocaleString()}</td>
-          <td>{rt.capacity}</td>
-          <td>{rt.description}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .error { color: red; }
-</style>
+  <div class="bg-card border border-border rounded-xl overflow-hidden">
+    {#await roomTypes}
+      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
+    {:then data}
+      <table class="w-full text-sm">
+        <thead class="bg-secondary/50 border-b border-border">
+          <tr>
+            {#each ['Title','Type','Rate (KES)','Capacity','Description'] as h}
+              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as rt}
+            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+              <td class="px-4 py-3 text-foreground font-medium">{rt.title}</td>
+              <td class="px-4 py-3 text-muted-foreground capitalize">{rt.roomType}</td>
+              <td class="px-4 py-3 text-foreground">KES {rt.rate?.toLocaleString()}</td>
+              <td class="px-4 py-3 text-foreground">{rt.capacity}</td>
+              <td class="px-4 py-3 text-muted-foreground">{rt.description || '—'}</td>
+            </tr>
+          {:else}
+            <tr><td colspan="5" class="px-4 py-6 text-center text-sm text-muted-foreground">No room types found</td></tr>
+          {/each}
+        </tbody>
+      </table>
+    {:catch err}
+      <div class="p-6 text-sm text-destructive">{err.message}</div>
+    {/await}
+  </div>
+</div>

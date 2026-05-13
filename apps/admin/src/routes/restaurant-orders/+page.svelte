@@ -3,56 +3,55 @@
 
   const orders = getOrders();
 
-  const statusColor: Record<string, string> = {
-    pending: '#f39c12',
-    preparing: '#2980b9',
-    ready: '#8e44ad',
-    served: '#27ae60',
-    cancelled: '#c0392b',
+  const statusCls: Record<string, string> = {
+    pending:    'bg-amber-500/15 text-amber-500',
+    preparing:  'bg-blue-500/15 text-blue-400',
+    ready:      'bg-purple-500/15 text-purple-400',
+    served:     'bg-green-500/15 text-green-500',
+    cancelled:  'bg-red-500/15 text-red-500',
   };
 </script>
 
-<h1>Restaurant Orders</h1>
+<div class="space-y-6">
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Restaurant Orders</h1>
+    <p class="text-sm text-muted-foreground mt-1">All table orders</p>
+  </div>
 
-{#await orders}
-  <p>Loading…</p>
-{:then data}
-  <table>
-    <thead>
-      <tr>
-        <th>Order ID</th>
-        <th>Table</th>
-        <th>Items</th>
-        <th>Total (KES)</th>
-        <th>Status</th>
-        <th>Payment</th>
-      </tr>
-    </thead>
-    <tbody>
-      {#each data as order}
-        <tr>
-          <td>{order._id}</td>
-          <td>{order.tableNumber ?? '-'}</td>
-          <td>{order.items?.length ?? 0}</td>
-          <td>{order.totalAmount?.toLocaleString()}</td>
-          <td>
-            <span style="color: {statusColor[order.status] ?? '#333'}; font-weight: 600;">
-              {order.status}
-            </span>
-          </td>
-          <td>{order.paymentStatus}</td>
-        </tr>
-      {/each}
-    </tbody>
-  </table>
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  h1 { margin: 0 0 1.5rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  .error { color: red; }
-</style>
+  <div class="bg-card border border-border rounded-xl overflow-hidden">
+    {#await orders}
+      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
+    {:then data}
+      <table class="w-full text-sm">
+        <thead class="bg-secondary/50 border-b border-border">
+          <tr>
+            {#each ['Order ID','Table','Items','Total (KES)','Status','Payment'] as h}
+              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+            {/each}
+          </tr>
+        </thead>
+        <tbody>
+          {#each data as order}
+            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order._id}</td>
+              <td class="px-4 py-3 text-foreground">{order.tableNumber ?? '—'}</td>
+              <td class="px-4 py-3 text-foreground">{order.items?.length ?? 0}</td>
+              <td class="px-4 py-3 text-foreground font-medium">{order.totalAmount?.toLocaleString() ?? '—'}</td>
+              <td class="px-4 py-3">
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
+                  {statusCls[order.status] ?? 'bg-secondary text-muted-foreground'}">
+                  {order.status}
+                </span>
+              </td>
+              <td class="px-4 py-3 text-muted-foreground capitalize">{order.paymentStatus ?? '—'}</td>
+            </tr>
+          {:else}
+            <tr><td colspan="6" class="px-4 py-6 text-center text-sm text-muted-foreground">No orders found</td></tr>
+          {/each}
+        </tbody>
+      </table>
+    {:catch err}
+      <div class="p-6 text-sm text-destructive">{err.message}</div>
+    {/await}
+  </div>
+</div>
