@@ -9,6 +9,9 @@ const config = {
     experimental: {
       remoteFunctions: true,
     },
+    csrf: {
+      checkOrigin: false,
+    },
   },
   compilerOptions: {
     experimental: {
