@@ -1,30 +1,71 @@
-<div class="page">
-  <h1>Contact Us</h1>
-  <p>We'd love to hear from you. Reach out using the details below or send us a message.</p>
+<script lang="ts">
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
-  <div class="info">
-    <div><strong>Address:</strong> El'Mariam Hotel, Nairobi, Kenya</div>
-    <div><strong>Phone:</strong> +254 700 000 000</div>
-    <div><strong>Email:</strong> info@elmariam.co.ke</div>
+  let name = $state('');
+  let email = $state('');
+  let message = $state('');
+  let sent = $state(false);
+
+  function submit(e: SubmitEvent) {
+    e.preventDefault();
+    // placeholder — wire to API when available
+    sent = true;
+  }
+
+  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors';
+</script>
+
+<svelte:head>
+  <title>Contact Us — El'Mariam Hotel</title>
+</svelte:head>
+
+<div class="max-w-2xl mx-auto px-4 py-16">
+  <h1 class="text-3xl font-bold text-foreground mb-2">Contact Us</h1>
+  <p class="text-muted-foreground mb-8">
+    We'd love to hear from you. Reach out using the details below or send us a message.
+  </p>
+
+  <!-- Contact info -->
+  <div class="bg-card border border-border rounded-xl px-5 py-4 mb-8 space-y-2 text-sm">
+    <div class="flex gap-3">
+      <span class="text-muted-foreground w-16 flex-shrink-0">Address</span>
+      <span class="text-foreground">El'Mariam Hotel, Nairobi, Kenya</span>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-muted-foreground w-16 flex-shrink-0">Phone</span>
+      <span class="text-foreground">+254 700 000 000</span>
+    </div>
+    <div class="flex gap-3">
+      <span class="text-muted-foreground w-16 flex-shrink-0">Email</span>
+      <span class="text-foreground">info@elmariam.co.ke</span>
+    </div>
   </div>
 
-  <h2>Send a Message</h2>
-  <form class="form">
-    <label>Name <input type="text" placeholder="Your name" /></label>
-    <label>Email <input type="email" placeholder="your@email.com" /></label>
-    <label>Message <textarea rows="5" placeholder="Your message…"></textarea></label>
-    <button type="submit">Send Message</button>
-  </form>
-</div>
+  <!-- Contact form -->
+  <h2 class="text-xl font-semibold text-foreground mb-4">Send a Message</h2>
 
-<style>
-  .page { max-width: 600px; margin: 0 auto; padding: 3rem 2rem; }
-  h1 { color: #1a1a2e; margin: 0 0 1rem; }
-  h2 { color: #1a1a2e; margin: 2rem 0 1rem; }
-  p { color: #555; margin: 0 0 1.5rem; }
-  .info { background: #f0f0f0; padding: 1.25rem 1.5rem; border-radius: 8px; display: flex; flex-direction: column; gap: 0.5rem; color: #444; margin-bottom: 1.5rem; }
-  .form { display: flex; flex-direction: column; gap: 1rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; color: #555; }
-  input, textarea { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; font-family: inherit; }
-  button { background: #1a1a2e; color: #fff; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-</style>
+  {#if sent}
+    <Alert>
+      <AlertDescription class="text-green-500">
+        Your message has been sent — we'll get back to you shortly.
+      </AlertDescription>
+    </Alert>
+  {:else}
+    <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="name">Name</label>
+        <input id="name" type="text" bind:value={name} placeholder="Your name" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="email">Email</label>
+        <input id="email" type="email" bind:value={email} placeholder="your@email.com" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-sm text-muted-foreground" for="message">Message</label>
+        <textarea id="message" bind:value={message} rows="5" placeholder="Your message…" required
+          class="{inputCls} resize-none"></textarea>
+      </div>
+      <Button type="submit" class="w-full">Send Message</Button>
+    </form>
+  {/if}
+</div>

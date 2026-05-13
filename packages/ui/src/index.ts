@@ -9,5 +9,7 @@ export * from "./lib/components/ui/separator/index.js";
 export * from "./lib/components/ui/alert/index.js";
 export * from "./lib/components/ui/dialog/index.js";
 
+export * from "./lib/components/ui/theme-toggle/index.js";
+
 // Utilities
 export { cn } from "./lib/utils.js";

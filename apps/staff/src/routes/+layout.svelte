@@ -2,7 +2,7 @@
   import '../app.css';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
-  import { Separator } from '@elmariam/ui';
+  import { Separator, ThemeToggle } from '@elmariam/ui';
   import {
     LayoutDashboard, CalendarDays, UtensilsCrossed,
     ClipboardList, GlassWater, ShoppingCart, LogOut,
@@ -62,7 +62,10 @@
       <Separator class="bg-sidebar-border" />
 
       <!-- Footer -->
-      <div class="px-2 py-3">
+      <div class="px-2 py-3 space-y-0.5">
+        <div class="flex items-center gap-2 px-3 py-2">
+          <ThemeToggle class="size-8" />
+        </div>
         <a
           href="/login"
           class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"

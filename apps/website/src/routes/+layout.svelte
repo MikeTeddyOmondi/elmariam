@@ -2,6 +2,7 @@
   import '../app.css';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
+  import { ThemeToggle } from '@elmariam/ui';
 
   interface Props { children: Snippet }
   let { children }: Props = $props();
@@ -51,6 +52,7 @@
         </nav>
 
         <div class="flex items-center gap-2">
+          <ThemeToggle />
           {#if isPortal}
             <a
               href="/portal"
