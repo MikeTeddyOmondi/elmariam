@@ -1,8 +1,7 @@
 import { dev } from '$app/environment';
-import { redirect } from '@sveltejs/kit';
+import { redirect, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@openauthjs/openauth/client';
 import { subjects } from '$lib/subjects';
-import type { RequestHandler } from './$types';
 
 const client = createClient({
   clientID: 'admin',
@@ -20,11 +19,12 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   if (!verifier) throw redirect(302, '/login?error=no_verifier');
 
   const redirectUri = `${url.origin}/login/callback`;
+  console.log('[callback] redirectUri:', redirectUri, 'verifier present:', !!verifier, 'code:', code?.slice(0, 8));
   const result = await client.exchange(code, redirectUri, verifier);
 
   if (result.err) {
-    console.error('Token exchange error:', result.err);
-    throw redirect(302, '/login?error=exchange_failed');
+    console.error('[callback] Token exchange error:', JSON.stringify(result.err));
+    throw redirect(302, `/login?error=exchange_failed`);
   }
 
   const verified = await client.verify(subjects, result.tokens.access);
