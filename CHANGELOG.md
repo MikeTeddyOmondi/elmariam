@@ -2,6 +2,47 @@
 
 All notable changes to the El'Mariam rewrite are documented here.
 
+## [c158744] fix: resolve all KrakenD gateway issues and public/POST endpoint failures
+
+- Removed `requireReceptionist` from `GET /rooms/types` (hotel) and `requireAuth` from `GET /menu` (restaurant) — public KrakenD endpoints can't inject auth headers, so these routes must be open at the service level
+- Added `"input_body_encoding": "json"` to all POST/PUT endpoint configs in krakend.json — KrakenD v2.4+ does not forward request bodies unless this is explicitly set
+- Added `"method": "POST"/"PUT"` to every backend object for mutating endpoints — without this KrakenD defaults the backend call to GET, stripping the body
+- Added `x-user-id`, `x-user-email`, `x-user-type`, `X-Requested-With` to service-level CORS `allow_headers` and `expose_headers`
+- Removed martian `fifo.Group` header injection from public endpoints (no longer needed)
+- Rebuilt gateway Docker image — krakend.json is `COPY`'d at build time; `docker restart` alone does not pick up config changes
+- Added `.http` request file with curl equivalents for all endpoints
+- Added `test-api.sh` smoke test script: 19 tests pass / 0 fail / 12 skipped (Docker-internal services)
+
+## [178f264] fix: align KrakenD JWT issuer with OpenAuth's actual iss claim
+
+- Changed all 39 `"issuer"` values in krakend.json from the production URL to `"http://openauth:3100"` — OpenAuth derives `iss` from the request URL, which inside Docker is the container hostname
+- Protected endpoints now validate JWT correctly; previously all returning 401
+
+## [76c10b7] fix: replace deprecated checkOrigin with trustedOrigins
+
+- Updated CSRF config in `apps/admin`, `apps/staff`, `apps/website` `svelte.config.js` from deprecated `checkOrigin: false` to `csrf: { trustedOrigins: ['*'] }`
+- Resolves "Cross-site POST form submissions are forbidden" errors from SvelteKit remote functions
+
+## [fd2c713] fix: disable SvelteKit CSRF origin check on all apps
+
+- Initial CSRF fix using `checkOrigin: false` (later superseded by trustedOrigins approach above)
+
+## [9557515] fix: show fallback select when room types fail to load
+
+- Added `{:catch}` block to the `{#await roomTypes}` expression on the Add Rooms page — without it the room type `<select>` silently disappeared on API error
+
+## [7f46db4] fix: standardise typography and theme across all admin pages
+
+- Rewrote 6 admin pages (bookings, customers, bar-sales, restaurant-orders, room-types, users) that had raw HTML with hardcoded `<style>` blocks and `background: #fff`
+- All pages now use theme-aware Tailwind: `text-foreground`, `bg-card`, `border-border`, `bg-secondary/50` table headers, `bg-X/15 text-X` status badges
+
+## [683f6b1] feat: add chart.js analytics dashboard to admin app
+
+- Replaced `layerchart@next` (requires Tailwind v4) with `chart.js ^4.4.0` (canvas-based, Tailwind-agnostic)
+- Admin dashboard: bar chart (activity by category), doughnut (payment methods), bar chart (revenue by service)
+- Added `Chart.Container` CSS-var injector component to `packages/ui`; reads HSL vars via `cssVar()` helper at runtime
+- Chart instances created/destroyed via Svelte 5 `$effect` with canvas refs
+
 ## [c73bc78] feat: Task 18 — integration smoke test script
 
 - scripts/smoke-test.sh: verifies service reachability (gateway, OpenAuth, 3 apps), public endpoints return success, protected endpoints reject 401, OpenAuth JWKS + OIDC config present
