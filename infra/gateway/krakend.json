@@ -1,5 +1,5 @@
 {
-  "$schema": "https://www.krakend.io/schema/v3.json",
+  "$schema": "https://www.krakend.io/schema/v2.13/krakend.json",
   "version": 3,
   "name": "elmariam-api-gateway",
   "timeout": "30000ms",
