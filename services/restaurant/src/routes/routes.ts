@@ -10,7 +10,7 @@ router.get("/", requireAuth, (_req, res) => {
 });
 
 // Menu
-router.get("/menu", requireAuth, getMenuItems);
+router.get("/menu", getMenuItems);
 router.post("/menu", requireAdmin, addMenuItem);
 router.get("/menu/:id", requireAuth, getOneMenuItem);
 router.put("/menu/:id", requireAdmin, updateMenuItem);

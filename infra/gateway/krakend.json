@@ -16,7 +16,13 @@
         "http://localhost:*"
       ],
       "allow_methods": ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"],
-      "expose_headers": ["Content-Length", "Content-Type"],
+      "expose_headers": [
+        "Content-Length",
+        "Content-Type",
+        "x-user-id",
+        "x-user-email",
+        "x-user-type"
+      ],
       "allow_credentials": true,
       "allow_headers": [
         "Accept",
@@ -24,7 +30,11 @@
         "Content-Type",
         "Cookie",
         "Origin",
-        "X-Refresh-Token"
+        "X-Refresh-Token",
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "X-Requested-With"
       ],
       "max_age": "12h"
     }
@@ -35,23 +45,38 @@
       "endpoint": "/api/public/roomtypes",
       "method": "GET",
       "backend": [
-        { "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }
+        {
+          "url_pattern": "/api/v1/rooms/types",
+          "host": ["http://hotel:8003"]
+        }
       ]
     },
     {
       "endpoint": "/api/public/menu",
       "method": "GET",
       "backend": [
-        { "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }
+        {
+          "url_pattern": "/api/v1/menu",
+          "host": ["http://restaurant:8005"]
+        }
       ]
     },
-
     {
       "__comment": "=== HOTEL ===",
       "endpoint": "/api/hotel/version",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/", "host": ["http://hotel:8003"] }],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/",
+          "host": ["http://hotel:8003"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -71,9 +96,17 @@
     {
       "endpoint": "/api/hotel/customers",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/customers", "host": ["http://hotel:8003"] }
+        {
+          "url_pattern": "/api/v1/customers",
+          "host": ["http://hotel:8003"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -94,9 +127,18 @@
     {
       "endpoint": "/api/hotel/customers",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/customers", "host": ["http://hotel:8003"] }
+        {
+          "url_pattern": "/api/v1/customers",
+          "host": ["http://hotel:8003"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -112,12 +154,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/hotel/customers/{customerid}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/customers/{customerid}",
@@ -143,9 +191,17 @@
     {
       "endpoint": "/api/hotel/bookings",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/bookings", "host": ["http://hotel:8003"] }
+        {
+          "url_pattern": "/api/v1/bookings",
+          "host": ["http://hotel:8003"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -166,9 +222,18 @@
     {
       "endpoint": "/api/hotel/bookings",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/bookings", "host": ["http://hotel:8003"] }
+        {
+          "url_pattern": "/api/v1/bookings",
+          "host": ["http://hotel:8003"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -184,12 +249,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/hotel/bookings/{bookingid}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/bookings/{bookingid}",
@@ -215,79 +286,15 @@
     {
       "endpoint": "/api/hotel/roomtypes",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [
-        { "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
       ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "ES256",
-          "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "http://openauth:3100",
-          "cache": true,
-          "cache_duration": 900,
-          "disable_jwk_security": true,
-          "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
-          ]
-        }
-      }
-    },
-    {
-      "endpoint": "/api/hotel/roomtypes",
-      "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [
-        { "url_pattern": "/api/v1/rooms/types", "host": ["http://hotel:8003"] }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "ES256",
-          "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "http://openauth:3100",
-          "cache": true,
-          "cache_duration": 900,
-          "disable_jwk_security": true,
-          "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
-          ]
-        }
-      }
-    },
-    {
-      "endpoint": "/api/hotel/rooms",
-      "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [
-        { "url_pattern": "/api/v1/rooms", "host": ["http://hotel:8003"] }
-      ],
-      "extra_config": {
-        "auth/validator": {
-          "alg": "ES256",
-          "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "http://openauth:3100",
-          "cache": true,
-          "cache_duration": 900,
-          "disable_jwk_security": true,
-          "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
-          ]
-        }
-      }
-    },
-    {
-      "endpoint": "/api/hotel/rooms/{roomtypeid}",
-      "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
       "backend": [
         {
-          "url_pattern": "/api/v1/rooms/{roomtypeid}",
+          "url_pattern": "/api/v1/rooms/types",
           "host": ["http://hotel:8003"]
         }
       ],
@@ -308,11 +315,116 @@
       }
     },
     {
+      "endpoint": "/api/hotel/roomtypes",
+      "method": "POST",
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/types",
+          "host": ["http://hotel:8003"],
+          "method": "POST"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "ES256",
+          "jwk_url": "http://openauth:3100/.well-known/jwks.json",
+          "issuer": "http://openauth:3100",
+          "cache": true,
+          "cache_duration": 900,
+          "disable_jwk_security": true,
+          "propagate_claims": [
+            ["sub", "x-user-id"],
+            ["properties.email", "x-user-email"],
+            ["properties.userType", "x-user-type"]
+          ]
+        }
+      },
+      "input_body_encoding": "json"
+    },
+    {
+      "endpoint": "/api/hotel/rooms",
+      "method": "GET",
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms",
+          "host": ["http://hotel:8003"]
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "ES256",
+          "jwk_url": "http://openauth:3100/.well-known/jwks.json",
+          "issuer": "http://openauth:3100",
+          "cache": true,
+          "cache_duration": 900,
+          "disable_jwk_security": true,
+          "propagate_claims": [
+            ["sub", "x-user-id"],
+            ["properties.email", "x-user-email"],
+            ["properties.userType", "x-user-type"]
+          ]
+        }
+      }
+    },
+    {
+      "endpoint": "/api/hotel/rooms/{roomtypeid}",
+      "method": "POST",
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/rooms/{roomtypeid}",
+          "host": ["http://hotel:8003"],
+          "method": "POST"
+        }
+      ],
+      "extra_config": {
+        "auth/validator": {
+          "alg": "ES256",
+          "jwk_url": "http://openauth:3100/.well-known/jwks.json",
+          "issuer": "http://openauth:3100",
+          "cache": true,
+          "cache_duration": 900,
+          "disable_jwk_security": true,
+          "propagate_claims": [
+            ["sub", "x-user-id"],
+            ["properties.email", "x-user-email"],
+            ["properties.userType", "x-user-type"]
+          ]
+        }
+      },
+      "input_body_encoding": "json"
+    },
+    {
       "endpoint": "/api/hotel/invoices",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/invoices", "host": ["http://hotel:8003"] }
+        {
+          "url_pattern": "/api/v1/invoices",
+          "host": ["http://hotel:8003"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -333,7 +445,12 @@
     {
       "endpoint": "/api/hotel/invoices/{invoiceid}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/invoices/{invoiceid}",
@@ -359,11 +476,17 @@
     {
       "endpoint": "/api/hotel/mpesa-payment/{bookingid}",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/mpesa-payment/{bookingid}",
-          "host": ["http://hotel:8003"]
+          "host": ["http://hotel:8003"],
+          "method": "POST"
         }
       ],
       "extra_config": {
@@ -380,16 +503,23 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/hotel/sms/{bookingid}",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/sms/{bookingid}",
-          "host": ["http://hotel:8003"]
+          "host": ["http://hotel:8003"],
+          "method": "POST"
         }
       ],
       "extra_config": {
@@ -406,15 +536,25 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
-
     {
       "__comment": "=== BAR ===",
       "endpoint": "/api/bar/version",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
-      "backend": [{ "url_pattern": "/api/v1/", "host": ["http://bar:8004"] }],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
+      "backend": [
+        {
+          "url_pattern": "/api/v1/",
+          "host": ["http://bar:8004"]
+        }
+      ],
       "extra_config": {
         "auth/validator": {
           "alg": "ES256",
@@ -434,9 +574,17 @@
     {
       "endpoint": "/api/bar/drinks",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/drinks", "host": ["http://bar:8004"] }
+        {
+          "url_pattern": "/api/v1/drinks",
+          "host": ["http://bar:8004"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -457,9 +605,18 @@
     {
       "endpoint": "/api/bar/drinks",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/drinks", "host": ["http://bar:8004"] }
+        {
+          "url_pattern": "/api/v1/drinks",
+          "host": ["http://bar:8004"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -475,12 +632,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/bar/drinks/{drinkid}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/drinks/{drinkid}",
@@ -506,11 +669,17 @@
     {
       "endpoint": "/api/bar/drinks/{drinkid}",
       "method": "PUT",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/drinks/{drinkid}",
-          "host": ["http://bar:8004"]
+          "host": ["http://bar:8004"],
+          "method": "PUT"
         }
       ],
       "extra_config": {
@@ -527,16 +696,23 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/bar/drinks/{drinkid}",
       "method": "DELETE",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/drinks/{drinkid}",
-          "host": ["http://bar:8004"]
+          "host": ["http://bar:8004"],
+          "method": "DELETE"
         }
       ],
       "extra_config": {
@@ -558,9 +734,17 @@
     {
       "endpoint": "/api/bar/purchases",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/purchases", "host": ["http://bar:8004"] }
+        {
+          "url_pattern": "/api/v1/purchases",
+          "host": ["http://bar:8004"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -581,9 +765,18 @@
     {
       "endpoint": "/api/bar/purchases",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/purchases", "host": ["http://bar:8004"] }
+        {
+          "url_pattern": "/api/v1/purchases",
+          "host": ["http://bar:8004"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -599,12 +792,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/bar/purchases/{purchaseid}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/purchases/{purchaseid}",
@@ -630,9 +829,17 @@
     {
       "endpoint": "/api/bar/sales",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/sales", "host": ["http://bar:8004"] }
+        {
+          "url_pattern": "/api/v1/sales",
+          "host": ["http://bar:8004"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -653,9 +860,18 @@
     {
       "endpoint": "/api/bar/sales",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/sales", "host": ["http://bar:8004"] }
+        {
+          "url_pattern": "/api/v1/sales",
+          "host": ["http://bar:8004"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -671,12 +887,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/bar/sales/{salesid}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/sales/{salesid}",
@@ -702,11 +924,17 @@
     {
       "endpoint": "/api/bar/sales/lipa-mpesa/{salesid}",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/sales/lipa-mpesa/{salesid}",
-          "host": ["http://bar:8004"]
+          "host": ["http://bar:8004"],
+          "method": "POST"
         }
       ],
       "extra_config": {
@@ -723,16 +951,24 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
-
     {
       "__comment": "=== RESTAURANT ===",
       "endpoint": "/api/restaurant/version",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/", "host": ["http://restaurant:8005"] }
+        {
+          "url_pattern": "/api/v1/",
+          "host": ["http://restaurant:8005"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -753,9 +989,17 @@
     {
       "endpoint": "/api/restaurant/menu",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }
+        {
+          "url_pattern": "/api/v1/menu",
+          "host": ["http://restaurant:8005"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -776,9 +1020,18 @@
     {
       "endpoint": "/api/restaurant/menu",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/menu", "host": ["http://restaurant:8005"] }
+        {
+          "url_pattern": "/api/v1/menu",
+          "host": ["http://restaurant:8005"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -794,12 +1047,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/restaurant/menu/{id}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/menu/{id}",
@@ -825,11 +1084,17 @@
     {
       "endpoint": "/api/restaurant/menu/{id}",
       "method": "PUT",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/menu/{id}",
-          "host": ["http://restaurant:8005"]
+          "host": ["http://restaurant:8005"],
+          "method": "PUT"
         }
       ],
       "extra_config": {
@@ -846,16 +1111,23 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/restaurant/menu/{id}",
       "method": "DELETE",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/menu/{id}",
-          "host": ["http://restaurant:8005"]
+          "host": ["http://restaurant:8005"],
+          "method": "DELETE"
         }
       ],
       "extra_config": {
@@ -877,9 +1149,17 @@
     {
       "endpoint": "/api/restaurant/orders",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/orders", "host": ["http://restaurant:8005"] }
+        {
+          "url_pattern": "/api/v1/orders",
+          "host": ["http://restaurant:8005"]
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -900,9 +1180,18 @@
     {
       "endpoint": "/api/restaurant/orders",
       "method": "POST",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
-        { "url_pattern": "/api/v1/orders", "host": ["http://restaurant:8005"] }
+        {
+          "url_pattern": "/api/v1/orders",
+          "host": ["http://restaurant:8005"],
+          "method": "POST"
+        }
       ],
       "extra_config": {
         "auth/validator": {
@@ -918,12 +1207,18 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/restaurant/orders/{id}",
       "method": "GET",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/orders/{id}",
@@ -949,11 +1244,17 @@
     {
       "endpoint": "/api/restaurant/orders/{id}/status",
       "method": "PUT",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/orders/{id}/status",
-          "host": ["http://restaurant:8005"]
+          "host": ["http://restaurant:8005"],
+          "method": "PUT"
         }
       ],
       "extra_config": {
@@ -970,16 +1271,23 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     },
     {
       "endpoint": "/api/restaurant/orders/{id}/payment",
       "method": "PUT",
-      "input_headers": ["x-user-id", "x-user-email", "x-user-type"],
+      "input_headers": [
+        "x-user-id",
+        "x-user-email",
+        "x-user-type",
+        "Content-Type"
+      ],
       "backend": [
         {
           "url_pattern": "/api/v1/orders/{id}/payment",
-          "host": ["http://restaurant:8005"]
+          "host": ["http://restaurant:8005"],
+          "method": "PUT"
         }
       ],
       "extra_config": {
@@ -996,7 +1304,8 @@
             ["properties.userType", "x-user-type"]
           ]
         }
-      }
+      },
+      "input_body_encoding": "json"
     }
   ]
 }

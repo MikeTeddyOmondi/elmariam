@@ -57,7 +57,7 @@ router.post("/sms/:bookingid", requireReceptionist, initiateSmsNotification);
 
 // Rooms
 router.get("/rooms", requireAdmin, fetchAllRooms);
-router.get("/rooms/types", requireReceptionist, allRoomTypes);
+router.get("/rooms/types", allRoomTypes);
 router.post("/rooms/types", requireAdmin, createRoomType);
 router.post("/rooms/:roomtypeid", requireAdmin, createRoom);
 router.get("/rooms/:roomid", requireAdmin, fetchOneRoom);

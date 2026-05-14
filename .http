@@ -1,0 +1,713 @@
+# El'Mariam API Tests
+# Compatible with: VS Code REST Client, JetBrains HTTP Client, IntelliJ
+#
+# Usage:
+#   1. Set @token below after running the OpenAuth login flow
+#   2. Run requests individually with "Send Request" (REST Client)
+#   3. Or run the curl equivalent shown beneath each request
+
+### Variables
+@gateway     = http://localhost:8009
+@openauth    = http://localhost:3100
+@hotel       = http://localhost:8003
+@bar         = http://localhost:8004
+@restaurant  = http://localhost:8005
+@checkout    = http://localhost:8008
+
+# Paste access_token here after login
+@token       = eyJhbGciOiJFUzI1NiIsImtpZCI6Ijk5ZjI5MjFkLTk2ZjYtNDFmMS04MDFhLTgyMzA3YmY3ODE1MiIsInR5cCI6IkpXVCJ9.eyJtb2RlIjoiYWNjZXNzIiwidHlwZSI6InVzZXIiLCJwcm9wZXJ0aWVzIjp7ImlkIjoiNmEwMzc4ZGEzOWEyNDhiOGQ1NTI3NWYyIiwiZW1haWwiOiJhZG1pbkBsb2NjaS5jbG91ZCIsInVzZXJUeXBlIjoibWFuYWdlbWVudCJ9LCJhdWQiOiJhZG1pbiIsImlzcyI6Imh0dHA6Ly9vcGVuYXV0aDozMTAwIiwic3ViIjoidXNlcjplNDA1ZGMwY2M3Y2MxYmQwIiwiZXhwIjoxNzgxMjg3ODM2fQ.0PbmjSK7bSUQMNs89S1M50j-ZewRHOepFziqDDouHKoS3kUhZlJ04kl_QQTy38LhbDjuJ9ta2fYTH0MZGmjSzQ
+
+# Sample IDs — replace after creating resources
+@customerId  = 000000000000000000000001
+@bookingId   = 000000000000000000000002
+@invoiceId   = 000000000000000000000003
+@roomTypeId  = 000000000000000000000004
+@roomId      = 000000000000000000000005
+@drinkId     = 000000000000000000000006
+@purchaseId  = 000000000000000000000007
+@saleId      = 000000000000000000000008
+@menuItemId  = 000000000000000000000009
+@orderId     = 000000000000000000000010
+
+
+# ════════════════════════════════════════════════════
+# OPENAUTH  (port 3100)
+# ════════════════════════════════════════════════════
+
+### OAuth authorization server metadata (OpenAuth discovery)
+# curl -s http://localhost:3100/.well-known/oauth-authorization-server | jq .
+GET {{openauth}}/.well-known/oauth-authorization-server
+
+###
+
+### JWKS (used by KrakenD for JWT validation)
+# curl -s http://localhost:3100/.well-known/jwks.json | jq .
+GET {{openauth}}/.well-known/jwks.json
+
+###
+
+### Token exchange — swap code for access_token
+# Replace CODE with the code returned after login
+# curl -s -X POST http://localhost:3100/token \
+#   -H "Content-Type: application/x-www-form-urlencoded" \
+#   -d "grant_type=authorization_code&client_id=admin&redirect_uri=http://localhost:3000/login/callback&code=REPLACE_WITH_CODE" | jq .
+POST {{openauth}}/token
+Content-Type: application/x-www-form-urlencoded
+
+grant_type=authorization_code&client_id=admin&redirect_uri=http://localhost:3000/login/callback&code=REPLACE_WITH_CODE
+
+###
+
+
+# ════════════════════════════════════════════════════
+# GATEWAY — PUBLIC (no auth required)
+# ════════════════════════════════════════════════════
+
+### Public: list room types
+# curl -s http://localhost:8009/api/public/roomtypes | jq .
+GET {{gateway}}/api/public/roomtypes
+
+###
+
+### Public: list restaurant menu
+# curl -s http://localhost:8009/api/public/menu | jq .
+GET {{gateway}}/api/public/menu
+
+###
+
+
+# ════════════════════════════════════════════════════
+# GATEWAY — HOTEL  (protected, JWT required)
+# ════════════════════════════════════════════════════
+
+### Hotel: service version
+# curl -s http://localhost:8009/api/hotel/version \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/hotel/version
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: list customers  [receptionist | management]
+# curl -s http://localhost:8009/api/hotel/customers \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/hotel/customers
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: create customer  [receptionist | management]
+# curl -s -X POST http://localhost:8009/api/hotel/customers \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"firstname":"Jane","lastname":"Doe","email":"jane.doe@example.com","phone_number":254700000001,"id_number":"12345678"}' | jq .
+POST {{gateway}}/api/hotel/customers
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "firstname": "Jane",
+  "lastname": "Doe",
+  "email": "jane.doe@example.com",
+  "phone_number": 254700000001,
+  "id_number": "12345678"
+}
+
+###
+
+### Hotel: get customer by ID
+# curl -s http://localhost:8009/api/hotel/customers/000000000000000000000001 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/hotel/customers/{{customerId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: search customer by ID number
+# curl -s http://localhost:8009/api/hotel/customers/search/12345678 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/hotel/customers/search/12345678
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: list bookings
+# curl -s http://localhost:8009/api/hotel/bookings \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/hotel/bookings
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: get booking by ID
+# curl -s http://localhost:8009/api/hotel/bookings/000000000000000000000002 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/hotel/bookings/{{bookingId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: create booking  [receptionist | management]
+# curl -s -X POST http://localhost:8009/api/hotel/bookings \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"customerId":"000000000000000000000001","roomTypeId":"000000000000000000000004","checkInDate":"2026-06-01","checkOutDate":"2026-06-05","numberAdults":2,"numberKids":0,"paymentMethod":"cash"}' | jq .
+POST {{gateway}}/api/hotel/bookings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "customerId": "{{customerId}}",
+  "roomTypeId": "{{roomTypeId}}",
+  "checkInDate": "2026-06-01",
+  "checkOutDate": "2026-06-05",
+  "numberAdults": 2,
+  "numberKids": 0,
+  "paymentMethod": "cash"
+}
+
+###
+
+### Hotel: list invoices
+# curl -s http://localhost:8009/api/hotel/invoices \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/hotel/invoices
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: get invoice by ID
+# curl -s http://localhost:8009/api/hotel/invoices/000000000000000000000003 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/hotel/invoices/{{invoiceId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: initiate M-Pesa payment  [receptionist | management]
+# curl -s -X POST http://localhost:8009/api/hotel/mpesa-payment/000000000000000000000002 \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"phoneNumber":"254700000001"}' | jq .
+POST {{gateway}}/api/hotel/mpesa-payment/{{bookingId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "phoneNumber": "254700000001"
+}
+
+###
+
+### Hotel: send SMS notification  [receptionist | management]
+# curl -s -X POST http://localhost:8009/api/hotel/sms/000000000000000000000002 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+POST {{gateway}}/api/hotel/sms/{{bookingId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: list all rooms  [management]
+# curl -s http://localhost:8009/api/hotel/rooms \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/hotel/rooms
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: get room by ID  [management]
+# curl -s http://localhost:8009/api/hotel/rooms/000000000000000000000005 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/hotel/rooms/{{roomId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: list room types (protected)  [receptionist | management]
+# curl -s http://localhost:8009/api/hotel/roomtypes \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/hotel/roomtypes
+Authorization: Bearer {{token}}
+
+###
+
+### Hotel: create room type  [management]
+# curl -s -X POST http://localhost:8009/api/hotel/roomtypes \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"title":"Deluxe Suite","description":"Spacious suite with ocean view","rate":15000,"capacity":2,"roomType":"double"}' | jq .
+POST {{gateway}}/api/hotel/roomtypes
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "title": "Deluxe Suite",
+  "description": "Spacious suite with ocean view",
+  "rate": 15000,
+  "capacity": 2,
+  "roomType": "double"
+}
+
+###
+
+### Hotel: add room to room type  [management]
+# curl -s -X POST http://localhost:8009/api/hotel/rooms/000000000000000000000004 \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"number":"101"}' | jq .
+POST {{gateway}}/api/hotel/rooms/{{roomTypeId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "number": "101"
+}
+
+###
+
+
+# ════════════════════════════════════════════════════
+# GATEWAY — BAR  (protected, JWT required)
+# ════════════════════════════════════════════════════
+
+### Bar: service version  [barista | management]
+# curl -s http://localhost:8009/api/bar/version \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/bar/version
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: list drinks  [barista | management]
+# curl -s http://localhost:8009/api/bar/drinks \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/bar/drinks
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: get drink by ID  [barista | management]
+# curl -s http://localhost:8009/api/bar/drinks/000000000000000000000006 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/bar/drinks/{{drinkId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: add drink with image  [management]
+# curl -s -X POST http://localhost:8009/api/bar/drinks \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -F "drinkName=Tusker Lager" \
+#   -F "drinkCode=TUS001" \
+#   -F "typeOfDrink=beer" \
+#   -F "uom=crates" \
+#   -F "packageQty=24" \
+#   -F "buyingPrice=2400" \
+#   -F "sellingPrice=300" \
+#   -F "file=@/path/to/tusker.jpg" | jq .
+POST {{gateway}}/api/bar/drinks
+Authorization: Bearer {{token}}
+Content-Type: multipart/form-data; boundary=boundary
+
+--boundary
+Content-Disposition: form-data; name="drinkName"
+
+Tusker Lager
+--boundary
+Content-Disposition: form-data; name="drinkCode"
+
+TUS001
+--boundary
+Content-Disposition: form-data; name="typeOfDrink"
+
+beer
+--boundary
+Content-Disposition: form-data; name="uom"
+
+crates
+--boundary
+Content-Disposition: form-data; name="packageQty"
+
+24
+--boundary
+Content-Disposition: form-data; name="buyingPrice"
+
+2400
+--boundary
+Content-Disposition: form-data; name="sellingPrice"
+
+300
+--boundary
+Content-Disposition: form-data; name="file"; filename="tusker.jpg"
+Content-Type: image/jpeg
+
+< ./tusker.jpg
+--boundary--
+
+###
+
+### Bar: list purchases  [management]
+# curl -s http://localhost:8009/api/bar/purchases \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/bar/purchases
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: get purchase by ID  [management]
+# curl -s http://localhost:8009/api/bar/purchases/000000000000000000000007 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/bar/purchases/{{purchaseId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: record purchase  [management]
+# curl -s -X POST http://localhost:8009/api/bar/purchases \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"receiptNumber":"REC-001","product":"000000000000000000000006","quantity":5,"supplier":"Kenya Breweries"}' | jq .
+POST {{gateway}}/api/bar/purchases
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "receiptNumber": "REC-001",
+  "product": "{{drinkId}}",
+  "quantity": 5,
+  "supplier": "Kenya Breweries"
+}
+
+###
+
+### Bar: list sales  [barista | management]
+# curl -s http://localhost:8009/api/bar/sales \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/bar/sales
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: get sale by ID  [barista | management]
+# curl -s http://localhost:8009/api/bar/sales/000000000000000000000008 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/bar/sales/{{saleId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Bar: record sale  [barista | management]
+# curl -s -X POST http://localhost:8009/api/bar/sales \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"drinks":[{"drinkId":"000000000000000000000006","quantity":2}]}' | jq .
+POST {{gateway}}/api/bar/sales
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "drinks": [
+    { "drinkId": "{{drinkId}}", "quantity": 2 }
+  ]
+}
+
+###
+
+### Bar: initiate M-Pesa for sale  [barista | management]
+# curl -s -X POST http://localhost:8009/api/bar/sales/lipa-mpesa/000000000000000000000008 \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"phoneNumber":"254700000001"}' | jq .
+POST {{gateway}}/api/bar/sales/lipa-mpesa/{{saleId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "phoneNumber": "254700000001"
+}
+
+###
+
+
+# ════════════════════════════════════════════════════
+# GATEWAY — RESTAURANT  (protected, JWT required)
+# ════════════════════════════════════════════════════
+
+### Restaurant: service version
+# curl -s http://localhost:8009/api/restaurant/version \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/restaurant/version
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurant: list menu items
+# curl -s http://localhost:8009/api/restaurant/menu \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/restaurant/menu
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurant: get menu item by ID
+# curl -s http://localhost:8009/api/restaurant/menu/000000000000000000000009 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/restaurant/menu/{{menuItemId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurant: add menu item  [management]
+# curl -s -X POST http://localhost:8009/api/restaurant/menu \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"name":"Nyama Choma","description":"Grilled meat served with ugali","price":850,"category":"main","isAvailable":true}' | jq .
+POST {{gateway}}/api/restaurant/menu
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Nyama Choma",
+  "description": "Grilled meat served with ugali",
+  "price": 850,
+  "category": "main",
+  "isAvailable": true
+}
+
+###
+
+### Restaurant: update menu item  [management]
+# curl -s -X PUT http://localhost:8009/api/restaurant/menu/000000000000000000000009 \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"price":900,"isAvailable":true}' | jq .
+PUT {{gateway}}/api/restaurant/menu/{{menuItemId}}
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "price": 900,
+  "isAvailable": true
+}
+
+###
+
+### Restaurant: delete menu item  [management]
+# curl -s -X DELETE http://localhost:8009/api/restaurant/menu/000000000000000000000009 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+DELETE {{gateway}}/api/restaurant/menu/{{menuItemId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurant: list orders  [waiter | management]
+# curl -s http://localhost:8009/api/restaurant/orders \
+#   -H "Authorization: Bearer $TOKEN" | jq '.data | length'
+GET {{gateway}}/api/restaurant/orders
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurant: get order by ID  [waiter | management]
+# curl -s http://localhost:8009/api/restaurant/orders/000000000000000000000010 \
+#   -H "Authorization: Bearer $TOKEN" | jq .
+GET {{gateway}}/api/restaurant/orders/{{orderId}}
+Authorization: Bearer {{token}}
+
+###
+
+### Restaurant: create order  [waiter | management]
+# curl -s -X POST http://localhost:8009/api/restaurant/orders \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"tableNumber":"5","items":[{"menuItemId":"000000000000000000000009","quantity":2}]}' | jq .
+POST {{gateway}}/api/restaurant/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "tableNumber": "5",
+  "items": [
+    { "menuItemId": "{{menuItemId}}", "quantity": 2 }
+  ]
+}
+
+###
+
+### Restaurant: update order status  [waiter | management]
+# curl -s -X PUT http://localhost:8009/api/restaurant/orders/000000000000000000000010/status \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"status":"preparing"}' | jq .
+PUT {{gateway}}/api/restaurant/orders/{{orderId}}/status
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "status": "preparing"
+}
+
+###
+
+### Restaurant: mark order paid  [waiter | management]
+# curl -s -X PUT http://localhost:8009/api/restaurant/orders/000000000000000000000010/payment \
+#   -H "Authorization: Bearer $TOKEN" \
+#   -H "Content-Type: application/json" \
+#   -d '{"paid":true}' | jq .
+PUT {{gateway}}/api/restaurant/orders/{{orderId}}/payment
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "paid": true
+}
+
+###
+
+
+# ════════════════════════════════════════════════════
+# DIRECT — HOTEL SERVICE (port 8003, bypass gateway)
+# Headers must be set manually since there's no JWT validation
+# ════════════════════════════════════════════════════
+
+### Direct hotel: list customers
+# curl -s http://localhost:8003/api/v1/customers \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: receptionist" | jq '.data | length'
+GET {{hotel}}/api/v1/customers
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: receptionist
+
+###
+
+### Direct hotel: list bookings
+# curl -s http://localhost:8003/api/v1/bookings \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: management" | jq '.data | length'
+GET {{hotel}}/api/v1/bookings
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: management
+
+###
+
+### Direct hotel: list room types
+# curl -s http://localhost:8003/api/v1/rooms/types \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: receptionist" | jq '.data | length'
+GET {{hotel}}/api/v1/rooms/types
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: receptionist
+
+###
+
+### Direct hotel: list rooms
+# curl -s http://localhost:8003/api/v1/rooms \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: management" | jq '.data | length'
+GET {{hotel}}/api/v1/rooms
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: management
+
+###
+
+### Direct hotel: list invoices
+# curl -s http://localhost:8003/api/v1/invoices \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: management" | jq '.data | length'
+GET {{hotel}}/api/v1/invoices
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: management
+
+###
+
+
+# ════════════════════════════════════════════════════
+# DIRECT — BAR SERVICE (port 8004, bypass gateway)
+# ════════════════════════════════════════════════════
+
+### Direct bar: list drinks
+# curl -s http://localhost:8004/api/v1/drinks \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: barista" | jq '.data | length'
+GET {{bar}}/api/v1/drinks
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: barista
+
+###
+
+### Direct bar: list purchases
+# curl -s http://localhost:8004/api/v1/purchases \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: management" | jq '.data | length'
+GET {{bar}}/api/v1/purchases
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: management
+
+###
+
+### Direct bar: list sales
+# curl -s http://localhost:8004/api/v1/sales \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: barista" | jq '.data | length'
+GET {{bar}}/api/v1/sales
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: barista
+
+###
+
+
+# ════════════════════════════════════════════════════
+# DIRECT — RESTAURANT SERVICE (port 8005, bypass gateway)
+# ════════════════════════════════════════════════════
+
+### Direct restaurant: list menu
+# curl -s http://localhost:8005/api/v1/menu \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: management" | jq '.data | length'
+GET {{restaurant}}/api/v1/menu
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: management
+
+###
+
+### Direct restaurant: list orders
+# curl -s http://localhost:8005/api/v1/orders \
+#   -H "x-user-id: debug-user-id" \
+#   -H "x-user-email: admin@elmariam.com" \
+#   -H "x-user-type: waiter" | jq '.data | length'
+GET {{restaurant}}/api/v1/orders
+x-user-id: debug-user-id
+x-user-email: admin@elmariam.com
+x-user-type: waiter
+
+###
+
+
+# ════════════════════════════════════════════════════
+# DIRECT — CHECKOUT SERVICE (port 8008)
+# Queue consumer — only exposes a health endpoint
+# ════════════════════════════════════════════════════
+
+### Checkout: health / info
+# curl -s http://localhost:8008/ | jq .
+GET {{checkout}}/
+
+###
