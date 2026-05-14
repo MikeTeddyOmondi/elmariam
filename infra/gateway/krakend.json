@@ -56,7 +56,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -79,7 +79,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -102,7 +102,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -128,7 +128,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -151,7 +151,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -174,7 +174,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -200,7 +200,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -223,7 +223,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -246,7 +246,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -269,7 +269,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -295,7 +295,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -318,7 +318,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -344,7 +344,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -370,7 +370,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -396,7 +396,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -419,7 +419,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -442,7 +442,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -465,7 +465,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -491,7 +491,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -517,7 +517,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -543,7 +543,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -566,7 +566,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -589,7 +589,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -615,7 +615,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -638,7 +638,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -661,7 +661,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -687,7 +687,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -713,7 +713,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -738,7 +738,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -761,7 +761,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -784,7 +784,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -810,7 +810,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -836,7 +836,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -862,7 +862,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -885,7 +885,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -908,7 +908,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -934,7 +934,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -960,7 +960,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
@@ -986,7 +986,7 @@
         "auth/validator": {
           "alg": "ES256",
           "jwk_url": "http://openauth:3100/.well-known/jwks.json",
-          "issuer": "https://auth.otienoobogeandcompany.com",
+          "issuer": "http://openauth:3100",
           "cache": true,
           "cache_duration": 900,
           "disable_jwk_security": true,
