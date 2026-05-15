@@ -15,7 +15,14 @@
         "https://*.otienoobogeandcompany.com",
         "http://localhost:*"
       ],
-      "allow_methods": ["GET", "HEAD", "POST", "PUT", "DELETE", "OPTIONS"],
+      "allow_methods": [
+        "GET",
+        "HEAD",
+        "POST",
+        "PUT",
+        "DELETE",
+        "OPTIONS"
+      ],
       "expose_headers": [
         "Content-Length",
         "Content-Type",
@@ -47,7 +54,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/rooms/types",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ]
     },
@@ -57,7 +66,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/menu",
-          "host": ["http://restaurant:8005"]
+          "host": [
+            "http://restaurant:8005"
+          ]
         }
       ]
     },
@@ -74,7 +85,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -86,9 +99,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -105,7 +127,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/customers",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -117,9 +141,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -136,7 +169,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/customers",
-          "host": ["http://hotel:8003"],
+          "host": [
+            "http://hotel:8003"
+          ],
           "method": "POST"
         }
       ],
@@ -149,13 +184,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/hotel/customers/{customerid}",
@@ -169,7 +212,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/customers/{customerid}",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -181,9 +226,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -200,7 +254,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/bookings",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -212,9 +268,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -231,7 +296,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/bookings",
-          "host": ["http://hotel:8003"],
+          "host": [
+            "http://hotel:8003"
+          ],
           "method": "POST"
         }
       ],
@@ -244,13 +311,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/hotel/bookings/{bookingid}",
@@ -264,7 +339,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/bookings/{bookingid}",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -276,9 +353,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -295,7 +381,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/rooms/types",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -307,9 +395,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -326,7 +423,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/rooms/types",
-          "host": ["http://hotel:8003"],
+          "host": [
+            "http://hotel:8003"
+          ],
           "method": "POST"
         }
       ],
@@ -339,13 +438,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/hotel/rooms",
@@ -359,7 +466,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/rooms",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -371,9 +480,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -390,7 +508,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/rooms/{roomtypeid}",
-          "host": ["http://hotel:8003"],
+          "host": [
+            "http://hotel:8003"
+          ],
           "method": "POST"
         }
       ],
@@ -403,13 +523,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/hotel/invoices",
@@ -423,7 +551,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/invoices",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -435,9 +565,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -454,7 +593,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/invoices/{invoiceid}",
-          "host": ["http://hotel:8003"]
+          "host": [
+            "http://hotel:8003"
+          ]
         }
       ],
       "extra_config": {
@@ -466,9 +607,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -485,7 +635,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/mpesa-payment/{bookingid}",
-          "host": ["http://hotel:8003"],
+          "host": [
+            "http://hotel:8003"
+          ],
           "method": "POST"
         }
       ],
@@ -498,13 +650,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/hotel/sms/{bookingid}",
@@ -518,7 +678,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/sms/{bookingid}",
-          "host": ["http://hotel:8003"],
+          "host": [
+            "http://hotel:8003"
+          ],
           "method": "POST"
         }
       ],
@@ -531,13 +693,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "__comment": "=== BAR ===",
@@ -552,7 +722,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -564,9 +736,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -583,7 +764,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/drinks",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -595,9 +778,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -614,7 +806,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/drinks",
-          "host": ["http://bar:8004"],
+          "host": [
+            "http://bar:8004"
+          ],
           "method": "POST"
         }
       ],
@@ -627,13 +821,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/bar/drinks/{drinkid}",
@@ -647,7 +849,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/drinks/{drinkid}",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -659,9 +863,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -678,7 +891,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/drinks/{drinkid}",
-          "host": ["http://bar:8004"],
+          "host": [
+            "http://bar:8004"
+          ],
           "method": "PUT"
         }
       ],
@@ -691,13 +906,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/bar/drinks/{drinkid}",
@@ -711,7 +934,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/drinks/{drinkid}",
-          "host": ["http://bar:8004"],
+          "host": [
+            "http://bar:8004"
+          ],
           "method": "DELETE"
         }
       ],
@@ -724,9 +949,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -743,7 +977,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/purchases",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -755,9 +991,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -774,7 +1019,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/purchases",
-          "host": ["http://bar:8004"],
+          "host": [
+            "http://bar:8004"
+          ],
           "method": "POST"
         }
       ],
@@ -787,13 +1034,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/bar/purchases/{purchaseid}",
@@ -807,7 +1062,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/purchases/{purchaseid}",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -819,9 +1076,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -838,7 +1104,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/sales",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -850,9 +1118,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -869,7 +1146,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/sales",
-          "host": ["http://bar:8004"],
+          "host": [
+            "http://bar:8004"
+          ],
           "method": "POST"
         }
       ],
@@ -882,13 +1161,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/bar/sales/{salesid}",
@@ -902,7 +1189,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/sales/{salesid}",
-          "host": ["http://bar:8004"]
+          "host": [
+            "http://bar:8004"
+          ]
         }
       ],
       "extra_config": {
@@ -914,9 +1203,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -933,7 +1231,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/sales/lipa-mpesa/{salesid}",
-          "host": ["http://bar:8004"],
+          "host": [
+            "http://bar:8004"
+          ],
           "method": "POST"
         }
       ],
@@ -946,13 +1246,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "__comment": "=== RESTAURANT ===",
@@ -967,7 +1275,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/",
-          "host": ["http://restaurant:8005"]
+          "host": [
+            "http://restaurant:8005"
+          ]
         }
       ],
       "extra_config": {
@@ -979,9 +1289,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -998,7 +1317,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/menu",
-          "host": ["http://restaurant:8005"]
+          "host": [
+            "http://restaurant:8005"
+          ]
         }
       ],
       "extra_config": {
@@ -1010,9 +1331,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -1029,7 +1359,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/menu",
-          "host": ["http://restaurant:8005"],
+          "host": [
+            "http://restaurant:8005"
+          ],
           "method": "POST"
         }
       ],
@@ -1042,13 +1374,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/restaurant/menu/{id}",
@@ -1062,7 +1402,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/menu/{id}",
-          "host": ["http://restaurant:8005"]
+          "host": [
+            "http://restaurant:8005"
+          ]
         }
       ],
       "extra_config": {
@@ -1074,9 +1416,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -1093,7 +1444,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/menu/{id}",
-          "host": ["http://restaurant:8005"],
+          "host": [
+            "http://restaurant:8005"
+          ],
           "method": "PUT"
         }
       ],
@@ -1106,13 +1459,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/restaurant/menu/{id}",
@@ -1126,7 +1487,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/menu/{id}",
-          "host": ["http://restaurant:8005"],
+          "host": [
+            "http://restaurant:8005"
+          ],
           "method": "DELETE"
         }
       ],
@@ -1139,9 +1502,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -1158,7 +1530,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/orders",
-          "host": ["http://restaurant:8005"]
+          "host": [
+            "http://restaurant:8005"
+          ]
         }
       ],
       "extra_config": {
@@ -1170,9 +1544,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -1189,7 +1572,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/orders",
-          "host": ["http://restaurant:8005"],
+          "host": [
+            "http://restaurant:8005"
+          ],
           "method": "POST"
         }
       ],
@@ -1202,13 +1587,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/restaurant/orders/{id}",
@@ -1222,7 +1615,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/orders/{id}",
-          "host": ["http://restaurant:8005"]
+          "host": [
+            "http://restaurant:8005"
+          ]
         }
       ],
       "extra_config": {
@@ -1234,9 +1629,18 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
       }
@@ -1253,7 +1657,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/orders/{id}/status",
-          "host": ["http://restaurant:8005"],
+          "host": [
+            "http://restaurant:8005"
+          ],
           "method": "PUT"
         }
       ],
@@ -1266,13 +1672,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     },
     {
       "endpoint": "/api/restaurant/orders/{id}/payment",
@@ -1286,7 +1700,9 @@
       "backend": [
         {
           "url_pattern": "/api/v1/orders/{id}/payment",
-          "host": ["http://restaurant:8005"],
+          "host": [
+            "http://restaurant:8005"
+          ],
           "method": "PUT"
         }
       ],
@@ -1299,13 +1715,21 @@
           "cache_duration": 900,
           "disable_jwk_security": true,
           "propagate_claims": [
-            ["sub", "x-user-id"],
-            ["properties.email", "x-user-email"],
-            ["properties.userType", "x-user-type"]
+            [
+              "sub",
+              "x-user-id"
+            ],
+            [
+              "properties.email",
+              "x-user-email"
+            ],
+            [
+              "properties.userType",
+              "x-user-type"
+            ]
           ]
         }
-      },
-      "input_body_encoding": "json"
+      }
     }
   ]
 }
