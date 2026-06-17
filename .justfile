@@ -53,10 +53,6 @@ up:
 up-infra:
   docker compose up -d mongo rabbitmq minio openauth
 
-# Start with legacy services included (hotel, bar, restaurant, gateway)
-up-legacy:
-  docker compose --profile legacy up -d
-
 # Stop all containers
 down:
   docker compose down
