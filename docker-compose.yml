@@ -51,7 +51,7 @@ services:
 
   minio:
     container_name: elmariam-object-store
-    image: minio/minio:latest
+    image: ranckosolutionsinc/s3:lts
     restart: always
     environment:
       - MINIO_ROOT_USER=minio
@@ -95,6 +95,7 @@ services:
   # ──── Auth ────
   openauth:
     container_name: elmariam-openauth
+    image: rancksolutionsinc/elmariam-openauth
     build:
       context: .
       dockerfile: infra/openauth/Dockerfile
@@ -117,6 +118,7 @@ services:
   # ──── Integrations Service (M-Pesa + SMS + Email) ────
   integrations:
     container_name: elmariam-integrations-svc
+    image: rancksolutionsinc/elmariam-integrations
     build:
       context: .
       dockerfile: services/integrations/Dockerfile
