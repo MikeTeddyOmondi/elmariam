@@ -19,7 +19,7 @@ build-packages:
 
 # Start only core infrastructure (mongo, rabbitmq, openauth)
 dev-infra:
-  docker compose up -d mongo rabbitmq openauth
+  docker compose up -d mongo compass rabbitmq openauth
 
 # Start specific app in dev mode (run build-packages first)
 dev-admin:
@@ -51,7 +51,7 @@ up:
 
 # Start only core infrastructure containers
 up-infra:
-  docker compose up -d mongo rabbitmq minio openauth
+  docker compose up -d mongo compass rabbitmq minio openauth 
 
 # Stop all containers
 down:

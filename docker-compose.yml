@@ -140,6 +140,7 @@ services:
   # ──── Frontend Apps ────
   admin:
     container_name: elmariam-admin-app
+    image: rancksolutionsinc/elmariam-admin-app
     build:
       context: .
       dockerfile: apps/admin/Dockerfile
@@ -161,6 +162,7 @@ services:
 
   staff:
     container_name: elmariam-staff-app
+    image: rancksolutionsinc/elmariam-staff-app
     build:
       context: .
       dockerfile: apps/staff/Dockerfile
@@ -182,6 +184,7 @@ services:
 
   website:
     container_name: elmariam-website
+    image: rancksolutionsinc/elmariam-website
     build:
       context: .
       dockerfile: apps/website/Dockerfile
@@ -193,7 +196,7 @@ services:
       - "3002:3002"
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.website.rule=Host(`otienoobogeandcompany.com`)"
+      - "traefik.http.routers.website.rule=Host(`elmariam.otienoobogeandcompany.com`)"
       - "traefik.http.services.website.loadbalancer.server.port=3002"
     depends_on:
       - mongo
