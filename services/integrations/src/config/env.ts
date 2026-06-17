@@ -8,10 +8,7 @@ export const env = {
   UJUMBESMS_API_URL: process.env.UJUMBESMS_API_URL || "https://ujumbesms.co.ke",
   UJUMBESMS_API_KEY: process.env.UJUMBESMS_API_KEY || "",
   UJUMBESMS_ACCOUNT_EMAIL: process.env.UJUMBESMS_ACCOUNT_EMAIL || "",
-  // Gmail SMTP
+  // Resend SMTP
   EMAIL_SENDER: process.env.EMAIL_SENDER || "",
-  CLIENT_ID: process.env.CLIENT_ID || "",
-  CLIENT_SECRET: process.env.CLIENT_SECRET || "",
-  G_RFR_TKN: process.env.G_RFR_TKN || "",
-  G_ACC_TKN: process.env.G_ACC_TKN || "",
+  RESEND_API_KEY: process.env.RESEND_API_KEY || "",
 };

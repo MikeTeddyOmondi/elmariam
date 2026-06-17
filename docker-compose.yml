@@ -131,10 +131,7 @@ services:
       UJUMBESMS_API_URL: ${UJUMBESMS_API_URL:-https://ujumbesms.co.ke}
       UJUMBESMS_ACCOUNT_EMAIL: ${UJUMBESMS_ACCOUNT_EMAIL}
       EMAIL_SENDER: ${EMAIL_SENDER}
-      CLIENT_ID: ${GMAIL_CLIENT_ID}
-      CLIENT_SECRET: ${GMAIL_CLIENT_SECRET}
-      G_RFR_TKN: ${GMAIL_REFRESH_TOKEN}
-      G_ACC_TKN: ${GMAIL_ACCESS_TOKEN}
+      RESEND_API_KEY: ${RESEND_API_KEY}
     depends_on:
       - rabbitmq
     networks:

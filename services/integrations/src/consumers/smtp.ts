@@ -13,19 +13,17 @@ function capitalize(str: string): string {
   return str.charAt(0).toUpperCase() + str.slice(1);
 }
 
-export async function handleSmtp(data: { username: string; url: string }) {
-  const transporter = nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      type: "OAuth2",
-      user: env.EMAIL_SENDER,
-      clientId: env.CLIENT_ID,
-      clientSecret: env.CLIENT_SECRET,
-      refreshToken: env.G_RFR_TKN,
-      accessToken: env.G_ACC_TKN,
-    },
-  } as any);
+const transporter = nodemailer.createTransport({
+  host: "smtp.resend.com",
+  port: 465,
+  secure: true,
+  auth: {
+    user: "resend",
+    pass: env.RESEND_API_KEY,
+  },
+});
 
+export async function handleSmtp(data: { username: string; url: string }) {
   const html = template({
     title: "Registration Successful ✔",
     username: capitalize(data.username),
