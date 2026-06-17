@@ -1,38 +1,31 @@
 import { query, command } from '$app/server';
 import { getRequestEvent } from '$app/server';
 import * as v from 'valibot';
+import { Customer, createCustomer as dbCreateCustomer } from '@elmariam/db';
 
-const GATEWAY_URL = process.env.GATEWAY_URL || 'http://gateway:8009';
-
-async function apiFetch(path: string, options: RequestInit = {}) {
-  const event = getRequestEvent();
-  const token = event.cookies.get('access_token');
-  if (!token) throw new Error('Unauthenticated');
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-  const text = await res.text();
-  if (!text) { if (!res.ok) throw new Error(`HTTP ${res.status}`); return null; }
-  let data: any;
-  try { data = JSON.parse(text); } catch { throw new Error(`Non-JSON response (${res.status})`); }
-  if (!data.success) throw new Error(data.message || data.data?.message || 'API error');
-  return data.data;
+function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
 }
 
-export const getMyProfile = query(() => apiFetch('/api/hotel/customers/me'));
+export const getMyProfile = query(async () => {
+  const event = getRequestEvent();
+  const email = event?.locals?.user?.email;
+  if (!email) throw new Error('Unauthenticated');
+  const customer = await Customer.findOne({ email }).lean();
+  if (!customer) throw new Error('Customer profile not found');
+  return customer;
+});
 
 export const createCustomer = command(
   v.object({
-    firstname: v.pipe(v.string(), v.minLength(1)),
-    lastname: v.pipe(v.string(), v.minLength(1)),
-    id_number: v.string(),
-    email: v.pipe(v.string(), v.email()),
+    firstname:    v.pipe(v.string(), v.minLength(1)),
+    lastname:     v.pipe(v.string(), v.minLength(1)),
+    id_number:    v.string(),
+    email:        v.pipe(v.string(), v.email()),
     phone_number: v.optional(v.string()),
   }),
-  async (data) => apiFetch('/api/hotel/customers', { method: 'POST', body: JSON.stringify(data) })
+  async (data) => unwrap(await dbCreateCustomer({
+    ...data,
+    phone_number: data.phone_number ? Number(data.phone_number) : undefined,
+  }))
 );

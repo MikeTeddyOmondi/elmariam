@@ -1,43 +1,26 @@
 import { query, command } from '$app/server';
-import { getRequestEvent } from '$app/server';
 import * as v from 'valibot';
+import { listMenuItems, listOrders, createOrder, updateOrderStatus } from '@elmariam/db';
 
-const GATEWAY_URL = process.env.GATEWAY_URL || 'http://gateway:8009';
-
-async function apiFetch(path: string, options: RequestInit = {}) {
-  const event = getRequestEvent();
-  const token = event.cookies.get('access_token');
-  if (!token) throw new Error('Unauthenticated');
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
-  });
-  const text = await res.text();
-  if (!text) { if (!res.ok) throw new Error(`HTTP ${res.status}`); return null; }
-  let data: any;
-  try { data = JSON.parse(text); } catch { throw new Error(`Non-JSON response (${res.status})`); }
-  if (!data.success) throw new Error(data.message || data.data?.message || 'API error');
-  return data.data;
+function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
 }
 
-export const getMenuItems = query(() => apiFetch('/api/restaurant/menu'));
-export const getOrders = query(() => apiFetch('/api/restaurant/orders'));
+export const getMenuItems = query(async () => unwrap(await listMenuItems()));
+export const getOrders    = query(async () => unwrap(await listOrders()));
 
-export const createOrder = command(
+export const createRestaurantOrder = command(
   v.object({
-    tableNumber: v.optional(v.number()),
-    items: v.array(v.object({ menuItemId: v.string(), quantity: v.number() })),
-    paymentMethod: v.optional(v.picklist(['cash', 'mpesa', 'bank'])),
+    tableNumber: v.optional(v.string()),
+    items:       v.array(v.object({ menuItemId: v.string(), quantity: v.number() })),
   }),
-  async (data) => apiFetch('/api/restaurant/orders', { method: 'POST', body: JSON.stringify(data) })
+  async (data) => unwrap(await createOrder(data))
 );
 
-export const updateOrderStatus = command(
-  v.object({ orderId: v.string(), status: v.string() }),
-  async ({ orderId, status }) =>
-    apiFetch(`/api/restaurant/orders/${orderId}/status`, { method: 'PUT', body: JSON.stringify({ status }) })
+export const updateRestaurantOrderStatus = command(
+  v.object({
+    orderId: v.string(),
+    status:  v.picklist(['pending', 'preparing', 'ready', 'served', 'cancelled']),
+  }),
+  async ({ orderId, status }) => unwrap(await updateOrderStatus(orderId, status))
 );

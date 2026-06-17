@@ -1,6 +1,9 @@
 import { dev } from '$app/environment';
+import { sequence } from '@sveltejs/kit/hooks';
 import { createClient } from '@openauthjs/openauth/client';
 import { subjects } from '$lib/subjects';
+import { connectDB } from '@elmariam/db';
+import { MONGODB_URL } from '$env/static/private';
 import type { Handle } from '@sveltejs/kit';
 
 const client = createClient({
@@ -8,8 +11,19 @@ const client = createClient({
   issuer: process.env.OPENAUTH_ISSUER || 'http://openauth:3100',
 });
 
-export const handle: Handle = async ({ event, resolve }) => {
+let dbConnected = false;
+
+const dbHandle: Handle = async ({ event, resolve }) => {
+  if (!dbConnected) {
+    await connectDB({ url: MONGODB_URL });
+    dbConnected = true;
+  }
+  return resolve(event);
+};
+
+const authHandle: Handle = async ({ event, resolve }) => {
   const accessToken = event.cookies.get('access_token');
+
   const refreshToken = event.cookies.get('refresh_token');
 
   if (accessToken) {
@@ -39,3 +53,5 @@ export const handle: Handle = async ({ event, resolve }) => {
 
   return resolve(event);
 };
+
+export const handle = sequence(dbHandle, authHandle);

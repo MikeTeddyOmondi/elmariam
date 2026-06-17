@@ -1,29 +1,16 @@
 import { query } from '$app/server';
-import { getRequestEvent } from '$app/server';
+import { listBookings, listInvoices, listSales, listOrders } from '@elmariam/db';
 
-const GATEWAY_URL = process.env.GATEWAY_URL || 'http://gateway:8009';
-
-async function apiFetch(path: string) {
-  const event = getRequestEvent();
-  const token = event.cookies.get('access_token');
-  if (!token) throw new Error('Unauthenticated');
-  const res = await fetch(`${GATEWAY_URL}${path}`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  const text = await res.text();
-  if (!text) { if (!res.ok) throw new Error(`HTTP ${res.status}`); return null; }
-  let data: any;
-  try { data = JSON.parse(text); } catch { throw new Error(`Non-JSON response (${res.status})`); }
-  if (!data.success) throw new Error(data.message || data.data?.message || 'API error');
-  return data.data;
+function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
 }
 
 export const getDashboardStats = query(async () => {
   const [bookings, invoices, sales, orders] = await Promise.all([
-    apiFetch('/api/hotel/bookings'),
-    apiFetch('/api/hotel/invoices'),
-    apiFetch('/api/bar/sales'),
-    apiFetch('/api/restaurant/orders'),
+    listBookings().then(unwrap),
+    listInvoices().then(unwrap),
+    listSales().then(unwrap),
+    listOrders().then(unwrap),
   ]);
   return { bookings, invoices, sales, orders };
 });

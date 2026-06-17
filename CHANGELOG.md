@@ -1,6 +1,43 @@
 # Changelog
 
-All notable changes to the El'Mariam rewrite are documented here.
+All notable changes to this project will be documented in this file.
+
+The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for versioned releases. Older entries below are commit-log style from the `rewrite` branch.
+
+---
+
+## [Unreleased]
+
+## [v0.1.0] — 2026-06-17 (`feat/simplifying-stack`)
+
+### Added
+
+- `packages/db/src/errors/` — domain `TaggedError` classes for hotel, bar, restaurant, and users
+- `packages/db/src/operations/` — typed DB operation functions returning `Result<T, DomainError>` via `better-result`
+- `better-result` dependency in `packages/db` for Rust-inspired typed error handling
+- `services/integrations` — consolidated Express service (port 8010) replacing three separate services: M-Pesa STK push, UjumbeSMS SMS, Gmail OAuth2 email
+- DB connection singleton in `hooks.server.ts` for all three apps using `sequence` from `@sveltejs/kit/hooks`
+- `MONGODB_URL` as single canonical MongoDB connection string across all apps and services
+- `x-common-env` and `x-rabbitmq-env` YAML anchors in `docker-compose.yml`
+- Legacy services (`hotel`, `bar`, `restaurant`, `gateway`) moved to `profiles: [legacy]`
+- `.github/workflows/ci.yml` — typecheck + build on push/PR (pnpm v10, Node 22)
+- `.github/workflows/release.yml` — Docker matrix build + GitHub Release on `v*` tags
+- `docs/ERROR_HANDLING.md`, `CONTRIBUTING.md`, `README.md`, `PLAN.md`, `BACKLOG.md`
+
+### Changed
+
+- All 10 remote function files rewritten to call `@elmariam/db` operations directly (no `apiFetch`)
+- Apps now depend on `mongo` + `openauth` directly instead of `gateway` in docker-compose
+
+### Fixed
+
+- Toast error messages now show correct domain-specific text (e.g. "A customer with that id number already exists.")
+- Chrome network tab no longer shows a false 200 on remote function errors
+- `E11000` duplicate key errors mapped to typed `*AlreadyExistsError` classes with user-readable messages
+
+---
+
+## Rewrite Branch History
 
 ## [c158744] fix: resolve all KrakenD gateway issues and public/POST endpoint failures
 

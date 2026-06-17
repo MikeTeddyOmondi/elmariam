@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@elmariam/auth": "workspace:*",
+    "@elmariam/db": "workspace:*",
+    "@elmariam/queue": "workspace:*",
     "@elmariam/ui": "workspace:*",
     "@openauthjs/openauth": "^0.3.0",
     "lucide-svelte": "^0.468.0",

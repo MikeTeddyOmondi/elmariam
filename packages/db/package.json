@@ -8,6 +8,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "better-result": "^2.9.2",
     "mongoose": "^8.0.0"
   },
   "devDependencies": {

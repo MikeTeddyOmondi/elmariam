@@ -1,3 +1,13 @@
+x-common-env: &common-env
+  MONGODB_URL: mongodb://mongo:27017/elmariam
+
+x-rabbitmq-env: &rabbitmq-env
+  RABBITMQ_HOST: rabbitmq
+  RABBITMQ_PORT: 5672
+  RABBITMQ_USERNAME: ${RABBITMQ_DEFAULT_USER:-user}
+  RABBITMQ_PASSWORD: ${RABBITMQ_DEFAULT_PASS:-password}
+  RABBITMQ_VHOST: ${RABBITMQ_DEFAULT_VHOST:-elmariam}
+
 services:
   # ──── Infrastructure ────
   mongo:
@@ -10,7 +20,7 @@ services:
       - elmariam-mongodb-data:/data/db
     networks:
       - elmariam-network
-      
+
   compass:
     container_name: elmariam-mongodb-compass
     image: haohanyang/compass-web:0.4.1
@@ -23,7 +33,7 @@ services:
       - CW_BASIC_AUTH_USERNAME=admin
       - CW_BASIC_AUTH_PASSWORD=password
     networks:
-      - elmariam-network  
+      - elmariam-network
 
   rabbitmq:
     container_name: elmariam-queue
@@ -104,7 +114,33 @@ services:
     networks:
       - elmariam-network
 
-  # ──── Backend Services ────
+  # ──── Integrations Service (M-Pesa + SMS + Email) ────
+  integrations:
+    container_name: elmariam-integrations-svc
+    build:
+      context: .
+      dockerfile: services/integrations/Dockerfile
+    restart: always
+    environment:
+      <<: *rabbitmq-env
+      PORT: 8010
+      INTASEND_API_TOKEN: ${INTASEND_API_TOKEN}
+      INTASEND_PUBLISHABLE_KEY: ${INTASEND_PUBLISHABLE_KEY}
+      INTASEND_TEST_MODE: ${INTASEND_TEST_MODE:-true}
+      UJUMBESMS_API_KEY: ${UJUMBESMS_API_KEY}
+      UJUMBESMS_API_URL: ${UJUMBESMS_API_URL:-https://ujumbesms.co.ke}
+      UJUMBESMS_ACCOUNT_EMAIL: ${UJUMBESMS_ACCOUNT_EMAIL}
+      EMAIL_SENDER: ${EMAIL_SENDER}
+      CLIENT_ID: ${GMAIL_CLIENT_ID}
+      CLIENT_SECRET: ${GMAIL_CLIENT_SECRET}
+      G_RFR_TKN: ${GMAIL_REFRESH_TOKEN}
+      G_ACC_TKN: ${GMAIL_ACCESS_TOKEN}
+    depends_on:
+      - rabbitmq
+    networks:
+      - elmariam-network
+
+  # ──── Legacy Backend Services (bypassed on feat/simplifying-stack) ────
   hotel:
     container_name: elmariam-hotel-svc
     build:
@@ -112,19 +148,17 @@ services:
       dockerfile: services/hotel/Dockerfile
     restart: always
     environment:
-      - PORT=8003
-      - DB_URL=mongodb://mongo:27017/hotel
-      - NODE_ENV=development
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
-      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+      <<: [*common-env, *rabbitmq-env]
+      PORT: 8003
+      DB_URL: mongodb://mongo:27017/elmariam
+      NODE_ENV: development
     depends_on:
       - mongo
       - rabbitmq
     networks:
       - elmariam-network
+    profiles:
+      - legacy
 
   bar:
     container_name: elmariam-bar-svc
@@ -133,24 +167,22 @@ services:
       dockerfile: services/bar/Dockerfile
     restart: always
     environment:
-      - PORT=8004
-      - DB_URL=mongodb://mongo:27017/bar
-      - NODE_ENV=development
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
-      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
-      - MINIO_API_HOST=minio
-      - MINIO_ACCESS_KEY=minio
-      - MINIO_SECRET_KEY=minio_password
-      - S3_HOSTNAME=s3.otienoobogeandcompany.com
+      <<: [*common-env, *rabbitmq-env]
+      PORT: 8004
+      DB_URL: mongodb://mongo:27017/elmariam
+      NODE_ENV: development
+      MINIO_API_HOST: minio
+      MINIO_ACCESS_KEY: minio
+      MINIO_SECRET_KEY: minio_password
+      S3_HOSTNAME: s3.otienoobogeandcompany.com
     depends_on:
       - mongo
       - minio
       - rabbitmq
     networks:
       - elmariam-network
+    profiles:
+      - legacy
 
   restaurant:
     container_name: elmariam-restaurant-svc
@@ -159,82 +191,17 @@ services:
       dockerfile: services/restaurant/Dockerfile
     restart: always
     environment:
-      - PORT=8005
-      - DB_URL=mongodb://mongo:27017/restaurant
-      - NODE_ENV=development
+      <<: *common-env
+      PORT: 8005
+      DB_URL: mongodb://mongo:27017/elmariam
+      NODE_ENV: development
     depends_on:
       - mongo
     networks:
       - elmariam-network
+    profiles:
+      - legacy
 
-  checkout:
-    container_name: elmariam-checkout-svc
-    build:
-      context: .
-      dockerfile: services/checkout/Dockerfile
-    restart: always
-    environment:
-      - PORT=8008
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
-      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
-      - INTASEND_API_TOKEN=${INTASEND_API_TOKEN}
-      - INTASEND_PUBLISHABLE_KEY=${INTASEND_PUBLISHABLE_KEY}
-      - INTASEND_TEST_MODE=${INTASEND_TEST_MODE:-true}
-    depends_on:
-      - rabbitmq
-    networks:
-      - elmariam-network
-
-  sms:
-    container_name: elmariam-sms-svc
-    build:
-      context: .
-      dockerfile: services/sms/Dockerfile
-    restart: always
-    environment:
-      - PORT=7879
-      - NODE_ENV=development
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
-      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
-      - UJUMBESMS_API_KEY=${UJUMBESMS_API_KEY}
-      - UJUMBESMS_API_URL=${UJUMBESMS_API_URL:-https://ujumbesms.co.ke}
-      - UJUMBESMS_ACCOUNT_EMAIL=${UJUMBESMS_ACCOUNT_EMAIL}
-    depends_on:
-      - rabbitmq
-    networks:
-      - elmariam-network
-
-  smtp:
-    container_name: elmariam-smtp-svc
-    build:
-      context: .
-      dockerfile: services/smtp/Dockerfile
-    restart: always
-    environment:
-      - PORT=3300
-      - NODE_ENV=development
-      - RABBITMQ_HOST=rabbitmq
-      - RABBITMQ_PORT=5672
-      - RABBITMQ_USERNAME=${RABBITMQ_DEFAULT_USER:-user}
-      - RABBITMQ_PASSWORD=${RABBITMQ_DEFAULT_PASS:-password}
-      - RABBITMQ_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
-      - EMAIL_SENDER=${EMAIL_SENDER}
-      - CLIENT_ID=${GMAIL_CLIENT_ID}
-      - CLIENT_SECRET=${GMAIL_CLIENT_SECRET}
-      - G_RFR_TKN=${GMAIL_REFRESH_TOKEN}
-      - G_ACC_TKN=${GMAIL_ACCESS_TOKEN}
-    depends_on:
-      - rabbitmq
-    networks:
-      - elmariam-network
-
-  # ──── Gateway ────
   gateway:
     container_name: elmariam-api-gateway
     build: ./infra/gateway
@@ -252,6 +219,8 @@ services:
       - restaurant
     networks:
       - elmariam-network
+    profiles:
+      - legacy
 
   # ──── Frontend Apps ────
   admin:
@@ -261,8 +230,8 @@ services:
       dockerfile: apps/admin/Dockerfile
     restart: always
     environment:
-      - GATEWAY_URL=http://gateway:8009
-      - OPENAUTH_ISSUER=http://openauth:3100
+      <<: *common-env
+      OPENAUTH_ISSUER: http://openauth:3100
     ports:
       - "3000:3000"
     labels:
@@ -270,7 +239,8 @@ services:
       - "traefik.http.routers.admin.rule=Host(`admin-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.admin.loadbalancer.server.port=3000"
     depends_on:
-      - gateway
+      - mongo
+      - openauth
     networks:
       - elmariam-network
 
@@ -281,8 +251,8 @@ services:
       dockerfile: apps/staff/Dockerfile
     restart: always
     environment:
-      - GATEWAY_URL=http://gateway:8009
-      - OPENAUTH_ISSUER=http://openauth:3100
+      <<: *common-env
+      OPENAUTH_ISSUER: http://openauth:3100
     ports:
       - "3001:3001"
     labels:
@@ -290,7 +260,8 @@ services:
       - "traefik.http.routers.staff.rule=Host(`staff-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.staff.loadbalancer.server.port=3001"
     depends_on:
-      - gateway
+      - mongo
+      - openauth
     networks:
       - elmariam-network
 
@@ -301,14 +272,17 @@ services:
       dockerfile: apps/website/Dockerfile
     restart: always
     environment:
-      - GATEWAY_URL=http://gateway:8009
-      - OPENAUTH_ISSUER=http://openauth:3100
+      <<: *common-env
+      OPENAUTH_ISSUER: http://openauth:3100
     ports:
       - "3002:3002"
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.website.rule=Host(`otienoobogeandcompany.com`)"
       - "traefik.http.services.website.loadbalancer.server.port=3002"
+    depends_on:
+      - mongo
+      - openauth
     networks:
       - elmariam-network
 
