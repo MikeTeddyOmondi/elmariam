@@ -16,5 +16,6 @@ FROM node:20-alpine
 WORKDIR /app
 COPY --from=builder /standalone .
 ENV PORT=3002
+ENV ORIGIN=http://localhost:3002
 EXPOSE 3002
 CMD ["node", "build"]

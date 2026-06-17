@@ -29,7 +29,7 @@ export const getBookings = query(() => apiFetch('/api/hotel/bookings'));
 export const getRooms = query(() => apiFetch('/api/hotel/rooms'));
 export const getRoomTypes = query(() => apiFetch('/api/hotel/roomtypes'));
 export const getInvoices = query(() => apiFetch('/api/hotel/invoices'));
-export const getOneBooking = query(async (bookingId: string) => apiFetch(`/api/hotel/bookings/${bookingId}`));
+export const getOneBooking = query(v.string(), async (bookingId: string) => apiFetch(`/api/hotel/bookings/${bookingId}`));
 
 export const createCustomer = command(
   v.object({

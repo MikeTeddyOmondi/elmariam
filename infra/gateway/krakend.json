@@ -56,7 +56,12 @@
           "url_pattern": "/api/v1/rooms/types",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ]
     },
@@ -68,7 +73,12 @@
           "url_pattern": "/api/v1/menu",
           "host": [
             "http://restaurant:8005"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ]
     },
@@ -87,7 +97,12 @@
           "url_pattern": "/api/v1/",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -129,7 +144,12 @@
           "url_pattern": "/api/v1/customers",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -172,7 +192,12 @@
           "host": [
             "http://hotel:8003"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -214,7 +239,12 @@
           "url_pattern": "/api/v1/customers/{customerid}",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -256,7 +286,12 @@
           "url_pattern": "/api/v1/bookings",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -299,7 +334,12 @@
           "host": [
             "http://hotel:8003"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -341,7 +381,12 @@
           "url_pattern": "/api/v1/bookings/{bookingid}",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -383,7 +428,12 @@
           "url_pattern": "/api/v1/rooms/types",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -426,7 +476,12 @@
           "host": [
             "http://hotel:8003"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -468,7 +523,12 @@
           "url_pattern": "/api/v1/rooms",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -511,7 +571,12 @@
           "host": [
             "http://hotel:8003"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -553,7 +618,12 @@
           "url_pattern": "/api/v1/invoices",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -595,7 +665,12 @@
           "url_pattern": "/api/v1/invoices/{invoiceid}",
           "host": [
             "http://hotel:8003"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -638,7 +713,12 @@
           "host": [
             "http://hotel:8003"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -681,7 +761,12 @@
           "host": [
             "http://hotel:8003"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -724,7 +809,12 @@
           "url_pattern": "/api/v1/",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -766,7 +856,12 @@
           "url_pattern": "/api/v1/drinks",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -809,7 +904,12 @@
           "host": [
             "http://bar:8004"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -851,7 +951,12 @@
           "url_pattern": "/api/v1/drinks/{drinkid}",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -894,7 +999,12 @@
           "host": [
             "http://bar:8004"
           ],
-          "method": "PUT"
+          "method": "PUT",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -937,7 +1047,12 @@
           "host": [
             "http://bar:8004"
           ],
-          "method": "DELETE"
+          "method": "DELETE",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -979,7 +1094,12 @@
           "url_pattern": "/api/v1/purchases",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1022,7 +1142,12 @@
           "host": [
             "http://bar:8004"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1064,7 +1189,12 @@
           "url_pattern": "/api/v1/purchases/{purchaseid}",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1106,7 +1236,12 @@
           "url_pattern": "/api/v1/sales",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1149,7 +1284,12 @@
           "host": [
             "http://bar:8004"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1191,7 +1331,12 @@
           "url_pattern": "/api/v1/sales/{salesid}",
           "host": [
             "http://bar:8004"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1234,7 +1379,12 @@
           "host": [
             "http://bar:8004"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1277,7 +1427,12 @@
           "url_pattern": "/api/v1/",
           "host": [
             "http://restaurant:8005"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1319,7 +1474,12 @@
           "url_pattern": "/api/v1/menu",
           "host": [
             "http://restaurant:8005"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1362,7 +1522,12 @@
           "host": [
             "http://restaurant:8005"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1404,7 +1569,12 @@
           "url_pattern": "/api/v1/menu/{id}",
           "host": [
             "http://restaurant:8005"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1447,7 +1617,12 @@
           "host": [
             "http://restaurant:8005"
           ],
-          "method": "PUT"
+          "method": "PUT",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1490,7 +1665,12 @@
           "host": [
             "http://restaurant:8005"
           ],
-          "method": "DELETE"
+          "method": "DELETE",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1532,7 +1712,12 @@
           "url_pattern": "/api/v1/orders",
           "host": [
             "http://restaurant:8005"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1575,7 +1760,12 @@
           "host": [
             "http://restaurant:8005"
           ],
-          "method": "POST"
+          "method": "POST",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1617,7 +1807,12 @@
           "url_pattern": "/api/v1/orders/{id}",
           "host": [
             "http://restaurant:8005"
-          ]
+          ],
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1660,7 +1855,12 @@
           "host": [
             "http://restaurant:8005"
           ],
-          "method": "PUT"
+          "method": "PUT",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
@@ -1703,7 +1903,12 @@
           "host": [
             "http://restaurant:8005"
           ],
-          "method": "PUT"
+          "method": "PUT",
+          "extra_config": {
+            "backend/http": {
+              "return_error_code": true
+            }
+          }
         }
       ],
       "extra_config": {
