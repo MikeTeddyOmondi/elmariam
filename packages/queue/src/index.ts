@@ -22,7 +22,7 @@ export class RabbitMQConfig {
   private retryOptions: Required<RabbitMQRetryOptions>;
 
   constructor(env: RabbitMQEnv, retryOptions: RabbitMQRetryOptions = {}) {
-    this.url = `amqp://${env.username}:${env.password}@${env.host}:${env.port}${env.vhost}`;
+    this.url = `amqp://${env.username}:${env.password}@${env.host}:${env.port}/${env.vhost}`;
     this.retryOptions = {
       maxRetries: retryOptions.maxRetries ?? 5,
       initialDelay: retryOptions.initialDelay ?? 1000,
