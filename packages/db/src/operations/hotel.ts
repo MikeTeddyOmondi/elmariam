@@ -1,5 +1,6 @@
 import { Result } from "better-result";
 import { Customer, Booking, Invoice, Room, RoomType } from "../models";
+import type { ICustomer, IBooking, IInvoice, IRoomType } from "../models";
 import {
   CustomerAlreadyExistsError,
   CustomerNotFoundError,
@@ -67,7 +68,7 @@ function getDatesInRange(start: Date, end: Date): string[] {
 
 export async function listCustomers() {
   return Result.tryPromise({
-    try: () => Customer.find().sort({ createdAt: -1 }).lean(),
+    try: () => Customer.find().sort({ createdAt: -1 }).lean<ICustomer[]>({ virtuals: true }),
     catch: (e) => dbErr("listCustomers", e),
   });
 }
@@ -75,7 +76,7 @@ export async function listCustomers() {
 export async function getCustomer(id: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await Customer.findById(id).lean();
+      const doc = await Customer.findById(id).lean<ICustomer>({ virtuals: true });
       if (!doc) throw new CustomerNotFoundError({ id, message: "Customer not found" });
       return doc;
     },
@@ -89,7 +90,7 @@ export async function getCustomer(id: string) {
 export async function searchCustomer(idNumber: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await Customer.findOne({ id_number: idNumber }).lean();
+      const doc = await Customer.findOne({ id_number: idNumber }).lean<ICustomer>({ virtuals: true });
       if (!doc) throw new CustomerNotFoundError({ id: idNumber, message: "Customer not found" });
       return doc;
     },
@@ -124,7 +125,8 @@ export async function listBookings() {
       Booking.find()
         .populate("occupant")
         .populate("room-type")
-        .populate("invoice"),
+        .populate("invoice")
+        .lean<IBooking[]>({ virtuals: true }),
     catch: (e) => dbErr("listBookings", e),
   });
 }
@@ -135,7 +137,8 @@ export async function getBooking(id: string) {
       const doc = await Booking.findById(id)
         .populate("occupant")
         .populate("room-type")
-        .populate("invoice");
+        .populate("invoice")
+        .lean<IBooking>({ virtuals: true });
       if (!doc) throw new BookingNotFoundError({ id, message: "Booking not found" });
       return doc;
     },
@@ -294,7 +297,7 @@ export async function createBooking(input: CreateBookingInput) {
 
 export async function listInvoices() {
   return Result.tryPromise({
-    try: () => Invoice.find().sort({ createdAt: -1 }).lean(),
+    try: () => Invoice.find().sort({ createdAt: -1 }).lean<IInvoice[]>({ virtuals: true }),
     catch: (e) => dbErr("listInvoices", e),
   });
 }
@@ -302,7 +305,7 @@ export async function listInvoices() {
 export async function getInvoice(id: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await Invoice.findById(id).lean();
+      const doc = await Invoice.findById(id).lean<IInvoice>({ virtuals: true });
       if (!doc) throw new InvoiceNotFoundError({ id, message: "Invoice not found" });
       return doc;
     },
@@ -317,14 +320,14 @@ export async function getInvoice(id: string) {
 
 export async function listRooms() {
   return Result.tryPromise({
-    try: () => Room.find().sort({ createdAt: -1 }).lean(),
+    try: () => Room.find().sort({ createdAt: -1 }).lean({ virtuals: true }),
     catch: (e) => dbErr("listRooms", e),
   });
 }
 
 export async function listRoomTypes() {
   return Result.tryPromise({
-    try: () => RoomType.find().lean(),
+    try: () => RoomType.find().lean<IRoomType[]>({ virtuals: true }),
     catch: (e) => dbErr("listRoomTypes", e),
   });
 }

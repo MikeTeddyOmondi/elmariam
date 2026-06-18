@@ -1,5 +1,6 @@
 import { Result } from "better-result";
 import { User } from "../models";
+import type { IUser } from "../models";
 import {
   UserAlreadyExistsError,
   UserNotFoundError,
@@ -16,7 +17,7 @@ export interface CreateUserInput {
   email: string;
   id_number: string;
   phone_number?: number;
-  userType: "customer" | "receptionist" | "barista" | "waiter" | "management";
+  userType: "admin" | "customer" | "receptionist" | "barista" | "waiter" | "management";
   openauth_subject_id?: string;
 }
 
@@ -39,7 +40,7 @@ function dbErr(operation: string, e: unknown): UsersDatabaseError {
 
 export async function listUsers() {
   return Result.tryPromise({
-    try: () => User.find().sort({ createdAt: -1 }).lean(),
+    try: () => User.find().sort({ createdAt: -1 }).lean<IUser[]>({ virtuals: true }),
     catch: (e) => dbErr("listUsers", e),
   });
 }
@@ -47,7 +48,7 @@ export async function listUsers() {
 export async function getUser(id: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await User.findById(id).lean();
+      const doc = await User.findById(id).lean<IUser>({ virtuals: true });
       if (!doc) throw new UserNotFoundError({ id, message: "User not found" });
       return doc;
     },
@@ -77,7 +78,7 @@ export async function createUser(input: CreateUserInput) {
 export async function updateUser(id: string, input: UpdateUserInput) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await User.findByIdAndUpdate(id, input, { new: true }).lean();
+      const doc = await User.findByIdAndUpdate(id, input, { new: true }).lean<IUser>({ virtuals: true });
       if (!doc) throw new UserNotFoundError({ id, message: "User not found" });
       return doc;
     },
@@ -91,7 +92,7 @@ export async function updateUser(id: string, input: UpdateUserInput) {
 export async function deleteUser(id: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await User.findByIdAndDelete(id).lean();
+      const doc = await User.findByIdAndDelete(id).lean<IUser>({ virtuals: true });
       if (!doc) throw new UserNotFoundError({ id, message: "User not found" });
       return { id };
     },

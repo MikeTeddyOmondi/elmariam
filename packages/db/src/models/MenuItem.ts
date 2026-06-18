@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface IMenuItem extends Document {
+  id: string;
   name: string;
   description?: string;
   category: "appetizer" | "main" | "dessert" | "beverage" | "side";

@@ -1,6 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export interface IRoomType extends Document {
+  id: string;
   title: string;
   description: string;
   rate: number;

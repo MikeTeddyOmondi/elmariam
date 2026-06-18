@@ -1,5 +1,6 @@
 import { Result } from "better-result";
 import { MenuItem, RestaurantOrder } from "../models";
+import type { IMenuItem, IRestaurantOrder } from "../models";
 import {
   MenuItemNotFoundError,
   OrderNotFoundError,
@@ -46,7 +47,7 @@ function dbErr(operation: string, e: unknown): RestaurantDatabaseError {
 
 export async function listMenuItems() {
   return Result.tryPromise({
-    try: () => MenuItem.find().sort({ createdAt: -1 }).lean(),
+    try: () => MenuItem.find().sort({ createdAt: -1 }).lean<IMenuItem[]>({ virtuals: true }),
     catch: (e) => dbErr("listMenuItems", e),
   });
 }
@@ -54,7 +55,7 @@ export async function listMenuItems() {
 export async function getMenuItem(id: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await MenuItem.findById(id).lean();
+      const doc = await MenuItem.findById(id).lean<IMenuItem>({ virtuals: true });
       if (!doc) throw new MenuItemNotFoundError({ id, message: "Menu item not found" });
       return doc;
     },
@@ -75,7 +76,7 @@ export async function createMenuItem(input: CreateMenuItemInput) {
 export async function updateMenuItem(id: string, input: UpdateMenuItemInput) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await MenuItem.findByIdAndUpdate(id, input, { new: true }).lean();
+      const doc = await MenuItem.findByIdAndUpdate(id, input, { new: true }).lean<IMenuItem>({ virtuals: true });
       if (!doc) throw new MenuItemNotFoundError({ id, message: "Menu item not found" });
       return doc;
     },

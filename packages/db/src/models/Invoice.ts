@@ -1,6 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export interface IInvoice extends Document {
+  id: string;
   bookingRef: Types.ObjectId;
   status: "paid" | "pending";
   paymentMethod: "cash" | "mpesa" | "bank";

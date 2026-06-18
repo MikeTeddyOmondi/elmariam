@@ -1,5 +1,6 @@
 import { Result } from "better-result";
 import { Drink, BarPurchase, BarSale } from "../models";
+import type { IDrink } from "../models";
 import {
   DrinkAlreadyExistsError,
   DrinkNotFoundError,
@@ -51,7 +52,7 @@ function dbErr(operation: string, e: unknown): BarDatabaseError {
 
 export async function listDrinks() {
   return Result.tryPromise({
-    try: () => Drink.find().sort({ createdAt: -1 }).lean(),
+    try: () => Drink.find().sort({ createdAt: -1 }).lean<IDrink[]>({ virtuals: true }),
     catch: (e) => dbErr("listDrinks", e),
   });
 }
@@ -59,7 +60,7 @@ export async function listDrinks() {
 export async function getDrink(id: string) {
   return Result.tryPromise({
     try: async () => {
-      const doc = await Drink.findById(id).lean();
+      const doc = await Drink.findById(id).lean<IDrink>({ virtuals: true });
       if (!doc) throw new DrinkNotFoundError({ id, message: "Drink not found" });
       return doc;
     },

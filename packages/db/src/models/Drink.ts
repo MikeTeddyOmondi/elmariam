@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface IDrink extends Document {
+  id: string;
   drinkName: string;
   drinkCode: string;
   typeOfDrink: "spirit" | "beer" | "rtd" | "wine" | "water";

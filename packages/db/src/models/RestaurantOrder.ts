@@ -8,6 +8,7 @@ interface OrderItem {
 }
 
 export interface IRestaurantOrder extends Document {
+  id: string;
   customer?: Types.ObjectId;
   tableNumber?: string;
   status: "pending" | "preparing" | "ready" | "served" | "cancelled";

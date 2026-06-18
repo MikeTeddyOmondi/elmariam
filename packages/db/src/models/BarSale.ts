@@ -7,6 +7,7 @@ interface BarSaleDrink {
 }
 
 export interface IBarSale extends Document {
+  id: string;
   customer?: Types.ObjectId;
   drinks: BarSaleDrink[];
   totalStockValue: number;

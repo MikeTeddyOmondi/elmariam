@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface IRoom extends Document {
+  id: string;
   number: string;
   isBooked: boolean;
   createdAt: Date;

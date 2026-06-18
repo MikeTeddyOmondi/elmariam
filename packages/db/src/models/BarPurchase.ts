@@ -1,6 +1,7 @@
 import { Schema, model, Document, Types } from "mongoose";
 
 export interface IBarPurchase extends Document {
+  id: string;
   receiptNumber: string;
   product: Types.ObjectId;
   quantity: number;

@@ -1,13 +1,14 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface IUser extends Document {
+  id: string;
   username: string;
   firstname: string;
   lastname: string;
   email: string;
   id_number: string;
   phone_number?: number;
-  userType: "customer" | "receptionist" | "barista" | "waiter" | "management";
+  userType: "admin" | "customer" | "receptionist" | "barista" | "waiter" | "management";
   openauth_subject_id?: string;
   isActive: boolean;
   isVerified: boolean;
@@ -25,7 +26,7 @@ const UserSchema = new Schema<IUser>(
     phone_number: { type: Number, required: false },
     userType: {
       type: String,
-      enum: ["customer", "receptionist", "barista", "waiter", "management"],
+      enum: ["admin", "customer", "receptionist", "barista", "waiter", "management"],
       required: true,
     },
     openauth_subject_id: { type: String, required: false },

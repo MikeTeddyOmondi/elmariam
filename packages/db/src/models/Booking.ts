@@ -1,6 +1,8 @@
 import { Schema, model, Document, Types } from "mongoose";
+import type { IInvoice } from "./Invoice";
 
 export interface IBooking extends Document {
+  id: string;
   customer: Types.ObjectId;
   numberAdults: number;
   numberKids: number;
@@ -8,6 +10,7 @@ export interface IBooking extends Document {
   checkInDate: Date;
   checkOutDate: Date;
   invoiceRef: Types.ObjectId;
+  invoice?: IInvoice;
   createdAt: Date;
   updatedAt: Date;
 }

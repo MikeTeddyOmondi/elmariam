@@ -1,6 +1,7 @@
 import { Schema, model, Document } from "mongoose";
 
 export interface ICustomer extends Document {
+  id: string;
   firstname: string;
   lastname: string;
   id_number: string;
