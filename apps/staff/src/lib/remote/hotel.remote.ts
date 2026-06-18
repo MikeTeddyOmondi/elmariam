@@ -15,7 +15,7 @@ import { RabbitMQConfig, rabbitMQEnvFromProcess } from '@elmariam/queue';
 
 function unwrap<T>(result: { match: (handlers: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
   return result.match({
-    ok: (data) => data,
+    ok: (d) => JSON.parse(JSON.stringify(d)),
     err: (e: any) => { throw new Error(e.message); },
   });
 }

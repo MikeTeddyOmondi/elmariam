@@ -4,7 +4,10 @@ import * as v from 'valibot';
 import { Customer, createCustomer as dbCreateCustomer } from '@elmariam/db';
 
 function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
-  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)),
+    err: (e: any) => { throw new Error(e.message); },
+  });
 }
 
 export const getMyProfile = query(async () => {
@@ -13,7 +16,7 @@ export const getMyProfile = query(async () => {
   if (!email) throw new Error('Unauthenticated');
   const customer = await Customer.findOne({ email }).lean();
   if (!customer) throw new Error('Customer profile not found');
-  return customer;
+  return JSON.parse(JSON.stringify(customer));
 });
 
 export const createCustomer = command(

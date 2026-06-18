@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getOrders } from '$lib/remote/restaurant.remote';
+  import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
 
-  const orders = getOrders();
+  let orders = $state(getOrders());
 
   const statusCls: Record<string, string> = {
     pending:    'bg-amber-500/15 text-amber-500',
@@ -10,6 +10,22 @@
     served:     'bg-green-500/15 text-green-500',
     cancelled:  'bg-red-500/15 text-red-500',
   };
+
+  const statuses = ['pending', 'preparing', 'ready', 'served', 'cancelled'] as const;
+  let updating = $state<string | null>(null);
+  let error = $state('');
+
+  async function changeStatus(orderId: string, status: typeof statuses[number]) {
+    updating = orderId; error = '';
+    try {
+      await updateOrderStatus({ orderId, status });
+      orders = getOrders();
+    } catch (err: any) {
+      error = err.message;
+    } finally { updating = null; }
+  }
+
+  const selectCls = 'bg-background border border-input rounded px-2 py-1 text-xs text-foreground focus:outline-none focus:ring-1 focus:ring-ring cursor-pointer';
 </script>
 
 <div class="space-y-6">
@@ -18,6 +34,8 @@
     <p class="text-sm text-muted-foreground mt-1">All table orders</p>
   </div>
 
+  {#if error}<div class="text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-2">{error}</div>{/if}
+
   <div class="bg-card border border-border rounded-xl overflow-hidden">
     {#await orders}
       <div class="p-6 text-sm text-muted-foreground">Loading…</div>
@@ -25,7 +43,7 @@
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
-            {#each ['Order ID','Table','Items','Total (KES)','Status','Payment'] as h}
+            {#each ['Order ID','Table','Items','Total (KES)','Status','Payment','Update Status'] as h}
               <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
             {/each}
           </tr>
@@ -44,9 +62,20 @@
                 </span>
               </td>
               <td class="px-4 py-3 text-muted-foreground capitalize">{order.paymentStatus ?? '—'}</td>
+              <td class="px-4 py-3">
+                <select
+                  value={order.status}
+                  disabled={updating === order._id}
+                  onchange={(e) => changeStatus(order._id, (e.target as HTMLSelectElement).value as any)}
+                  class={selectCls}>
+                  {#each statuses as s}
+                    <option value={s}>{s}</option>
+                  {/each}
+                </select>
+              </td>
             </tr>
           {:else}
-            <tr><td colspan="6" class="px-4 py-6 text-center text-sm text-muted-foreground">No orders found</td></tr>
+            <tr><td colspan="7" class="px-4 py-6 text-center text-sm text-muted-foreground">No orders found</td></tr>
           {/each}
         </tbody>
       </table>

@@ -3,7 +3,10 @@ import * as v from 'valibot';
 import { listDrinks, listPurchases, listSales, createPurchase, createSale } from '@elmariam/db';
 
 function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
-  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)),
+    err: (e: any) => { throw new Error(e.message); },
+  });
 }
 
 export const getDrinks       = query(async () => unwrap(await listDrinks()));

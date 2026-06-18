@@ -15,7 +15,10 @@ import {
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from '@elmariam/queue';
 
 function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
-  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)),
+    err: (e: any) => { throw new Error(e.message); },
+  });
 }
 
 export const getCustomers = query(async () => unwrap(await listCustomers()));
@@ -24,7 +27,7 @@ export const getRoomTypes = query(async () => unwrap(await listRoomTypes()));
 export const getRooms     = query(async () => unwrap(await listRooms()));
 export const getInvoices  = query(async () => unwrap(await listInvoices()));
 
-export const getOneBooking = query(async (bookingId: string) =>
+export const getOneBooking = query(v.string(), async (bookingId: string) =>
   unwrap(await getBooking(bookingId))
 );
 

@@ -3,7 +3,10 @@ import * as v from 'valibot';
 import { listMenuItems, listOrders, createOrder as dbCreateOrder, updateOrderStatus as dbUpdateOrderStatus } from '@elmariam/db';
 
 function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
-  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)),
+    err: (e: any) => { throw new Error(e.message); },
+  });
 }
 
 export const getMenuItems = query(async () => unwrap(await listMenuItems()));

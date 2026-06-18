@@ -9,3 +9,4 @@ export {
   requireWaiter,
   type GatewayUser,
 } from "./middleware";
+export { subjects } from "./subjects";

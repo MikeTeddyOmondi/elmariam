@@ -1,13 +1,30 @@
 <script lang="ts">
-  import { enhance } from '$app/forms';
-  import { getDrinks } from '$lib/remote/bar.remote';
+  import { getDrinks, createDrink } from '$lib/remote/bar.remote';
   import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const drinks = getDrinks();
 
-  let saving = $state(false);
-  let formError = $state('');
-  let formSuccess = $state(false);
+  let drinkName         = $state('');
+  let drinkCode         = $state('');
+  let typeOfDrink       = $state<'spirit'|'beer'|'rtd'|'wine'|'water'>('beer');
+  let uom               = $state<'bottles'|'crates'|'pack'>('bottles');
+  let packageQty        = $state(24);
+  let buyingStockPrice  = $state(0);
+  let sellingStockPrice = $state(0);
+  let saving            = $state(false);
+  let error             = $state('');
+  let success           = $state(false);
+
+  async function submit(e: SubmitEvent) {
+    e.preventDefault();
+    error = ''; success = false; saving = true;
+    try {
+      await createDrink({ drinkName, drinkCode, typeOfDrink, uom, packageQty, buyingStockPrice, sellingStockPrice });
+      success = true; drinkName = ''; drinkCode = ''; packageQty = 24; buyingStockPrice = 0; sellingStockPrice = 0;
+    } catch (err: any) {
+      error = err.message;
+    } finally { saving = false; }
+  }
 
   const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
   const selectCls = `${inputCls} cursor-pointer`;
@@ -19,62 +36,42 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Add Drink</h2>
-    {#if formError}<Alert class="mb-3"><AlertDescription class="text-destructive">{formError}</AlertDescription></Alert>{/if}
-    {#if formSuccess}<Alert class="mb-3"><AlertDescription class="text-green-500">Drink added successfully.</AlertDescription></Alert>{/if}
-    <form
-      method="POST"
-      action="?/create"
-      enctype="multipart/form-data"
-      use:enhance={() => {
-        saving = true; formError = ''; formSuccess = false;
-        return async ({ result, update }) => {
-          saving = false;
-          if (result.type === 'success') { formSuccess = true; await update(); }
-          else if (result.type === 'failure') { formError = (result.data as any)?.error || 'Failed'; }
-        };
-      }}
-      class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3"
-    >
+    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
+    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Drink added successfully.</AlertDescription></Alert>{/if}
+    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="drinkName">Name</label>
-        <input id="drinkName" name="drinkName" placeholder="e.g. Tusker Lager" required class={inputCls} />
+        <input id="drinkName" bind:value={drinkName} placeholder="e.g. Tusker Lager" required class={inputCls} />
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="drinkCode">Code</label>
-        <input id="drinkCode" name="drinkCode" placeholder="e.g. TUS001" required class={inputCls} />
+        <input id="drinkCode" bind:value={drinkCode} placeholder="e.g. TUS001" required class={inputCls} />
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="typeOfDrink">Type</label>
-        <select id="typeOfDrink" name="typeOfDrink" required class={selectCls}>
-          <option value="">Select type</option>
+        <select id="typeOfDrink" bind:value={typeOfDrink} required class={selectCls}>
           {#each ['spirit','beer','rtd','wine','water'] as t}<option value={t}>{t}</option>{/each}
         </select>
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="uom">Unit of Measure</label>
-        <select id="uom" name="uom" required class={selectCls}>
-          <option value="">Select UOM</option>
+        <select id="uom" bind:value={uom} required class={selectCls}>
           {#each ['bottles','crates','pack'] as u}<option value={u}>{u}</option>{/each}
         </select>
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="packageQty">Package Qty</label>
-        <input id="packageQty" name="packageQty" type="number" min="1" placeholder="24" required class={inputCls} />
+        <input id="packageQty" bind:value={packageQty} type="number" min="1" required class={inputCls} />
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="buyingPrice">Buying Price (KES)</label>
-        <input id="buyingPrice" name="buyingPrice" type="number" min="0" step="0.01" placeholder="0.00" required class={inputCls} />
+        <input id="buyingPrice" bind:value={buyingStockPrice} type="number" min="0" step="0.01" required class={inputCls} />
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="sellingPrice">Selling Price (KES)</label>
-        <input id="sellingPrice" name="sellingPrice" type="number" min="0" step="0.01" placeholder="0.00" required class={inputCls} />
+        <input id="sellingPrice" bind:value={sellingStockPrice} type="number" min="0" step="0.01" required class={inputCls} />
       </div>
-      <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-2">
-        <label class="text-xs text-muted-foreground" for="file">Image</label>
-        <input id="file" name="file" type="file" accept="image/*" required
-          class="w-full text-sm text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:bg-secondary file:text-foreground" />
-      </div>
-      <div class="flex items-end">
+      <div class="sm:col-span-2 lg:col-span-2 flex items-end">
         <Button type="submit" class="w-full" disabled={saving}>{saving ? 'Saving…' : 'Add Drink'}</Button>
       </div>
     </form>

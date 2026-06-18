@@ -1,13 +1,52 @@
 <script lang="ts">
-  import { getUsers } from '$lib/remote/users.remote';
+  import { getUsers, createUser, deleteUser } from '$lib/remote/users.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const users = getUsers();
 
+  let username     = $state('');
+  let firstname    = $state('');
+  let lastname     = $state('');
+  let email        = $state('');
+  let id_number    = $state('');
+  let phone_number = $state('');
+  let userType     = $state<'admin'|'receptionist'|'barista'|'waiter'|'management'>('receptionist');
+  let saving       = $state(false);
+  let error        = $state('');
+  let success      = $state('');
+  let deleting     = $state<string | null>(null);
+
+  async function submit(e: SubmitEvent) {
+    e.preventDefault();
+    error = ''; success = ''; saving = true;
+    try {
+      await createUser({ username, firstname, lastname, email, id_number, phone_number: phone_number || undefined, userType });
+      success = `User ${username} created.`;
+      username = ''; firstname = ''; lastname = ''; email = ''; id_number = ''; phone_number = '';
+    } catch (err: any) {
+      error = err.message;
+    } finally { saving = false; }
+  }
+
+  async function remove(id: string, name: string) {
+    if (!confirm(`Delete ${name}?`)) return;
+    deleting = id;
+    try {
+      await deleteUser({ id });
+      success = `${name} deleted.`;
+    } catch (err: any) {
+      error = err.message;
+    } finally { deleting = null; }
+  }
+
+  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
+  const selectCls = `${inputCls} cursor-pointer`;
   const typeCls: Record<string, string> = {
     admin:        'bg-purple-500/15 text-purple-400',
     receptionist: 'bg-blue-500/15 text-blue-400',
     barista:      'bg-amber-500/15 text-amber-500',
     waiter:       'bg-green-500/15 text-green-500',
+    management:   'bg-pink-500/15 text-pink-400',
   };
 </script>
 
@@ -17,6 +56,51 @@
     <p class="text-sm text-muted-foreground mt-1">Staff accounts and roles</p>
   </div>
 
+  <!-- Create form -->
+  <div class="bg-card border border-border rounded-xl p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4">Add User</h2>
+    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
+    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">{success}</AlertDescription></Alert>{/if}
+    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="uname">Username</label>
+        <input id="uname" bind:value={username} placeholder="jdoe" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="ufname">First Name</label>
+        <input id="ufname" bind:value={firstname} placeholder="John" class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="ulname">Last Name</label>
+        <input id="ulname" bind:value={lastname} placeholder="Doe" class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="uemail">Email</label>
+        <input id="uemail" type="email" bind:value={email} placeholder="john@example.com" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="uidno">ID Number</label>
+        <input id="uidno" bind:value={id_number} placeholder="12345678" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="uphone">Phone (optional)</label>
+        <input id="uphone" bind:value={phone_number} placeholder="+254700000000" class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="utype">Role</label>
+        <select id="utype" bind:value={userType} required class={selectCls}>
+          {#each ['admin','receptionist','barista','waiter','management'] as t}
+            <option value={t}>{t}</option>
+          {/each}
+        </select>
+      </div>
+      <div class="sm:col-span-2 flex justify-end">
+        <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add User'}</Button>
+      </div>
+    </form>
+  </div>
+
+  <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
     {#await users}
       <div class="p-6 text-sm text-muted-foreground">Loading…</div>
@@ -24,7 +108,7 @@
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
-            {#each ['Name','Email','Role'] as h}
+            {#each ['Name','Email','Role',''] as h}
               <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
             {/each}
           </tr>
@@ -40,9 +124,17 @@
                   {user.userType}
                 </span>
               </td>
+              <td class="px-4 py-3">
+                <button
+                  onclick={() => remove(user._id, `${user.firstname} ${user.lastname}`)}
+                  disabled={deleting === user._id}
+                  class="text-xs text-destructive hover:underline disabled:opacity-50">
+                  {deleting === user._id ? 'Deleting…' : 'Delete'}
+                </button>
+              </td>
             </tr>
           {:else}
-            <tr><td colspan="3" class="px-4 py-6 text-center text-sm text-muted-foreground">No users found</td></tr>
+            <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-muted-foreground">No users found</td></tr>
           {/each}
         </tbody>
       </table>

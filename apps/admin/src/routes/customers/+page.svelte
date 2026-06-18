@@ -1,7 +1,30 @@
 <script lang="ts">
-  import { getCustomers } from '$lib/remote/hotel.remote';
+  import { getCustomers, createCustomer } from '$lib/remote/hotel.remote';
+  import { Button, Alert, AlertDescription } from '@elmariam/ui';
 
   const customers = getCustomers();
+
+  let firstname    = $state('');
+  let lastname     = $state('');
+  let id_number    = $state('');
+  let email        = $state('');
+  let phone_number = $state('');
+  let saving       = $state(false);
+  let error        = $state('');
+  let success      = $state(false);
+
+  async function submit(e: SubmitEvent) {
+    e.preventDefault();
+    error = ''; success = false; saving = true;
+    try {
+      await createCustomer({ firstname, lastname, id_number, email, phone_number: phone_number || undefined });
+      success = true; firstname = ''; lastname = ''; id_number = ''; email = ''; phone_number = '';
+    } catch (err: any) {
+      error = err.message;
+    } finally { saving = false; }
+  }
+
+  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
 </script>
 
 <div class="space-y-6">
@@ -10,6 +33,37 @@
     <p class="text-sm text-muted-foreground mt-1">Registered hotel guests</p>
   </div>
 
+  <!-- Create form -->
+  <div class="bg-card border border-border rounded-xl p-5">
+    <h2 class="text-base font-semibold text-foreground mb-4">Add Customer</h2>
+    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
+    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Customer added.</AlertDescription></Alert>{/if}
+    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="fname">First Name</label>
+        <input id="fname" bind:value={firstname} placeholder="John" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="lname">Last Name</label>
+        <input id="lname" bind:value={lastname} placeholder="Doe" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="idno">ID Number</label>
+        <input id="idno" bind:value={id_number} placeholder="12345678" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="cemail">Email</label>
+        <input id="cemail" type="email" bind:value={email} placeholder="john@example.com" required class={inputCls} />
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <label class="text-xs text-muted-foreground" for="phone">Phone (optional)</label>
+        <input id="phone" bind:value={phone_number} placeholder="+254700000000" class={inputCls} />
+      </div>
+      <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add Customer'}</Button>
+    </form>
+  </div>
+
+  <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
     {#await customers}
       <div class="p-6 text-sm text-muted-foreground">Loading…</div>

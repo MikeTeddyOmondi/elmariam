@@ -87,3 +87,17 @@ export async function updateUser(id: string, input: UpdateUserInput) {
     },
   });
 }
+
+export async function deleteUser(id: string) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await User.findByIdAndDelete(id).lean();
+      if (!doc) throw new UserNotFoundError({ id, message: "User not found" });
+      return { id };
+    },
+    catch: (e): UsersError => {
+      if (e instanceof UserNotFoundError) return e;
+      return dbErr("deleteUser", e);
+    },
+  });
+}

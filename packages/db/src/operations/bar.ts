@@ -18,7 +18,7 @@ export interface CreateDrinkInput {
   packageQty: number;
   buyingStockPrice: number;
   sellingStockPrice: number;
-  imageUrl: string;
+  imageUrl?: string;
 }
 
 export interface CreatePurchaseInput {
