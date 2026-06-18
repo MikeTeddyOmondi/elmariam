@@ -35,9 +35,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Build packages
-        run: pnpm --filter @elmariam/db build --filter @elmariam/queue build
-
       - name: Typecheck
         run: pnpm turbo typecheck
 
@@ -60,8 +57,5 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
 
-      - name: Build packages
-        run: pnpm --filter @elmariam/db build --filter @elmariam/queue build
-
-      - name: Build apps
-        run: pnpm turbo build --filter=@elmariam/admin --filter=@elmariam/staff --filter=@elmariam/website
+      - name: Build
+        run: pnpm turbo build
