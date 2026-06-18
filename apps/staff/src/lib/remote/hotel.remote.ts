@@ -1,8 +1,9 @@
+import type { Result } from 'better-result';
 import { query, command } from '$app/server';
+import { error as httpError } from '@sveltejs/kit';
 import * as v from 'valibot';
 import {
   listCustomers,
-  getCustomer,
   listBookings,
   getBooking,
   createCustomer as dbCreateCustomer,
@@ -13,15 +14,28 @@ import {
 } from '@elmariam/db';
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from '@elmariam/queue';
 
-function unwrap<T>(result: { match: (handlers: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)),
-    err: (e: any) => { throw new Error(e.message); },
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => { throw httpError(400, e.message); },
   });
 }
 
+type BookingView = {
+  id: string;
+  customer?: { firstname?: string; lastname?: string; email?: string; phone_number?: number };
+  roomType?: { roomType?: string };
+  numberAdults: number;
+  numberKids: number;
+  checkInDate: Date;
+  checkOutDate: Date;
+  invoiceRef?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export const getCustomers = query(async () => unwrap(await listCustomers()));
-export const getBookings  = query(async () => unwrap(await listBookings()));
+export const getBookings  = query(async (): Promise<BookingView[]> => unwrap(await listBookings()) as unknown as BookingView[]);
 export const getRooms     = query(async () => unwrap(await listRooms()));
 export const getRoomTypes = query(async () => unwrap(await listRoomTypes()));
 export const getInvoices  = query(async () => unwrap(await listInvoices()));

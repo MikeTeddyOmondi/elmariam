@@ -1,8 +1,12 @@
+import type { Result } from 'better-result';
 import { query } from '$app/server';
 import { listBookings, listInvoices, listSales, listOrders } from '@elmariam/db';
 
-function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
-  return result.match({ ok: (d) => d, err: (e: any) => { throw new Error(e.message); } });
+function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => { throw new Error(e.message); },
+  });
 }
 
 export const getDashboardStats = query(async () => {

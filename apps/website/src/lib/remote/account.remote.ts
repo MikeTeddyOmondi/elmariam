@@ -1,12 +1,14 @@
 import { query, command } from '$app/server';
+import { error as httpError } from '@sveltejs/kit';
 import { getRequestEvent } from '$app/server';
 import * as v from 'valibot';
+import type { Result } from 'better-result';
 import { Customer, createCustomer as dbCreateCustomer } from '@elmariam/db';
 
-function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)),
-    err: (e: any) => { throw new Error(e.message); },
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => { throw httpError(400, e.message); },
   });
 }
 

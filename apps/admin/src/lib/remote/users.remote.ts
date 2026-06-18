@@ -1,15 +1,37 @@
+import type { Result } from 'better-result';
 import { query, command } from '$app/server';
+import { error as httpError } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { listUsers, createUser as dbCreateUser, updateUser as dbUpdateUser, deleteUser as dbDeleteUser } from '@elmariam/db';
+import {
+  listUsers,
+  createUser as dbCreateUser,
+  updateUser as dbUpdateUser,
+  deleteUser as dbDeleteUser,
+} from '@elmariam/db';
 
-function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)),
-    err: (e: any) => { throw new Error(e.message); },
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => { throw httpError(400, e.message); },
   });
 }
 
-export const getUsers = query(async () => unwrap(await listUsers()));
+type UserView = {
+  id: string;
+  username: string;
+  firstname: string;
+  lastname: string;
+  email: string;
+  id_number: string;
+  phone_number?: number;
+  userType: 'admin' | 'customer' | 'receptionist' | 'barista' | 'waiter' | 'management';
+  isActive: boolean;
+  isVerified: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export const getUsers = query(async (): Promise<UserView[]> => unwrap(await listUsers()) as unknown as UserView[]);
 
 export const createUser = command(
   v.object({
@@ -21,9 +43,9 @@ export const createUser = command(
     phone_number: v.optional(v.string()),
     userType:     v.picklist(['admin', 'receptionist', 'barista', 'waiter', 'management']),
   }),
-  async (data) => unwrap(await dbCreateUser({
+  async ({ phone_number, ...data }) => unwrap(await dbCreateUser({
     ...data,
-    phone_number: data.phone_number ? Number(data.phone_number) : undefined,
+    ...(phone_number ? { phone_number: Number(phone_number) } : {}),
   }))
 );
 
@@ -38,7 +60,7 @@ export const updateUser = command(
   }),
   async ({ id, phone_number, ...rest }) => unwrap(await dbUpdateUser(id, {
     ...rest,
-    phone_number: phone_number ? Number(phone_number) : undefined,
+    ...(phone_number ? { phone_number: Number(phone_number) } : {}),
   }))
 );
 

@@ -1,5 +1,7 @@
 import { query, command } from '$app/server';
+import { error as httpError } from '@sveltejs/kit';
 import * as v from 'valibot';
+import type { Result } from 'better-result';
 import {
   listBookings,
   getBooking,
@@ -7,19 +9,20 @@ import {
   listRoomTypes,
   createBooking as dbCreateBooking,
 } from '@elmariam/db';
+import type { IBooking, IInvoice, IRoomType } from '@elmariam/db';
 
-function unwrap<T>(result: { match: (h: { ok: (v: T) => T; err: (e: any) => never }) => T }) {
+function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)),
-    err: (e: any) => { throw new Error(e.message); },
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => { throw httpError(400, e.message); },
   });
 }
 
-export const getMyBookings = query(async () => unwrap(await listBookings()));
-export const getMyInvoices = query(async () => unwrap(await listInvoices()));
-export const getRoomTypes  = query(async () => unwrap(await listRoomTypes()));
+export const getMyBookings = query(async (): Promise<IBooking[]>  => unwrap(await listBookings()));
+export const getMyInvoices = query(async (): Promise<IInvoice[]>  => unwrap(await listInvoices()));
+export const getRoomTypes  = query(async (): Promise<IRoomType[]> => unwrap(await listRoomTypes()));
 
-export const getOneBooking = query(async (bookingId: string) =>
+export const getOneBooking = query(v.string(), async (bookingId: string): Promise<IBooking> =>
   unwrap(await getBooking(bookingId))
 );
 
