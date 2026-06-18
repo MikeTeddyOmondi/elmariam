@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
   import { ThemeToggle } from '@elmariam/ui';
+  import { Toaster } from 'svelte-sonner';
 
   interface Props { children: Snippet }
   let { children }: Props = $props();
@@ -24,6 +25,8 @@
       : $page.url.pathname.startsWith(href);
   }
 </script>
+
+<Toaster richColors />
 
 {#if isLoginPage || isPortal}
   {@render children()}

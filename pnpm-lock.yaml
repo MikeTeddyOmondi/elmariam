@@ -27,14 +27,20 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@openauthjs/openauth':
-        specifier: ^0.3.0
-        version: 0.3.9(arctic@2.3.4)(hono@4.12.18)
+        specifier: ^0.4.3
+        version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
+      better-result:
+        specifier: ^2.9.2
+        version: 2.9.2
       chart.js:
         specifier: ^4.4.0
         version: 4.5.1
       lucide-svelte:
         specifier: ^0.468.0
         version: 0.468.0(svelte@5.55.5)
+      svelte-sonner:
+        specifier: ^1.1.1
+        version: 1.1.1(svelte@5.55.5)
       valibot:
         specifier: ^1.0.0
         version: 1.4.0(typescript@5.9.3)
@@ -85,11 +91,17 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@openauthjs/openauth':
-        specifier: ^0.3.0
-        version: 0.3.9(arctic@2.3.4)(hono@4.12.18)
+        specifier: ^0.4.3
+        version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
+      better-result:
+        specifier: ^2.9.2
+        version: 2.9.2
       lucide-svelte:
         specifier: ^0.468.0
         version: 0.468.0(svelte@5.55.5)
+      svelte-sonner:
+        specifier: ^1.1.1
+        version: 1.1.1(svelte@5.55.5)
       valibot:
         specifier: ^1.0.0
         version: 1.4.0(typescript@5.9.3)
@@ -137,11 +149,17 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@openauthjs/openauth':
-        specifier: ^0.3.0
-        version: 0.3.9(arctic@2.3.4)(hono@4.12.18)
+        specifier: ^0.4.3
+        version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
+      better-result:
+        specifier: ^2.9.2
+        version: 2.9.2
       lucide-svelte:
         specifier: ^0.468.0
         version: 0.468.0(svelte@5.55.5)
+      svelte-sonner:
+        specifier: ^1.1.1
+        version: 1.1.1(svelte@5.55.5)
       valibot:
         specifier: ^1.0.0
         version: 1.4.0(typescript@5.9.3)
@@ -266,6 +284,9 @@ importers:
       lucide-svelte:
         specifier: ^0.468.0
         version: 0.468.0(svelte@5.55.5)
+      svelte-sonner:
+        specifier: ^1.1.1
+        version: 1.1.1(svelte@5.55.5)
       tailwind-merge:
         specifier: ^2.5.5
         version: 2.6.1
@@ -273,6 +294,9 @@ importers:
       svelte:
         specifier: ^5.0.0
         version: 5.55.5
+      svelte-check:
+        specifier: ^3.6.0
+        version: 3.8.6(postcss-load-config@6.0.1(jiti@1.21.7)(postcss@8.5.14))(postcss@8.5.14)(svelte@5.55.5)
       tailwindcss:
         specifier: ^3.4.0
         version: 3.4.19
@@ -504,6 +528,12 @@ packages:
 
   '@openauthjs/openauth@0.3.9':
     resolution: {integrity: sha512-a8UGz9iLQnB8TmY4bMDkCvMEWLHPEtDlXGnYNoFbEOxO13cCPu1pSS0DcUvKzHBAhXWnAMU01sSDMNZQr+aKWg==}
+    peerDependencies:
+      arctic: ^2.2.2
+      hono: ^4.0.0
+
+  '@openauthjs/openauth@0.4.3':
+    resolution: {integrity: sha512-RlnjqvHzqcbFVymEwhlUEuac4utA5h4nhSK/i2szZuQmxTIqbGUxZ+nM+avM+VV4Ing+/ZaNLKILoXS3yrkOOw==}
     peerDependencies:
       arctic: ^2.2.2
       hono: ^4.0.0
@@ -1689,6 +1719,11 @@ packages:
   run-parallel@1.2.0:
     resolution: {integrity: sha512-5l4VyZR86LZ/lDxZTR6jqL8AFE2S0IFLMP26AbjsLVADxHdhB/c0GUsH+y39UfCi3dzz8OlQuPmnaJOMoDHQBA==}
 
+  runed@0.28.0:
+    resolution: {integrity: sha512-k2xx7RuO9hWcdd9f+8JoBeqWtYrm5CALfgpkg2YDB80ds/QE4w0qqu34A7fqiAwiBBSBQOid7TLxwxVC27ymWQ==}
+    peerDependencies:
+      svelte: ^5.7.0
+
   sade@1.8.1:
     resolution: {integrity: sha512-xal3CZX1Xlo/k4ApwCFrHVACi9fBqJ7V+mwhBsuf/1IOKbBy098Fex+Wa/5QMubw09pSZ/u8EY8PWgevJsXp1A==}
     engines: {node: '>=6'}
@@ -1819,6 +1854,11 @@ packages:
         optional: true
       typescript:
         optional: true
+
+  svelte-sonner@1.1.1:
+    resolution: {integrity: sha512-5cd3p7wa4cq0NsqslMwdlPb7x1JglEZ/GKrLePWNr5bCxR1nagAVrY01FRFrXfUGs41miLt3C327+8XJo5BzZw==}
+    peerDependencies:
+      svelte: ^5.0.0
 
   svelte@5.55.5:
     resolution: {integrity: sha512-2uCs/LZ9us+AktdzYJM8OcxQ8qnPS1kpaO7syGT/MgO+6Qr1Ybl+TqPq+97u7PHqmmMlye5ZkoyXONy5mjjAbw==}
@@ -2120,6 +2160,14 @@ snapshots:
       fastq: 1.20.1
 
   '@openauthjs/openauth@0.3.9(arctic@2.3.4)(hono@4.12.18)':
+    dependencies:
+      '@standard-schema/spec': 1.0.0-beta.3
+      arctic: 2.3.4
+      aws4fetch: 1.0.20
+      hono: 4.12.18
+      jose: 5.9.6
+
+  '@openauthjs/openauth@0.4.3(arctic@2.3.4)(hono@4.12.18)':
     dependencies:
       '@standard-schema/spec': 1.0.0-beta.3
       arctic: 2.3.4
@@ -3234,6 +3282,11 @@ snapshots:
     dependencies:
       queue-microtask: 1.2.3
 
+  runed@0.28.0(svelte@5.55.5):
+    dependencies:
+      esm-env: 1.2.2
+      svelte: 5.55.5
+
   sade@1.8.1:
     dependencies:
       mri: 1.2.0
@@ -3385,6 +3438,11 @@ snapshots:
       postcss: 8.5.14
       postcss-load-config: 6.0.1(jiti@1.21.7)(postcss@8.5.14)
       typescript: 5.9.3
+
+  svelte-sonner@1.1.1(svelte@5.55.5):
+    dependencies:
+      runed: 0.28.0(svelte@5.55.5)
+      svelte: 5.55.5
 
   svelte@5.55.5:
     dependencies:

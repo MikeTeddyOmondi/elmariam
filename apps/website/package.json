@@ -13,8 +13,10 @@
     "@elmariam/auth": "workspace:*",
     "@elmariam/db": "workspace:*",
     "@elmariam/ui": "workspace:*",
-    "@openauthjs/openauth": "^0.3.0",
+    "@openauthjs/openauth": "^0.4.3",
+    "better-result": "^2.9.2",
     "lucide-svelte": "^0.468.0",
+    "svelte-sonner": "^1.1.1",
     "valibot": "^1.0.0"
   },
   "devDependencies": {

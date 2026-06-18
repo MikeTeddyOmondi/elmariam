@@ -3,6 +3,7 @@
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
   import { Separator, ThemeToggle } from '@elmariam/ui';
+  import { Toaster } from 'svelte-sonner';
   import {
     LayoutDashboard, Users, UserCheck, CalendarDays, BedDouble,
     Layers, GlassWater, ShoppingCart, BarChart3, UtensilsCrossed,
@@ -34,6 +35,8 @@
       : $page.url.pathname.startsWith(href);
   }
 </script>
+
+<Toaster richColors />
 
 {#if isLoginPage}
   {@render children()}
