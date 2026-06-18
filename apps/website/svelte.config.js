@@ -6,6 +6,7 @@ const config = {
   preprocess: vitePreprocess(),
   kit: {
     adapter: adapter({ out: "build" }),
+    alias: { "$lib/*": "./src/lib/*" },
     experimental: {
       remoteFunctions: true,
     },

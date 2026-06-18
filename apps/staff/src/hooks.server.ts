@@ -32,10 +32,10 @@ const authHandle: Handle = async ({ event, resolve }) => {
         refresh: refreshToken,
       });
 
-      if (!verified.err) {
+      if (!verified.err && 'subject' in verified) {
         event.locals.user = verified.subject.properties;
 
-        if (verified.tokens) {
+        if ('tokens' in verified && verified.tokens) {
           const opts = { path: '/', httpOnly: true, secure: !dev, sameSite: 'lax' as const };
           event.cookies.set('access_token', verified.tokens.access, { ...opts, maxAge: 60 * 60 * 24 * 7 });
           event.cookies.set('refresh_token', verified.tokens.refresh, { ...opts, maxAge: 60 * 60 * 24 * 30 });

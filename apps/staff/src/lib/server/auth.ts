@@ -13,7 +13,8 @@ export async function requireStaffAuth(cookies: Cookies): Promise<{ id: string; 
   if (!token) redirect(302, '/login');
   try {
     const verified = await client.verify(token as any, token);
-    const { id, email, userType } = verified.subject.properties as any;
+    if (!('subject' in verified)) redirect(302, '/login');
+    const { id, email, userType } = (verified as any).subject.properties as any;
     if (!['receptionist', 'barista', 'waiter', 'management'].includes(userType)) {
       redirect(302, '/login');
     }

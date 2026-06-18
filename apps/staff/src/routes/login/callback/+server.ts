@@ -38,7 +38,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   }
 
   const verified = await client.verify(subjects, result.tokens.access);
-  if (verified.err || !STAFF_TYPES.includes(verified.subject.properties.userType)) {
+  if (verified.err || !('subject' in verified) || !STAFF_TYPES.includes(verified.subject.properties.userType)) {
     throw redirect(302, '/login?error=unauthorized');
   }
 
