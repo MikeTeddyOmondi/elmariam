@@ -3,7 +3,7 @@ import { sequence } from '@sveltejs/kit/hooks';
 import { createClient } from '@openauthjs/openauth/client';
 import { subjects } from '$lib/subjects';
 import { connectDB } from '@elmariam/db';
-import { MONGODB_URL } from '$env/static/private';
+import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';
 
 const client = createClient({
@@ -15,7 +15,7 @@ let dbConnected = false;
 
 const dbHandle: Handle = async ({ event, resolve }) => {
   if (!dbConnected) {
-    await connectDB({ url: MONGODB_URL });
+    await connectDB({ url: env.MONGODB_URL });
     dbConnected = true;
   }
   return resolve(event);
