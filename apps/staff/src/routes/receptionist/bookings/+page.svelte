@@ -70,8 +70,8 @@
               <td class="px-4 py-3 text-muted-foreground">{b.numberKids}</td>
               <td class="px-4 py-3">
                 <div class="flex gap-2">
-                  <Button variant="outline" onclick={() => triggerMpesa(b._id)} class="h-7 px-2 text-xs">M-Pesa</Button>
-                  <Button variant="outline" onclick={() => triggerSms(b._id)} class="h-7 px-2 text-xs">SMS</Button>
+                  <Button variant="outline" onclick={() => triggerMpesa(b.id)} class="h-7 px-2 text-xs">M-Pesa</Button>
+                  <Button variant="outline" onclick={() => triggerSms(b.id)} class="h-7 px-2 text-xs">SMS</Button>
                 </div>
               </td>
             </tr>

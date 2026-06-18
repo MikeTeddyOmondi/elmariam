@@ -4,7 +4,8 @@
 
   const orders = getOrders();
 
-  const TRANSITIONS: Record<string, string[]> = {
+  type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
+  const TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
     pending:   ['preparing', 'cancelled'],
     preparing: ['ready', 'cancelled'],
     ready:     ['served'],
@@ -21,7 +22,7 @@
   let msg = $state('');
   let msgError = $state(false);
 
-  async function advance(orderId: string, status: string) {
+  async function advance(orderId: string, status: OrderStatus) {
     msg = '';
     msgError = false;
     try {
@@ -67,7 +68,7 @@
         <tbody>
           {#each data as order}
             <tr class="border-t border-border hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order._id}</td>
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order.id}</td>
               <td class="px-4 py-3 text-muted-foreground">{order.tableNumber ?? '-'}</td>
               <td class="px-4 py-3 text-muted-foreground">{order.items?.length ?? 0}</td>
               <td class="px-4 py-3 text-foreground font-medium">KES {order.totalAmount?.toLocaleString()}</td>
@@ -79,7 +80,7 @@
               <td class="px-4 py-3">
                 <div class="flex gap-1.5">
                   {#each TRANSITIONS[order.status] ?? [] as next}
-                    <Button variant="outline" onclick={() => advance(order._id, next)} class="h-7 px-2 text-xs capitalize">{next}</Button>
+                    <Button variant="outline" onclick={() => advance(order.id, next)} class="h-7 px-2 text-xs capitalize">{next}</Button>
                   {/each}
                 </div>
               </td>

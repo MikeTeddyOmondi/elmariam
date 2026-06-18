@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createOrder, getMenuItems } from '$lib/remote/restaurant.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const menuItems = getMenuItems();
 
@@ -8,25 +9,20 @@
   let items = $state<LineItem[]>([{ menuItemId: '', quantity: 1 }]);
   let tableNumber = $state<number | undefined>(undefined);
   let paymentMethod = $state<'cash' | 'mpesa' | 'bank'>('cash');
-  let error = $state('');
-  let success = $state('');
-
   function addItem() { items = [...items, { menuItemId: '', quantity: 1 }]; }
   function removeItem(i: number) { items = items.filter((_, idx) => idx !== i); }
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = '';
-    success = '';
     const valid = items.filter((it) => it.menuItemId && it.quantity > 0);
-    if (!valid.length) { error = 'Add at least one item.'; return; }
+    if (!valid.length) { toast.error('Add at least one item.'); return; }
     try {
       await createOrder({ items: valid, tableNumber, paymentMethod });
-      success = 'Order created.';
+      toast.success('Order created.');
       items = [{ menuItemId: '', quantity: 1 }];
       tableNumber = undefined;
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     }
   }
 
@@ -39,13 +35,6 @@
     <a href="/waiter/orders" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
     <h1 class="text-2xl font-bold text-foreground mt-2">New Order</h1>
   </div>
-
-  {#if success}
-    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
-  {/if}
-  {#if error}
-    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
-  {/if}
 
   <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
     <div class="flex flex-col gap-1.5">

@@ -1,5 +1,6 @@
 <script lang="ts">
   import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
+  import { toast } from 'svelte-sonner';
 
   let orders = $state(getOrders());
 
@@ -13,15 +14,14 @@
 
   const statuses = ['pending', 'preparing', 'ready', 'served', 'cancelled'] as const;
   let updating = $state<string | null>(null);
-  let error = $state('');
 
   async function changeStatus(orderId: string, status: typeof statuses[number]) {
-    updating = orderId; error = '';
+    updating = orderId;
     try {
       await updateOrderStatus({ orderId, status });
       orders = getOrders();
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { updating = null; }
   }
 
@@ -33,8 +33,6 @@
     <h1 class="text-2xl font-bold text-foreground">Restaurant Orders</h1>
     <p class="text-sm text-muted-foreground mt-1">All table orders</p>
   </div>
-
-  {#if error}<div class="text-sm text-destructive bg-destructive/10 rounded-lg px-4 py-2">{error}</div>{/if}
 
   <div class="bg-card border border-border rounded-xl overflow-hidden">
     {#await orders}
@@ -51,7 +49,7 @@
         <tbody>
           {#each data as order}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order._id}</td>
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order.id}</td>
               <td class="px-4 py-3 text-foreground">{order.tableNumber ?? '—'}</td>
               <td class="px-4 py-3 text-foreground">{order.items?.length ?? 0}</td>
               <td class="px-4 py-3 text-foreground font-medium">{order.totalAmount?.toLocaleString() ?? '—'}</td>
@@ -65,8 +63,8 @@
               <td class="px-4 py-3">
                 <select
                   value={order.status}
-                  disabled={updating === order._id}
-                  onchange={(e) => changeStatus(order._id, (e.target as HTMLSelectElement).value as any)}
+                  disabled={updating === order.id}
+                  onchange={(e) => changeStatus(order.id, (e.target as HTMLSelectElement).value as any)}
                   class={selectCls}>
                   {#each statuses as s}
                     <option value={s}>{s}</option>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getUsers, createUser, deleteUser } from '$lib/remote/users.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const users = getUsers();
 
@@ -12,19 +13,17 @@
   let phone_number = $state('');
   let userType     = $state<'admin'|'receptionist'|'barista'|'waiter'|'management'>('receptionist');
   let saving       = $state(false);
-  let error        = $state('');
-  let success      = $state('');
   let deleting     = $state<string | null>(null);
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = ''; success = ''; saving = true;
+    saving = true;
     try {
       await createUser({ username, firstname, lastname, email, id_number, phone_number: phone_number || undefined, userType });
-      success = `User ${username} created.`;
+      toast.success(`User ${username} created.`);
       username = ''; firstname = ''; lastname = ''; email = ''; id_number = ''; phone_number = '';
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
   }
 
@@ -33,9 +32,9 @@
     deleting = id;
     try {
       await deleteUser({ id });
-      success = `${name} deleted.`;
+      toast.success(`${name} deleted.`);
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { deleting = null; }
   }
 
@@ -59,8 +58,6 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Add User</h2>
-    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
-    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">{success}</AlertDescription></Alert>{/if}
     <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="uname">Username</label>
@@ -126,10 +123,10 @@
               </td>
               <td class="px-4 py-3">
                 <button
-                  onclick={() => remove(user._id, `${user.firstname} ${user.lastname}`)}
-                  disabled={deleting === user._id}
+                  onclick={() => remove(user.id, `${user.firstname} ${user.lastname}`)}
+                  disabled={deleting === user.id}
                   class="text-xs text-destructive hover:underline disabled:opacity-50">
-                  {deleting === user._id ? 'Deleting…' : 'Delete'}
+                  {deleting === user.id ? 'Deleting…' : 'Delete'}
                 </button>
               </td>
             </tr>

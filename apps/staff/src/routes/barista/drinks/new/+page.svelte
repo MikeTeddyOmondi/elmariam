@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const GATEWAY_URL = import.meta.env.VITE_GATEWAY_URL || 'http://localhost:8009';
 
@@ -11,8 +12,6 @@
   let buyingPrice = $state(0);
   let sellingPrice = $state(0);
   let file = $state<File | null>(null);
-  let error = $state('');
-  let success = $state('');
 
   function onFileChange(e: Event) {
     const input = e.target as HTMLInputElement;
@@ -21,10 +20,8 @@
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = '';
-    success = '';
     const token = document.cookie.split('; ').find((c) => c.startsWith('access_token='))?.split('=')[1];
-    if (!token) { error = 'Not authenticated.'; return; }
+    if (!token) { toast.error('Not authenticated.'); return; }
 
     const fd = new FormData();
     fd.append('drinkName', drinkName);
@@ -44,11 +41,11 @@
       });
       const data = await res.json();
       if (!data.success) throw new Error(data.data?.message || 'API error');
-      success = 'Drink added successfully.';
+      toast.success('Drink added successfully.');
       drinkName = drinkCode = typeOfDrink = '';
       uom = 'bottles'; packageQty = 1; buyingPrice = sellingPrice = 0; file = null;
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     }
   }
 
@@ -60,13 +57,6 @@
     <a href="/barista/drinks" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
     <h1 class="text-2xl font-bold text-foreground mt-2">Add Drink</h1>
   </div>
-
-  {#if success}
-    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
-  {/if}
-  {#if error}
-    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
-  {/if}
 
   <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
     <div class="grid grid-cols-2 gap-4">

@@ -1,29 +1,26 @@
 <script lang="ts">
   import { checkoutBarSale, getDrinks } from '$lib/remote/bar.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const drinks = getDrinks();
 
   type LineItem = { drinkId: string; quantity: number };
   let items = $state<LineItem[]>([{ drinkId: '', quantity: 1 }]);
-  let error = $state('');
-  let success = $state('');
 
   function addItem() { items = [...items, { drinkId: '', quantity: 1 }]; }
   function removeItem(i: number) { items = items.filter((_, idx) => idx !== i); }
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = '';
-    success = '';
     const valid = items.filter((it) => it.drinkId && it.quantity > 0);
-    if (!valid.length) { error = 'Add at least one item.'; return; }
+    if (!valid.length) { toast.error('Add at least one item.'); return; }
     try {
       await checkoutBarSale({ checkoutDrinkItems: valid });
-      success = 'Sale recorded.';
+      toast.success('Sale recorded.');
       items = [{ drinkId: '', quantity: 1 }];
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     }
   }
 
@@ -36,13 +33,6 @@
     <a href="/barista/sales" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
     <h1 class="text-2xl font-bold text-foreground mt-2">New Sale</h1>
   </div>
-
-  {#if success}
-    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
-  {/if}
-  {#if error}
-    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
-  {/if}
 
   <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
     {#await drinks then drinkList}

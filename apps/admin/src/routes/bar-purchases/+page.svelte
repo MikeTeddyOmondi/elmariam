@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getBarPurchases, createBarPurchase } from '$lib/remote/bar.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const purchases = getBarPurchases();
 
@@ -9,17 +10,16 @@
   let quantity = $state(0);
   let supplier = $state('');
   let saving = $state(false);
-  let error = $state('');
-  let success = $state(false);
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = ''; success = false; saving = true;
+    saving = true;
     try {
       await createBarPurchase({ receiptNumber, product, quantity, supplier });
-      success = true; receiptNumber = ''; product = ''; quantity = 0; supplier = '';
+      toast.success('Purchase recorded.');
+      receiptNumber = ''; product = ''; quantity = 0; supplier = '';
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
   }
 
@@ -32,8 +32,6 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Record Purchase</h2>
-    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
-    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Purchase recorded.</AlertDescription></Alert>{/if}
     <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="receipt">Receipt #</label>

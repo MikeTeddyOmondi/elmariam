@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createBooking, getRoomTypes } from '$lib/remote/booking.remote';
   import { getMyProfile } from '$lib/remote/account.remote';
+  import { toast } from 'svelte-sonner';
 
   const roomTypes = getRoomTypes();
   const profile = getMyProfile();
@@ -11,13 +12,8 @@
   let checkInDate = $state('');
   let checkOutDate = $state('');
   let paymentMethod = $state<'cash' | 'mpesa' | 'bank'>('cash');
-  let error = $state('');
-  let success = $state('');
-
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = '';
-    success = '';
     try {
       const p = await profile;
       await createBooking({
@@ -29,18 +25,15 @@
         checkOutDate,
         paymentMethod,
       });
-      success = 'Booking created! Check your bookings for details.';
+      toast.success('Booking created! Check your bookings for details.');
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     }
   }
 </script>
 
 <a href="/portal/bookings" class="back">← Back</a>
 <h1>New Booking</h1>
-
-{#if success}<p class="success">{success}</p>{/if}
-{#if error}<p class="error">{error}</p>{/if}
 
 <div class="layout">
   <form onsubmit={submit} class="form">
@@ -92,6 +85,4 @@
   aside { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 220px; }
   h3 { margin: 0 0 1rem; color: #1a1a2e; }
   .rate-card { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  .success { color: #27ae60; }
-  .error { color: red; }
 </style>

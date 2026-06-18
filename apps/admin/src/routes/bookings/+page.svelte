@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getBookings, createBooking, getCustomers } from '$lib/remote/hotel.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const bookings  = getBookings();
   const customers = getCustomers();
@@ -13,17 +14,16 @@
   let checkOutDate  = $state('');
   let paymentMethod = $state<'cash'|'mpesa'|'bank'>('cash');
   let saving        = $state(false);
-  let error         = $state('');
-  let success       = $state(false);
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = ''; success = false; saving = true;
+    saving = true;
     try {
       await createBooking({ customerId, numberAdults, numberKids, roomType, checkInDate, checkOutDate, paymentMethod });
-      success = true; customerId = ''; numberAdults = 1; numberKids = 0; checkInDate = ''; checkOutDate = '';
+      toast.success('Booking created.');
+      customerId = ''; numberAdults = 1; numberKids = 0; checkInDate = ''; checkOutDate = '';
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
   }
 
@@ -40,8 +40,6 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">New Booking</h2>
-    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
-    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Booking created.</AlertDescription></Alert>{/if}
     <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
       <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
         <label class="text-xs text-muted-foreground" for="bcust">Customer (ID Number)</label>
@@ -109,7 +107,7 @@
         <tbody>
           {#each data as b}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{b._id}</td>
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{b.id}</td>
               <td class="px-4 py-3 text-foreground">{b.customer?.firstname ?? '—'} {b.customer?.lastname ?? ''}</td>
               <td class="px-4 py-3 text-muted-foreground capitalize">{b.roomType?.roomType ?? b.roomType ?? '—'}</td>
               <td class="px-4 py-3 text-muted-foreground">{b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '—'}</td>

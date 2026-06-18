@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getRoomTypes, createRoomType } from '$lib/remote/hotel.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const roomTypes = getRoomTypes();
 
@@ -10,17 +11,16 @@
   let capacity    = $state(1);
   let roomType    = $state<'single'|'double'>('single');
   let saving      = $state(false);
-  let error       = $state('');
-  let success     = $state(false);
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = ''; success = false; saving = true;
+    saving = true;
     try {
       await createRoomType({ title, description, rate, capacity, roomType });
-      success = true; title = ''; description = ''; rate = 0; capacity = 1;
+      toast.success('Room type added.');
+      title = ''; description = ''; rate = 0; capacity = 1;
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
   }
 
@@ -37,8 +37,6 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Add Room Type</h2>
-    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
-    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Room type added.</AlertDescription></Alert>{/if}
     <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="rttitle">Title</label>

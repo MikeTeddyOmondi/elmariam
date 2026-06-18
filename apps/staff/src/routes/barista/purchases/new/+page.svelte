@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createBarPurchase, getDrinks } from '$lib/remote/bar.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const drinks = getDrinks();
 
@@ -8,20 +9,16 @@
   let product = $state('');
   let quantity = $state(1);
   let supplier = $state('');
-  let error = $state('');
-  let success = $state('');
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = '';
-    success = '';
     try {
       await createBarPurchase({ receiptNumber, product, quantity, supplier });
-      success = 'Purchase recorded.';
+      toast.success('Purchase recorded.');
       receiptNumber = product = supplier = '';
       quantity = 1;
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     }
   }
 
@@ -33,13 +30,6 @@
     <a href="/barista/purchases" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
     <h1 class="text-2xl font-bold text-foreground mt-2">New Purchase</h1>
   </div>
-
-  {#if success}
-    <Alert><AlertDescription class="text-green-400">{success}</AlertDescription></Alert>
-  {/if}
-  {#if error}
-    <Alert variant="destructive"><AlertDescription>{error}</AlertDescription></Alert>
-  {/if}
 
   <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
     <div class="flex flex-col gap-1.5">

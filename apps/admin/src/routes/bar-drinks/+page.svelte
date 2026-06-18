@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getDrinks, createDrink } from '$lib/remote/bar.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button } from '@elmariam/ui';
+  import { toast } from 'svelte-sonner';
 
   const drinks = getDrinks();
 
@@ -12,17 +13,16 @@
   let buyingStockPrice  = $state(0);
   let sellingStockPrice = $state(0);
   let saving            = $state(false);
-  let error             = $state('');
-  let success           = $state(false);
 
   async function submit(e: SubmitEvent) {
     e.preventDefault();
-    error = ''; success = false; saving = true;
+    saving = true;
     try {
       await createDrink({ drinkName, drinkCode, typeOfDrink, uom, packageQty, buyingStockPrice, sellingStockPrice });
-      success = true; drinkName = ''; drinkCode = ''; packageQty = 24; buyingStockPrice = 0; sellingStockPrice = 0;
+      toast.success('Drink added successfully.');
+      drinkName = ''; drinkCode = ''; packageQty = 24; buyingStockPrice = 0; sellingStockPrice = 0;
     } catch (err: any) {
-      error = err.message;
+      toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
   }
 
@@ -36,8 +36,6 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Add Drink</h2>
-    {#if error}<Alert class="mb-3"><AlertDescription class="text-destructive">{error}</AlertDescription></Alert>{/if}
-    {#if success}<Alert class="mb-3"><AlertDescription class="text-green-500">Drink added successfully.</AlertDescription></Alert>{/if}
     <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="drinkName">Name</label>
