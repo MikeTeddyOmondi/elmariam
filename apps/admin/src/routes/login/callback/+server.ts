@@ -2,10 +2,11 @@ import { dev } from '$app/environment';
 import { redirect, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@openauthjs/openauth/client';
 import { subjects } from '$lib/subjects';
+import { env } from '$env/dynamic/private';
 
 const client = createClient({
   clientID: 'admin',
-  issuer: process.env.OPENAUTH_ISSUER || 'http://openauth:3100',
+  issuer: env.OPENAUTH_ISSUER || 'http://openauth:3100',
 });
 
 export const GET: RequestHandler = async ({ url, cookies }) => {

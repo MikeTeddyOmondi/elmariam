@@ -3,7 +3,15 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const roomTypes = getRoomTypes();
+  let roomTypes: any[] = $state([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  $effect(() => {
+    getRoomTypes()
+      .then(d => { roomTypes = d; loading = false; })
+      .catch(e => { loadError = e.message; loading = false; });
+  });
 
   let title       = $state('');
   let description = $state('');
@@ -19,6 +27,7 @@
       await createRoomType({ title, description, rate, capacity, roomType });
       toast.success('Room type added.');
       title = ''; description = ''; rate = 0; capacity = 1;
+      getRoomTypes().then(d => { roomTypes = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
@@ -69,9 +78,22 @@
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await roomTypes}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if loading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-4 px-4 py-3">
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-16 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if loadError}
+      <div class="p-6 text-sm text-destructive">{loadError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -81,7 +103,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as rt}
+          {#each roomTypes as rt}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-foreground font-medium">{rt.title}</td>
               <td class="px-4 py-3 text-muted-foreground capitalize">{rt.roomType}</td>
@@ -94,8 +116,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

@@ -3,8 +3,21 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const bookings  = getBookings();
-  const customers = getCustomers();
+  let bookings: any[] = $state([]);
+  let bookingsLoading = $state(true);
+  let bookingsError = $state('');
+
+  let customers: any[] = $state([]);
+  let customersLoading = $state(true);
+
+  $effect(() => {
+    getBookings()
+      .then(d => { bookings = d; bookingsLoading = false; })
+      .catch(e => { bookingsError = e.message; bookingsLoading = false; });
+    getCustomers()
+      .then(d => { customers = d; customersLoading = false; })
+      .catch(() => { customersLoading = false; });
+  });
 
   let customerId    = $state('');
   let numberAdults  = $state(1);
@@ -22,6 +35,7 @@
       await createBooking({ customerId, numberAdults, numberKids, roomType, checkInDate, checkOutDate, paymentMethod });
       toast.success('Booking created.');
       customerId = ''; numberAdults = 1; numberKids = 0; checkInDate = ''; checkOutDate = '';
+      getBookings().then(d => { bookings = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
@@ -43,16 +57,14 @@
     <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
       <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
         <label class="text-xs text-muted-foreground" for="bcust">Customer (ID Number)</label>
-        {#await customers}
+        {#if customersLoading}
           <select disabled class={selectCls}><option>Loading…</option></select>
-        {:then list}
+        {:else}
           <select id="bcust" bind:value={customerId} required class={selectCls}>
             <option value="">Select customer</option>
-            {#each list as c}<option value={c.id_number}>{c.firstname} {c.lastname} — {c.id_number}</option>{/each}
+            {#each customers as c}<option value={c.id_number}>{c.firstname} {c.lastname} — {c.id_number}</option>{/each}
           </select>
-        {:catch}
-          <input bind:value={customerId} placeholder="Enter ID number" required class={inputCls} />
-        {/await}
+        {/if}
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="btype">Room Type</label>
@@ -93,9 +105,22 @@
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await bookings}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if bookingsLoading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse"></div>
+        {#each {length: 5} as _}
+          <div class="flex gap-3 px-4 py-3">
+            <div class="h-4 w-24 rounded bg-muted animate-pulse"></div>
+            <div class="h-4 flex-1 rounded bg-muted animate-pulse"></div>
+            <div class="h-4 w-16 rounded bg-muted animate-pulse"></div>
+            <div class="h-4 w-20 rounded bg-muted animate-pulse"></div>
+            <div class="h-4 w-20 rounded bg-muted animate-pulse"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if bookingsError}
+      <div class="p-6 text-sm text-destructive">{bookingsError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -105,7 +130,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as b}
+          {#each bookings as b}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{b.id}</td>
               <td class="px-4 py-3 text-foreground">{b.customer?.firstname ?? '—'} {b.customer?.lastname ?? ''}</td>
@@ -120,8 +145,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

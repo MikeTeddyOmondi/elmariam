@@ -3,7 +3,15 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const menuItems = getMenuItems();
+  let menuItems: any[] = $state([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  $effect(() => {
+    getMenuItems()
+      .then(d => { menuItems = d; loading = false; })
+      .catch(e => { loadError = e.message; loading = false; });
+  });
 
   let name = $state('');
   let category = $state<'appetizer'|'main'|'dessert'|'beverage'|'side'>('main');
@@ -19,6 +27,7 @@
       await createMenuItem({ name, category, price, description: description || undefined, isAvailable });
       toast.success('Menu item added.');
       name = ''; price = 0; description = ''; isAvailable = true;
+      getMenuItems().then(d => { menuItems = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
@@ -70,9 +79,22 @@
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await menuItems}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if loading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-4 px-4 py-3">
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if loadError}
+      <div class="p-6 text-sm text-destructive">{loadError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -82,7 +104,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as item}
+          {#each menuItems as item}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-foreground font-medium">{item.name}</td>
               <td class="px-4 py-3 text-muted-foreground capitalize">{item.category}</td>
@@ -98,8 +120,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

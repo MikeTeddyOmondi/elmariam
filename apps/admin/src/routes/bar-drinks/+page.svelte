@@ -3,7 +3,15 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const drinks = getDrinks();
+  let drinks: any[] = $state([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  $effect(() => {
+    getDrinks()
+      .then(d => { drinks = d; loading = false; })
+      .catch(e => { loadError = e.message; loading = false; });
+  });
 
   let drinkName         = $state('');
   let drinkCode         = $state('');
@@ -21,6 +29,7 @@
       await createDrink({ drinkName, drinkCode, typeOfDrink, uom, packageQty, buyingStockPrice, sellingStockPrice });
       toast.success('Drink added successfully.');
       drinkName = ''; drinkCode = ''; packageQty = 24; buyingStockPrice = 0; sellingStockPrice = 0;
+      getDrinks().then(d => { drinks = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
@@ -69,7 +78,7 @@
         <label class="text-xs text-muted-foreground" for="sellingPrice">Selling Price (KES)</label>
         <input id="sellingPrice" bind:value={sellingStockPrice} type="number" min="0" step="0.01" required class={inputCls} />
       </div>
-      <div class="sm:col-span-2 lg:col-span-2 flex items-end">
+      <div class="sm:col-span-2 flex items-end">
         <Button type="submit" class="w-full" disabled={saving}>{saving ? 'Saving…' : 'Add Drink'}</Button>
       </div>
     </form>
@@ -77,9 +86,24 @@
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await drinks}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if loading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-3 px-4 py-3">
+            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-16 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-16 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if loadError}
+      <div class="p-6 text-sm text-destructive">{loadError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -89,7 +113,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as d}
+          {#each drinks as d}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{d.drinkCode}</td>
               <td class="px-4 py-3 text-foreground font-medium">{d.drinkName}</td>
@@ -107,8 +131,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

@@ -3,7 +3,15 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const customers = getCustomers();
+  let customers: any[] = $state([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  $effect(() => {
+    getCustomers()
+      .then(d => { customers = d; loading = false; })
+      .catch(e => { loadError = e.message; loading = false; });
+  });
 
   let firstname    = $state('');
   let lastname     = $state('');
@@ -19,6 +27,7 @@
       await createCustomer({ firstname, lastname, id_number, email, phone_number: phone_number || undefined });
       toast.success('Customer added.');
       firstname = ''; lastname = ''; id_number = ''; email = ''; phone_number = '';
+      getCustomers().then(d => { customers = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
@@ -63,9 +72,21 @@
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await customers}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if loading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-4 px-4 py-3">
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-28 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-40 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if loadError}
+      <div class="p-6 text-sm text-destructive">{loadError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -75,7 +96,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as c}
+          {#each customers as c}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-foreground font-medium">{c.firstname} {c.lastname}</td>
               <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{c.id_number}</td>
@@ -87,8 +108,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

@@ -2,14 +2,22 @@
   import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
   import { toast } from 'svelte-sonner';
 
-  let orders = $state(getOrders());
+  let orders: any[] = $state([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  $effect(() => {
+    getOrders()
+      .then(d => { orders = d; loading = false; })
+      .catch(e => { loadError = e.message; loading = false; });
+  });
 
   const statusCls: Record<string, string> = {
-    pending:    'bg-amber-500/15 text-amber-500',
-    preparing:  'bg-blue-500/15 text-blue-400',
-    ready:      'bg-purple-500/15 text-purple-400',
-    served:     'bg-green-500/15 text-green-500',
-    cancelled:  'bg-red-500/15 text-red-500',
+    pending:   'bg-amber-500/15 text-amber-500',
+    preparing: 'bg-blue-500/15 text-blue-400',
+    ready:     'bg-purple-500/15 text-purple-400',
+    served:    'bg-green-500/15 text-green-500',
+    cancelled: 'bg-red-500/15 text-red-500',
   };
 
   const statuses = ['pending', 'preparing', 'ready', 'served', 'cancelled'] as const;
@@ -19,7 +27,7 @@
     updating = orderId;
     try {
       await updateOrderStatus({ orderId, status });
-      orders = getOrders();
+      getOrders().then(d => { orders = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { updating = null; }
@@ -35,9 +43,24 @@
   </div>
 
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await orders}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if loading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-3 px-4 py-3">
+            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-16 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-28 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if loadError}
+      <div class="p-6 text-sm text-destructive">{loadError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -47,7 +70,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as order}
+          {#each orders as order}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order.id}</td>
               <td class="px-4 py-3 text-foreground">{order.tableNumber ?? '—'}</td>
@@ -77,8 +100,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

@@ -3,8 +3,21 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const rooms = getRooms();
-  const roomTypes = getRoomTypes();
+  let rooms: any[] = $state([]);
+  let roomsLoading = $state(true);
+  let roomsError = $state('');
+
+  let roomTypes: any[] = $state([]);
+  let roomTypesLoading = $state(true);
+
+  $effect(() => {
+    getRooms()
+      .then(d => { rooms = d; roomsLoading = false; })
+      .catch(e => { roomsError = e.message; roomsLoading = false; });
+    getRoomTypes()
+      .then(d => { roomTypes = d; roomTypesLoading = false; })
+      .catch(() => { roomTypesLoading = false; });
+  });
 
   let number = $state('');
   let roomTypeId = $state('');
@@ -17,6 +30,7 @@
       await createRoom({ roomTypeId, number });
       toast.success('Room created.');
       number = ''; roomTypeId = '';
+      getRooms().then(d => { rooms = d; }).catch(() => {});
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { saving = false; }
@@ -42,16 +56,14 @@
       </div>
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="rtype">Room Type</label>
-        {#await roomTypes}
+        {#if roomTypesLoading}
           <select disabled class={selectCls}><option>Loading…</option></select>
-        {:then types}
+        {:else}
           <select id="rtype" bind:value={roomTypeId} required class={selectCls}>
             <option value="">Select type</option>
-            {#each types as t}<option value={t._id}>{t.title} ({t.roomType})</option>{/each}
+            {#each roomTypes as t}<option value={t.id}>{t.title} ({t.roomType})</option>{/each}
           </select>
-        {:catch}
-          <select disabled class={selectCls}><option>Failed to load types</option></select>
-        {/await}
+        {/if}
       </div>
       <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add Room'}</Button>
     </form>
@@ -59,9 +71,19 @@
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await rooms}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if roomsLoading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-4 px-4 py-3">
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if roomsError}
+      <div class="p-6 text-sm text-destructive">{roomsError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -70,7 +92,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as room}
+          {#each rooms as room}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-foreground font-medium">{room.number}</td>
               <td class="px-4 py-3">
@@ -83,8 +105,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>

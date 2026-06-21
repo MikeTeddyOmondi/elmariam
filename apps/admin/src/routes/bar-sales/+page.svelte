@@ -1,7 +1,15 @@
 <script lang="ts">
   import { getBarSales } from '$lib/remote/bar.remote';
 
-  const sales = getBarSales();
+  let sales: any[] = $state([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  $effect(() => {
+    getBarSales()
+      .then(d => { sales = d; loading = false; })
+      .catch(e => { loadError = e.message; loading = false; });
+  });
 </script>
 
 <div class="space-y-6">
@@ -11,9 +19,20 @@
   </div>
 
   <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#await sales}
-      <div class="p-6 text-sm text-muted-foreground">Loading…</div>
-    {:then data}
+    {#if loading}
+      <div class="divide-y divide-border">
+        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
+        {#each Array(5) as _}
+          <div class="flex gap-4 px-4 py-3">
+            <div class="h-4 w-32 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
+            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
+          </div>
+        {/each}
+      </div>
+    {:else if loadError}
+      <div class="p-6 text-sm text-destructive">{loadError}</div>
+    {:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -23,9 +42,9 @@
           </tr>
         </thead>
         <tbody>
-          {#each data as sale}
+          {#each sales as sale}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{sale._id}</td>
+              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{sale.id}</td>
               <td class="px-4 py-3 text-foreground">{sale.drinks?.length ?? 0} item(s)</td>
               <td class="px-4 py-3 text-foreground font-medium">KES {sale.totalStockValue?.toLocaleString() ?? '—'}</td>
             </tr>
@@ -34,8 +53,6 @@
           {/each}
         </tbody>
       </table>
-    {:catch err}
-      <div class="p-6 text-sm text-destructive">{err.message}</div>
-    {/await}
+    {/if}
   </div>
 </div>
