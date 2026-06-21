@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
 export interface IBarPurchase extends Document {
   id: string;
@@ -33,4 +33,4 @@ BarPurchaseSchema.virtual("drink", {
   justOne: true,
 });
 
-export const BarPurchase = model<IBarPurchase>("BarPurchase", BarPurchaseSchema);
+export const BarPurchase = models.BarPurchase ?? model<IBarPurchase>("BarPurchase", BarPurchaseSchema);

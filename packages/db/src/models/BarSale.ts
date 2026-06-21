@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
 interface BarSaleDrink {
   productID: Types.ObjectId;
@@ -51,4 +51,4 @@ BarSaleSchema.virtual("drinksBought", {
   justOne: true,
 });
 
-export const BarSale = model<IBarSale>("BarSale", BarSaleSchema);
+export const BarSale = models.BarSale ?? model<IBarSale>("BarSale", BarSaleSchema);

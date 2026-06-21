@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 import type { IInvoice } from "./Invoice";
 
 export interface IBooking extends Document {
@@ -61,4 +61,4 @@ BookingSchema.virtual("invoice", {
   justOne: true,
 });
 
-export const Booking = model<IBooking>("Booking", BookingSchema);
+export const Booking = models.Booking ?? model<IBooking>("Booking", BookingSchema);

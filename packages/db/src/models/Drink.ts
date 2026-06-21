@@ -1,4 +1,4 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, models, Document } from "mongoose";
 
 export interface IDrink extends Document {
   id: string;
@@ -44,4 +44,4 @@ const DrinkSchema = new Schema<IDrink>(
   { timestamps: true }
 );
 
-export const Drink = model<IDrink>("Drink", DrinkSchema);
+export const Drink = models.Drink ?? model<IDrink>("Drink", DrinkSchema);

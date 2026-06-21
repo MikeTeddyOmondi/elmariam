@@ -1,4 +1,4 @@
-import { Schema, model, Document, Types } from "mongoose";
+import { Schema, model, models, Document, Types } from "mongoose";
 
 export interface IInvoice extends Document {
   id: string;
@@ -39,4 +39,4 @@ InvoiceSchema.virtual("booking", {
   justOne: true,
 });
 
-export const Invoice = model<IInvoice>("Invoice", InvoiceSchema);
+export const Invoice = models.Invoice ?? model<IInvoice>("Invoice", InvoiceSchema);
