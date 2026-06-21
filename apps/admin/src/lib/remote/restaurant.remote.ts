@@ -16,7 +16,19 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-type OrderView = {
+export type MenuItemView = {
+  id: string;
+  name: string;
+  description?: string;
+  category: 'appetizer' | 'main' | 'dessert' | 'beverage' | 'side';
+  price: number;
+  isAvailable: boolean;
+  imageUrl?: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type OrderView = {
   id: string;
   tableNumber?: string;
   status: 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
@@ -28,7 +40,7 @@ type OrderView = {
   updatedAt: Date;
 };
 
-export const getMenuItems = query(async () => unwrap(await listMenuItems()));
+export const getMenuItems = query(async (): Promise<MenuItemView[]> => unwrap(await listMenuItems()) as unknown as MenuItemView[]);
 export const getOrders    = query(async (): Promise<OrderView[]> => unwrap(await listOrders()) as unknown as OrderView[]);
 
 export const createMenuItem = command(

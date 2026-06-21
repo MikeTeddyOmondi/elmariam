@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getCustomers, createCustomer } from '$lib/remote/hotel.remote';
+  import { getCustomers, createCustomer, type CustomerView } from '$lib/remote/hotel.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let customers: any[] = $state([]);
+  let customers: CustomerView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

@@ -23,7 +23,37 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-type BookingView = {
+export type CustomerView = {
+  id: string;
+  firstname: string;
+  lastname: string;
+  id_number: string;
+  email: string;
+  phone_number?: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type RoomView = {
+  id: string;
+  number: string;
+  isBooked: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type RoomTypeView = {
+  id: string;
+  title: string;
+  description: string;
+  rate: number;
+  capacity: number;
+  roomType: 'single' | 'double';
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type BookingView = {
   id: string;
   customer?: { firstname?: string; lastname?: string; email?: string; phone_number?: number };
   roomType?: { roomType?: string };
@@ -36,10 +66,10 @@ type BookingView = {
   updatedAt: Date;
 };
 
-export const getCustomers = query(async () => unwrap(await listCustomers()));
+export const getCustomers = query(async (): Promise<CustomerView[]> => unwrap(await listCustomers()) as unknown as CustomerView[]);
 export const getBookings  = query(async (): Promise<BookingView[]> => unwrap(await listBookings()) as unknown as BookingView[]);
-export const getRoomTypes = query(async () => unwrap(await listRoomTypes()));
-export const getRooms     = query(async () => unwrap(await listRooms()));
+export const getRoomTypes = query(async (): Promise<RoomTypeView[]> => unwrap(await listRoomTypes()) as unknown as RoomTypeView[]);
+export const getRooms     = query(async (): Promise<RoomView[]> => unwrap(await listRooms()) as unknown as RoomView[]);
 export const getInvoices  = query(async () => unwrap(await listInvoices()));
 
 export const getOneBooking = query(v.string(), async (bookingId: string) =>

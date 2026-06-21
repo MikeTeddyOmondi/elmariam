@@ -1,7 +1,7 @@
 <script lang="ts">
-  import { getBarSales } from '$lib/remote/bar.remote';
+  import { getBarSales, type BarSaleView } from '$lib/remote/bar.remote';
 
-  let sales: any[] = $state([]);
+  let sales: BarSaleView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

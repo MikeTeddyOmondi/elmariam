@@ -1,8 +1,8 @@
 <script lang="ts">
-  import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
+  import { getOrders, updateOrderStatus, type OrderView } from '$lib/remote/restaurant.remote';
   import { toast } from 'svelte-sonner';
 
-  let orders: any[] = $state([]);
+  let orders: OrderView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

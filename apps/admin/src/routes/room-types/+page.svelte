@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getRoomTypes, createRoomType } from '$lib/remote/hotel.remote';
+  import { getRoomTypes, createRoomType, type RoomTypeView } from '$lib/remote/hotel.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let roomTypes: any[] = $state([]);
+  let roomTypes: RoomTypeView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

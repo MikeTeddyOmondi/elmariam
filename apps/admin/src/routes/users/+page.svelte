@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getUsers, createUser, deleteUser } from "$lib/remote/users.remote";
+  import { getUsers, createUser, deleteUser, type UserView } from "$lib/remote/users.remote";
   import { Button } from "@elmariam/ui";
   import { toast } from "svelte-sonner";
 
-  let users: any[] = $state([]);
+  let users: UserView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

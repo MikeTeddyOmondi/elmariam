@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getMenuItems, createMenuItem } from '$lib/remote/restaurant.remote';
+  import { getMenuItems, createMenuItem, type MenuItemView } from '$lib/remote/restaurant.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let menuItems: any[] = $state([]);
+  let menuItems: MenuItemView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getBarPurchases, createBarPurchase } from '$lib/remote/bar.remote';
+  import { getBarPurchases, createBarPurchase, type BarPurchaseView } from '$lib/remote/bar.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let purchases: any[] = $state([]);
+  let purchases: BarPurchaseView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

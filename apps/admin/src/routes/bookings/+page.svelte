@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { getBookings, createBooking, getCustomers } from '$lib/remote/hotel.remote';
+  import { getBookings, createBooking, getCustomers, type BookingView, type CustomerView } from '$lib/remote/hotel.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let bookings: any[] = $state([]);
+  let bookings: BookingView[] = $state([]);
   let bookingsLoading = $state(true);
   let bookingsError = $state('');
 
-  let customers: any[] = $state([]);
+  let customers: CustomerView[] = $state([]);
   let customersLoading = $state(true);
 
   $effect(() => {

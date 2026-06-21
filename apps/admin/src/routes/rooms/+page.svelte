@@ -1,13 +1,13 @@
 <script lang="ts">
-  import { getRooms, getRoomTypes, createRoom } from '$lib/remote/hotel.remote';
+  import { getRooms, getRoomTypes, createRoom, type RoomView, type RoomTypeView } from '$lib/remote/hotel.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let rooms: any[] = $state([]);
+  let rooms: RoomView[] = $state([]);
   let roomsLoading = $state(true);
   let roomsError = $state('');
 
-  let roomTypes: any[] = $state([]);
+  let roomTypes: RoomTypeView[] = $state([]);
   let roomTypesLoading = $state(true);
 
   $effect(() => {

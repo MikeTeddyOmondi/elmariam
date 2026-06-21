@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { getDrinks, createDrink } from '$lib/remote/bar.remote';
+  import { getDrinks, createDrink, type DrinkView } from '$lib/remote/bar.remote';
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  let drinks: any[] = $state([]);
+  let drinks: DrinkView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 

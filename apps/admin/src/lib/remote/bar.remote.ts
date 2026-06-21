@@ -11,7 +11,25 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-type BarPurchaseView = {
+export type DrinkView = {
+  id: string;
+  drinkName: string;
+  drinkCode: string;
+  typeOfDrink: 'spirit' | 'beer' | 'rtd' | 'wine' | 'water';
+  uom: 'bottles' | 'crates' | 'pack';
+  packageQty: number;
+  buyingPrice: number;
+  sellingPrice: number;
+  buyingStockPrice: number;
+  sellingStockPrice: number;
+  stockQty: number;
+  inStock: boolean;
+  imageUrl: string;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type BarPurchaseView = {
   id: string;
   receiptNumber: string;
   product?: { drinkName?: string };
@@ -22,9 +40,17 @@ type BarPurchaseView = {
   updatedAt: Date;
 };
 
-export const getDrinks       = query(async () => unwrap(await listDrinks()));
+export type BarSaleView = {
+  id: string;
+  drinks: Array<{ productID: string; qtyBought: number; stockValue: number }>;
+  totalStockValue: number;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export const getDrinks       = query(async (): Promise<DrinkView[]> => unwrap(await listDrinks()) as unknown as DrinkView[]);
 export const getBarPurchases = query(async (): Promise<BarPurchaseView[]> => unwrap(await listPurchases()) as unknown as BarPurchaseView[]);
-export const getBarSales     = query(async () => unwrap(await listSales()));
+export const getBarSales     = query(async (): Promise<BarSaleView[]> => unwrap(await listSales()) as unknown as BarSaleView[]);
 
 export const createDrink = command(
   v.object({
