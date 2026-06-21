@@ -40,6 +40,10 @@ export interface CreateSaleInput {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function withId<T extends { _id: any }>(doc: T): T & { id: string } {
+  return { ...doc, id: String(doc._id) };
+}
+
 function dbErr(operation: string, e: unknown): BarDatabaseError {
   return new BarDatabaseError({
     operation,
@@ -52,7 +56,7 @@ function dbErr(operation: string, e: unknown): BarDatabaseError {
 
 export async function listDrinks() {
   return Result.tryPromise({
-    try: () => Drink.find().sort({ createdAt: -1 }).lean<IDrink[]>({ virtuals: true }),
+    try: async () => (await Drink.find().sort({ createdAt: -1 }).lean<IDrink[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listDrinks", e),
   });
 }
@@ -62,7 +66,7 @@ export async function getDrink(id: string) {
     try: async () => {
       const doc = await Drink.findById(id).lean<IDrink>({ virtuals: true });
       if (!doc) throw new DrinkNotFoundError({ id, message: "Drink not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): BarError => {
       if (e instanceof DrinkNotFoundError) return e;

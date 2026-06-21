@@ -46,6 +46,10 @@ export interface CreateRoomInput {
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function withId<T extends { _id: any }>(doc: T): T & { id: string } {
+  return { ...doc, id: String(doc._id) };
+}
+
 function dbErr(operation: string, e: unknown): HotelDatabaseError {
   return new HotelDatabaseError({
     operation,
@@ -68,7 +72,7 @@ function getDatesInRange(start: Date, end: Date): string[] {
 
 export async function listCustomers() {
   return Result.tryPromise({
-    try: () => Customer.find().sort({ createdAt: -1 }).lean<ICustomer[]>({ virtuals: true }),
+    try: async () => (await Customer.find().sort({ createdAt: -1 }).lean<ICustomer[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listCustomers", e),
   });
 }
@@ -78,7 +82,7 @@ export async function getCustomer(id: string) {
     try: async () => {
       const doc = await Customer.findById(id).lean<ICustomer>({ virtuals: true });
       if (!doc) throw new CustomerNotFoundError({ id, message: "Customer not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): HotelError => {
       if (e instanceof CustomerNotFoundError) return e;
@@ -92,7 +96,7 @@ export async function searchCustomer(idNumber: string) {
     try: async () => {
       const doc = await Customer.findOne({ id_number: idNumber }).lean<ICustomer>({ virtuals: true });
       if (!doc) throw new CustomerNotFoundError({ id: idNumber, message: "Customer not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): HotelError => {
       if (e instanceof CustomerNotFoundError) return e;
@@ -121,12 +125,11 @@ export async function createCustomer(input: CreateCustomerInput) {
 
 export async function listBookings() {
   return Result.tryPromise({
-    try: () =>
-      Booking.find()
-        .populate("occupant")
-        .populate("room-type")
-        .populate("invoice")
-        .lean<IBooking[]>({ virtuals: true }),
+    try: async () => (await Booking.find()
+      .populate("occupant")
+      .populate("room-type")
+      .populate("invoice")
+      .lean<IBooking[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listBookings", e),
   });
 }
@@ -140,7 +143,7 @@ export async function getBooking(id: string) {
         .populate("invoice")
         .lean<IBooking>({ virtuals: true });
       if (!doc) throw new BookingNotFoundError({ id, message: "Booking not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): HotelError => {
       if (e instanceof BookingNotFoundError) return e;
@@ -297,7 +300,7 @@ export async function createBooking(input: CreateBookingInput) {
 
 export async function listInvoices() {
   return Result.tryPromise({
-    try: () => Invoice.find().sort({ createdAt: -1 }).lean<IInvoice[]>({ virtuals: true }),
+    try: async () => (await Invoice.find().sort({ createdAt: -1 }).lean<IInvoice[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listInvoices", e),
   });
 }
@@ -307,7 +310,7 @@ export async function getInvoice(id: string) {
     try: async () => {
       const doc = await Invoice.findById(id).lean<IInvoice>({ virtuals: true });
       if (!doc) throw new InvoiceNotFoundError({ id, message: "Invoice not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): HotelError => {
       if (e instanceof InvoiceNotFoundError) return e;
@@ -320,14 +323,14 @@ export async function getInvoice(id: string) {
 
 export async function listRooms() {
   return Result.tryPromise({
-    try: () => Room.find().sort({ createdAt: -1 }).lean({ virtuals: true }),
+    try: async () => (await Room.find().sort({ createdAt: -1 }).lean({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listRooms", e),
   });
 }
 
 export async function listRoomTypes() {
   return Result.tryPromise({
-    try: () => RoomType.find().lean<IRoomType[]>({ virtuals: true }),
+    try: async () => (await RoomType.find().lean<IRoomType[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listRoomTypes", e),
   });
 }

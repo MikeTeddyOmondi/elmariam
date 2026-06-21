@@ -35,6 +35,10 @@ export type OrderStatus = "pending" | "preparing" | "ready" | "served" | "cancel
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function withId<T extends { _id: any }>(doc: T): T & { id: string } {
+  return { ...doc, id: String(doc._id) };
+}
+
 function dbErr(operation: string, e: unknown): RestaurantDatabaseError {
   return new RestaurantDatabaseError({
     operation,
@@ -47,7 +51,7 @@ function dbErr(operation: string, e: unknown): RestaurantDatabaseError {
 
 export async function listMenuItems() {
   return Result.tryPromise({
-    try: () => MenuItem.find().sort({ createdAt: -1 }).lean<IMenuItem[]>({ virtuals: true }),
+    try: async () => (await MenuItem.find().sort({ createdAt: -1 }).lean<IMenuItem[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listMenuItems", e),
   });
 }
@@ -57,7 +61,7 @@ export async function getMenuItem(id: string) {
     try: async () => {
       const doc = await MenuItem.findById(id).lean<IMenuItem>({ virtuals: true });
       if (!doc) throw new MenuItemNotFoundError({ id, message: "Menu item not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): RestaurantError => {
       if (e instanceof MenuItemNotFoundError) return e;
@@ -78,7 +82,7 @@ export async function updateMenuItem(id: string, input: UpdateMenuItemInput) {
     try: async () => {
       const doc = await MenuItem.findByIdAndUpdate(id, input, { new: true }).lean<IMenuItem>({ virtuals: true });
       if (!doc) throw new MenuItemNotFoundError({ id, message: "Menu item not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): RestaurantError => {
       if (e instanceof MenuItemNotFoundError) return e;

@@ -28,6 +28,10 @@ export interface UpdateUserInput extends Partial<Omit<CreateUserInput, "email" |
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
+function withId<T extends { _id: any }>(doc: T): T & { id: string } {
+  return { ...doc, id: String(doc._id) };
+}
+
 function dbErr(operation: string, e: unknown): UsersDatabaseError {
   return new UsersDatabaseError({
     operation,
@@ -40,7 +44,7 @@ function dbErr(operation: string, e: unknown): UsersDatabaseError {
 
 export async function listUsers() {
   return Result.tryPromise({
-    try: () => User.find().sort({ createdAt: -1 }).lean<IUser[]>({ virtuals: true }),
+    try: async () => (await User.find().sort({ createdAt: -1 }).lean<IUser[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listUsers", e),
   });
 }
@@ -50,7 +54,7 @@ export async function getUser(id: string) {
     try: async () => {
       const doc = await User.findById(id).lean<IUser>({ virtuals: true });
       if (!doc) throw new UserNotFoundError({ id, message: "User not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): UsersError => {
       if (e instanceof UserNotFoundError) return e;
@@ -80,7 +84,7 @@ export async function updateUser(id: string, input: UpdateUserInput) {
     try: async () => {
       const doc = await User.findByIdAndUpdate(id, input, { new: true }).lean<IUser>({ virtuals: true });
       if (!doc) throw new UserNotFoundError({ id, message: "User not found" });
-      return doc;
+      return withId(doc);
     },
     catch: (e): UsersError => {
       if (e instanceof UserNotFoundError) return e;
