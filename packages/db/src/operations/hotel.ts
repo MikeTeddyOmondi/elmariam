@@ -1,6 +1,6 @@
 import { Result } from "better-result";
 import { Customer, Booking, Invoice, Room, RoomType } from "../models";
-import type { ICustomer, IBooking, IInvoice, IRoomType } from "../models";
+import type { ICustomer, IBooking, IInvoice, IRoom, IRoomType } from "../models";
 import {
   CustomerAlreadyExistsError,
   CustomerNotFoundError,
@@ -180,7 +180,7 @@ export async function createBooking(input: CreateBookingInput) {
     // 2. Find customer by ID number
     const customer = yield* Result.await(
       Result.tryPromise({
-        try: async () => {
+        try: async (): Promise<ICustomer> => {
           const doc = await Customer.findOne({ id_number: input.customerId });
           if (!doc) throw new CustomerNotFoundError({ id: input.customerId, message: "Customer not found" });
           return doc;
@@ -195,7 +195,7 @@ export async function createBooking(input: CreateBookingInput) {
     // 3. Find room type
     const roomTypeDoc = yield* Result.await(
       Result.tryPromise({
-        try: async () => {
+        try: async (): Promise<IRoomType> => {
           const doc = await RoomType.findOne({ roomType: input.roomType });
           if (!doc) throw new RoomTypeNotFoundError({ id: input.roomType, message: "Room type not found" });
           return doc;
@@ -210,12 +210,12 @@ export async function createBooking(input: CreateBookingInput) {
     // 4. Find available room for this type
     const availableRooms = yield* Result.await(
       Result.tryPromise({
-        try: () => Room.find({ isBooked: false }),
+        try: (): Promise<IRoom[]> => Room.find({ isBooked: false }),
         catch: (e) => dbErr("createBooking.findRooms", e),
       })
     );
 
-    const typeRoomIds = roomTypeDoc.rooms.map((id) => id.toString());
+    const typeRoomIds = roomTypeDoc.rooms.map((roomId) => roomId.toString());
     const matchingRooms = availableRooms.filter((r) =>
       typeRoomIds.includes(r._id.toString())
     );
@@ -244,7 +244,7 @@ export async function createBooking(input: CreateBookingInput) {
     // 6. Create invoice
     const invoice = yield* Result.await(
       Result.tryPromise({
-        try: () =>
+        try: (): Promise<IInvoice> =>
           new Invoice({
             status: "pending",
             paymentMethod: input.paymentMethod,
@@ -259,7 +259,7 @@ export async function createBooking(input: CreateBookingInput) {
     // 7. Create booking
     const booking = yield* Result.await(
       Result.tryPromise({
-        try: () =>
+        try: (): Promise<IBooking> =>
           new Booking({
             customer: customer._id,
             numberAdults: input.numberAdults,
