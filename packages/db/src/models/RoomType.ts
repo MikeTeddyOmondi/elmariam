@@ -1,4 +1,5 @@
-import { Schema, model, models, Document, Types } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
+import type { Document, Types } from "mongoose";
 
 export interface IRoomType extends Document {
   id: string;
@@ -51,4 +52,4 @@ RoomTypeSchema.virtual("booking", {
   justOne: true,
 });
 
-export const RoomType = models.RoomType ?? model<IRoomType>("RoomType", RoomTypeSchema);
+export const RoomType = mongoose.models['RoomType'] ?? model<IRoomType>("RoomType", RoomTypeSchema);

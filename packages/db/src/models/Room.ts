@@ -1,4 +1,5 @@
-import { Schema, model, models, Document } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
+import type { Document } from "mongoose";
 
 export interface IRoom extends Document {
   id: string;
@@ -16,4 +17,4 @@ const RoomSchema = new Schema<IRoom>(
   { timestamps: true }
 );
 
-export const Room = models.Room ?? model<IRoom>("Room", RoomSchema);
+export const Room = mongoose.models['Room'] ?? model<IRoom>("Room", RoomSchema);

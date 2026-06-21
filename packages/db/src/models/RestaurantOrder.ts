@@ -1,4 +1,5 @@
-import { Schema, model, models, Document, Types } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
+import type { Document, Types } from "mongoose";
 
 interface OrderItem {
   menuItem: Types.ObjectId;
@@ -74,4 +75,4 @@ RestaurantOrderSchema.virtual("orderCustomer", {
   justOne: true,
 });
 
-export const RestaurantOrder = models.RestaurantOrder ?? model<IRestaurantOrder>("RestaurantOrder", RestaurantOrderSchema);
+export const RestaurantOrder = mongoose.models['RestaurantOrder'] ?? model<IRestaurantOrder>("RestaurantOrder", RestaurantOrderSchema);

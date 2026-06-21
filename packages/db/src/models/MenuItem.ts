@@ -1,4 +1,5 @@
-import { Schema, model, models, Document } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
+import type { Document } from "mongoose";
 
 export interface IMenuItem extends Document {
   id: string;
@@ -28,4 +29,4 @@ const MenuItemSchema = new Schema<IMenuItem>(
   { timestamps: true }
 );
 
-export const MenuItem = models.MenuItem ?? model<IMenuItem>("MenuItem", MenuItemSchema);
+export const MenuItem = mongoose.models['MenuItem'] ?? model<IMenuItem>("MenuItem", MenuItemSchema);
