@@ -8,7 +8,7 @@ import type { Handle } from '@sveltejs/kit';
 
 const client = createClient({
   clientID: 'admin',
-  issuer: process.env.OPENAUTH_ISSUER || 'http://openauth:3100',
+  issuer: env.OPENAUTH_ISSUER || 'http://openauth:3100',
 });
 
 let dbConnected = false;
