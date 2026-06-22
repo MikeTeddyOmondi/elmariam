@@ -39,6 +39,7 @@
   async function remove(id: string, name: string) {
     if (!confirm(`Delete ${name}?`)) return;
     deleting = id;
+    console.log({name});
     try {
       await deleteUser({ id });
       toast.success(`${name} deleted.`);

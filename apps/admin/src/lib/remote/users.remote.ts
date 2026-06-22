@@ -94,7 +94,6 @@ export const updateUser = command(
 export const deleteUser = command(
   v.object({ id: v.string() }),
   async ({ id }) => {
-    console.log({ id });
     unwrap(await dbDeleteUser(id));
   },
 );
