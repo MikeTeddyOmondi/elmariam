@@ -5,12 +5,13 @@ import { MongoClient } from "mongodb";
 import { subjects } from "./subjects.js";
 import { MongoStorage } from "./mongo-storage.js";
 
+const DATABASE_NAME = "elmariam";
 const PORT = process.env.PORT || 3100;
-const DB_URL = process.env.DB_URL || "mongodb://mongo:27017";
+const DATABASE_URL = process.env.DATABASE_URL || "mongodb://mongo:27017";
 
-const mongoClient = new MongoClient(DB_URL);
+const mongoClient = new MongoClient(DATABASE_URL);
 await mongoClient.connect();
-const usersCollection = mongoClient.db("elmariam").collection("users");
+const usersCollection = mongoClient.db(DATABASE_NAME).collection("users");
 
 async function getOrCreateUser(email: string) {
   // Get user from database
@@ -30,8 +31,8 @@ async function getOrCreateUser(email: string) {
 }
 
 const mongoStorage = MongoStorage({
-  uri: DB_URL,
-  database: "openauth",
+  uri: DATABASE_URL,
+  database: DATABASE_NAME,
   collection: "sessions",
 });
 

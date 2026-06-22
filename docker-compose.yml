@@ -102,7 +102,7 @@ services:
     restart: always
     environment:
       - PORT=3100
-      - DB_URL=mongodb://mongo:27017/auth
+      - DATABASE_URL=mongodb://mongo:27017/auth
       - OPENAUTH_ISSUER=https://auth.otienoobogeandcompany.com
     ports:
       - "3100:3100"
