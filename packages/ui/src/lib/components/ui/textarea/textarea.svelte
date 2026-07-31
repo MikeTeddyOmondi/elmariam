@@ -1,26 +1,24 @@
 <script lang="ts">
-  import type { HTMLInputAttributes } from "svelte/elements";
+  import type { HTMLTextareaAttributes } from "svelte/elements";
   import { cn } from "../../../utils.js";
 
-  type Props = HTMLInputAttributes & {
-    value?: unknown;
+  type Props = HTMLTextareaAttributes & {
+    value?: string;
     class?: string;
   };
 
   let { value = $bindable(), class: className, ...restProps }: Props = $props();
 </script>
 
-<input
+<textarea
   bind:value
   class={cn(
-    "flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-    "ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium",
-    "placeholder:text-muted-foreground",
+    "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
+    "ring-offset-background placeholder:text-muted-foreground",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:cursor-not-allowed disabled:opacity-50",
-    // `fields.x.as(...)` sets aria-invalid, so invalid fields style themselves.
     "aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive",
     className
   )}
   {...restProps}
-/>
+></textarea>
