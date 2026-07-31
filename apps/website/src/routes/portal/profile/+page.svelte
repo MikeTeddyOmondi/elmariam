@@ -9,12 +9,18 @@
 {#await profile}
   <p>Loading…</p>
 {:then p}
-  <div class="card">
-    <div class="row"><span>Name</span><strong>{p.firstname} {p.lastname}</strong></div>
-    <div class="row"><span>Email</span><strong>{p.email}</strong></div>
-    <div class="row"><span>ID Number</span><strong>{p.id_number}</strong></div>
-    <div class="row"><span>Phone</span><strong>{p.phone_number || '—'}</strong></div>
-  </div>
+  {#if p}
+    <div class="card">
+      <div class="row"><span>Name</span><strong>{p.firstname} {p.lastname}</strong></div>
+      <div class="row"><span>Email</span><strong>{p.email}</strong></div>
+      <div class="row"><span>ID Number</span><strong>{p.id_number}</strong></div>
+      <div class="row"><span>Phone</span><strong>{p.phone_number || '—'}</strong></div>
+    </div>
+  {:else}
+    <div class="card">
+      <p>You haven't set up your profile yet. We need a few details before you can make a booking.</p>
+    </div>
+  {/if}
 {:catch err}
   <p class="error">{err.message}</p>
 {/await}

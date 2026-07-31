@@ -12,10 +12,16 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
+/**
+ * Returns `null` when the signed-in user has not created a customer profile
+ * yet. The issuer provisions a `User` on first login but the `Customer` record
+ * only exists once they fill it in, so "no profile" is a normal state, not an
+ * error.
+ */
 export const getMyProfile = query(async () => {
   const user = requireUser();
   const customer = await Customer.findOne({ email: user.email }).lean();
-  if (!customer) throw httpError(404, 'Customer profile not found');
+  if (!customer) return null;
   return JSON.parse(JSON.stringify(customer));
 });
 
