@@ -29,13 +29,66 @@
 
 ## In Progress — forms & UI
 
-- [ ] `packages/ui` → real shadcn-svelte (components.json, bits-ui) with the existing primitives replaced one at a time
-- [ ] Add `form`, `select`, `textarea`, `checkbox`, `switch`, `sonner`, `alert-dialog`, `dropdown-menu`, `skeleton`
-- [ ] Convert the 14 form-driven `command()`s to `form()` remote functions
-- [ ] Rewrite the 16 hand-rolled `onsubmit` forms to `<form {...myForm}>` with `fields.x.as(...)` and inline `.issues()`
-- [ ] Normalize sonner: export `Toaster`/`toast` from `@elmariam/ui`, add a shared `toastError` mapping 401/403
-- [ ] Fix `staff/barista/drinks/new` — still POSTs to the removed gateway (the `createDrink` remote now exists)
-- [ ] Delete the dead stub `apps/admin/src/routes/bar-drinks/+page.server.ts`
+### Done
+
+- [x] Tailwind v3 → v4 across all apps + `packages/ui`; one shared `app.css`
+- [x] `packages/ui`: `components.json` + `bits-ui` + `tailwind-variants` wired up
+- [x] `Button` moved to `tailwind-variants` (exports `buttonVariants`, adds `href`)
+- [x] `Input` gains `aria-invalid` styling for inline form errors
+- [x] New components: `Form.Field` / `Form.FieldErrors` / `Form.Message`, `Select`, `Textarea`, `Checkbox`, `Switch`, `AlertDialog`, `Skeleton`, `Toaster`
+- [x] `toastError()` / `messageFor()` in `@elmariam/ui` — maps 401/403/404 and reads SvelteKit's `error()` body, which `err.message` never exposed
+- [x] `ASSIGNABLE_STAFF_ROLES` typed as a const tuple so `v.picklist` cannot accept `customer`
+
+### Eager remote queries during SSR
+
+29 pages call remote queries at component top level (`const rows = getRows()`),
+which fires a fetch during SSR — Svelte warns *"Avoid calling `fetch` eagerly
+during server-side rendering"* and the result is not hydratable, producing
+`hydratable_missing_but_required`. Convert each to the pattern the admin app
+already uses: `$state` + `$effect`, with `{#if loading}` / `{:else if loadError}`
+markup instead of `{#await}`.
+
+- [x] website — 6 call sites across `portal/{,bookings,bookings/new,invoices,profile}`
+- [ ] staff `receptionist/` — 9 call sites (`+page`, `customers`, `bookings`, `bookings/new`, `invoices`, `rooms`)
+- [ ] staff `waiter/` — 5 call sites (`+page`, `menu`, `orders`, `orders/new`)
+- [ ] staff `barista/` — 9 call sites (`+page`, `drinks`, `purchases`, `purchases/new`, `sales`, `sales/new`)
+
+### Conversion checklist — each form to `form()` + shadcn components
+
+Pattern per form: `command()` → `form(schema, handler)`; page drops `onsubmit` for
+`<form {...myForm}>`; raw `<input>`/`<select>` → `Input` / `Select` / `Textarea` /
+`Checkbox` inside `Form.Field`; inline `Form.FieldErrors` from `fields.x.issues()`;
+`confirm()` → `AlertDialog`; toasts via `toastError` from `@elmariam/ui`.
+
+**Remote queries must be called inside `$effect` and held in `$state`** — calling
+them from `{#await}` in markup causes `hydratable_missing_but_required`.
+
+- [x] admin `/users` — `createUser` + `deleteUser` converted; **reference implementation**, copy this pattern
+- [x] website `portal/bookings/new` — `createBooking` converted
+- [x] website `portal/{,bookings,invoices,profile}` — rebuilt on `Card`/`Table`/`Badge`/`Skeleton` + lucide icons; hardcoded `#fff`/`#1a1a2e` replaced with theme tokens so dark mode works
+- [ ] admin `/users` — `updateUser` still has no UI (edit-row form)
+- [ ] admin `/customers` — `createCustomer`
+- [ ] admin `/bookings` — `createBooking`
+- [ ] admin `/rooms` — `createRoom`
+- [ ] admin `/room-types` — `createRoomType`
+- [ ] admin `/bar-drinks` — `createDrink`; also delete the dead `+page.server.ts` stub
+- [ ] admin `/bar-purchases` — `createBarPurchase`
+- [ ] admin `/menu-items` — `createMenuItem`, `updateMenuItem` (no UI yet)
+- [ ] admin `/bar-sales` — wire the unused `checkoutBarSale`
+- [ ] staff `receptionist/customers/new` — `createCustomer`
+- [ ] staff `receptionist/bookings/new` — `createBooking`
+- [ ] staff `barista/purchases/new` — `createBarPurchase`
+- [ ] staff `barista/sales/new` — `checkoutBarSale`
+- [ ] staff `barista/drinks/new` — **broken**, still POSTs to the removed gateway; `createDrink` remote now exists
+- [ ] staff `waiter/orders/new` — `createOrder`
+- [ ] website `contact` — placeholder, wire to the SMTP queue
+- [ ] login/register pages (×4) — replace ad-hoc `let error` state with `toastError`
+- [ ] Swap all 16 `import { toast } from 'svelte-sonner'` to `@elmariam/ui`; single `<Toaster />` per layout
+
+### Deferred
+
+- [ ] `dropdown-menu` — add when a page actually needs it
+- [ ] Rich bits-ui `Select` (combobox) for non-form use; the current `Select` is a styled native element so the no-JS form fallback keeps working
 
 ## Planned — admin/staff feature gaps
 

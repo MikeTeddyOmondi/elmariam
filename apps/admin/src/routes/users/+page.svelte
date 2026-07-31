@@ -1,57 +1,36 @@
 <script lang="ts">
   import { getUsers, createUser, deleteUser, type UserView } from "$lib/remote/users.remote";
-  import { Button } from "@elmariam/ui";
-  import { ASSIGNABLE_STAFF_ROLES, type Role } from "@elmariam/auth";
-  import { toast } from "svelte-sonner";
+  import {
+    AlertDialog,
+    Button,
+    Form,
+    Input,
+    Label,
+    Select,
+    Skeleton,
+    messageFor,
+    toast,
+    toastError
+  } from "@elmariam/ui";
+  import { ASSIGNABLE_STAFF_ROLES } from "@elmariam/auth";
+  import Trash2 from "lucide-svelte/icons/trash-2";
+  import UserPlus from "lucide-svelte/icons/user-plus";
 
   let users: UserView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getUsers()
       .then(d => { users = d; loading = false; })
-      .catch(e => { loadError = e.message; loading = false; });
+      .catch(e => { loadError = messageFor(e); loading = false; });
   });
 
-  let username = $state('');
-  let firstname = $state('');
-  let lastname = $state('');
-  let email = $state('');
-  let id_number = $state('');
-  let phone_number = $state('');
-  let userType = $state<Role>('receptionist');
-  let saving = $state(false);
-  let deleting = $state<string | null>(null);
+  // Delete is confirmed through AlertDialog rather than window.confirm().
+  let pendingDelete = $state<UserView | null>(null);
 
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    saving = true;
-    try {
-      await createUser({ username, firstname, lastname, email, id_number, phone_number: phone_number || undefined, userType });
-      toast.success(`User ${username} created.`);
-      username = ''; firstname = ''; lastname = ''; email = ''; id_number = ''; phone_number = '';
-      getUsers().then(d => { users = d; }).catch(() => {});
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    } finally { saving = false; }
-  }
-
-  async function remove(id: string, name: string) {
-    if (!confirm(`Delete ${name}?`)) return;
-    deleting = id;
-    console.log({name});
-    try {
-      await deleteUser({ id });
-      toast.success(`${name} deleted.`);
-      users = users.filter(u => u.id !== id);
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    } finally { deleting = null; }
-  }
-
-  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
-  const selectCls = `${inputCls} cursor-pointer`;
   const typeCls: Record<string, string> = {
     admin: 'bg-purple-500/15 text-purple-400',
     receptionist: 'bg-blue-500/15 text-blue-400',
@@ -70,41 +49,83 @@
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Add User</h2>
-    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="uname">Username</label>
-        <input id="uname" bind:value={username} placeholder="jdoe" required class={inputCls} />
+
+    <!--
+      A `form()` remote function, so this still submits without JavaScript.
+      `enhance` only adds the toast on top of the normal submission.
+    -->
+    <form
+      {...createUser.enhance(async ({ submit }) => {
+        try {
+          await submit();
+          toast.success('User created.');
+        } catch (e) {
+          toastError(e);
+        }
+      })}
+      class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start"
+    >
+      <!--
+        `issues()` is form-level only. `allIssues()` would also include every
+        field's issues, duplicating what renders inline under each input.
+      -->
+      <div class="sm:col-span-2 lg:col-span-3 empty:hidden">
+        <Form.Message issues={createUser.fields.issues?.()} />
       </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="ufname">First Name</label>
-        <input id="ufname" bind:value={firstname} placeholder="John" class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="ulname">Last Name</label>
-        <input id="ulname" bind:value={lastname} placeholder="Doe" class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="uemail">Email</label>
-        <input id="uemail" type="email" bind:value={email} placeholder="john@example.com" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="uidno">ID Number</label>
-        <input id="uidno" bind:value={id_number} placeholder="12345678" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="uphone">Phone (optional)</label>
-        <input id="uphone" bind:value={phone_number} placeholder="+254700000000" class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="utype">Role</label>
-        <select id="utype" bind:value={userType} required class={selectCls}>
+
+      <Form.Field>
+        <Label for="uname">Username</Label>
+        <Input id="uname" placeholder="jdoe" {...createUser.fields.username.as('text')} />
+        <Form.FieldErrors issues={createUser.fields.username.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="ufname">First Name</Label>
+        <Input id="ufname" placeholder="John" {...createUser.fields.firstname.as('text')} />
+        <Form.FieldErrors issues={createUser.fields.firstname.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="ulname">Last Name</Label>
+        <Input id="ulname" placeholder="Doe" {...createUser.fields.lastname.as('text')} />
+        <Form.FieldErrors issues={createUser.fields.lastname.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="uemail">Email</Label>
+        <Input id="uemail" placeholder="john@example.com" {...createUser.fields.email.as('email')} />
+        <Form.FieldErrors issues={createUser.fields.email.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="uidno">ID Number</Label>
+        <Input id="uidno" placeholder="12345678" {...createUser.fields.id_number.as('text')} />
+        <Form.FieldErrors issues={createUser.fields.id_number.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="uphone">Phone (optional)</Label>
+        <Input id="uphone" placeholder="+254700000000" {...createUser.fields.phone_number.as('tel')} />
+        <Form.FieldErrors issues={createUser.fields.phone_number.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="utype">Role</Label>
+        <!-- Defaulted explicitly: without it the first option wins, which
+             would make `admin` the default role for every new user. -->
+        <Select id="utype" {...createUser.fields.userType.as('select', 'receptionist')}>
           {#each ASSIGNABLE_STAFF_ROLES as t}
             <option value={t}>{t}</option>
           {/each}
-        </select>
-      </div>
-      <div class="sm:col-span-2 flex justify-end">
-        <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add User'}</Button>
+        </Select>
+        <Form.FieldErrors issues={createUser.fields.userType.issues()} />
+      </Form.Field>
+
+      <div class="sm:col-span-2 flex justify-end self-end">
+        <Button type="submit" disabled={createUser.pending > 0}>
+          <UserPlus />
+          {createUser.pending > 0 ? 'Saving…' : 'Add User'}
+        </Button>
       </div>
     </form>
   </div>
@@ -113,13 +134,13 @@
   <div class="bg-card border border-border rounded-xl overflow-hidden">
     {#if loading}
       <div class="divide-y divide-border">
-        <div class="h-10 bg-secondary/50 animate-pulse"></div>
-        {#each {length: 5} as _}
+        <Skeleton class="h-10 rounded-none" />
+        {#each { length: 5 } as _}
           <div class="flex gap-4 px-4 py-3">
-            <div class="h-4 flex-1 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 w-40 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 w-20 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 w-12 rounded bg-muted animate-pulse"></div>
+            <Skeleton class="h-4 flex-1" />
+            <Skeleton class="h-4 w-40" />
+            <Skeleton class="h-4 w-20" />
+            <Skeleton class="h-4 w-12" />
           </div>
         {/each}
       </div>
@@ -146,12 +167,17 @@
                 </span>
               </td>
               <td class="px-4 py-3">
-                <button
-                  onclick={() => remove(user.id, `${user.firstname} ${user.lastname}`)}
-                  disabled={deleting === user.id}
-                  class="text-xs text-destructive hover:underline disabled:opacity-50">
-                  {deleting === user.id ? 'Deleting…' : 'Delete'}
-                </button>
+                <!-- Icon-only, so it needs an accessible name of its own. -->
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  class="text-destructive hover:text-destructive"
+                  aria-label="Delete {user.email}"
+                  title="Delete user"
+                  onclick={() => (pendingDelete = user)}
+                >
+                  <Trash2 />
+                </Button>
               </td>
             </tr>
           {:else}
@@ -162,3 +188,36 @@
     {/if}
   </div>
 </div>
+
+{#if pendingDelete}
+  {@const target = pendingDelete}
+  {@const deleteForm = deleteUser.for(target.id)}
+  <!--
+    `.for(id)` gives each row its own form instance, so pending state and
+    issues stay scoped to the row being deleted.
+  -->
+  <form
+    id="delete-user-form"
+    {...deleteForm.enhance(async ({ submit }) => {
+      try {
+        await submit();
+        toast.success(`${target.firstname} ${target.lastname} deleted.`.trim());
+        pendingDelete = null;
+      } catch (e) {
+        toastError(e);
+      }
+    })}
+  >
+    <input type="hidden" name="id" value={target.id} />
+  </form>
+
+  <AlertDialog
+    open={true}
+    title="Delete this user?"
+    description="{target.email} will lose access immediately. This cannot be undone."
+    confirmLabel={deleteForm.pending > 0 ? 'Deleting…' : 'Delete'}
+    destructive
+    pending={deleteForm.pending > 0}
+    confirmForm="delete-user-form"
+  />
+{/if}

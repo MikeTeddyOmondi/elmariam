@@ -1,73 +1,100 @@
 <script lang="ts">
   import { createBooking, getRoomTypes } from '$lib/remote/booking.remote';
-  import { toast } from 'svelte-sonner';
+  import { Button, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
 
-  const roomTypes = getRoomTypes();
+  type RoomType = Awaited<ReturnType<typeof getRoomTypes>>[number];
 
-  let numberAdults = $state(1);
-  let numberKids = $state(0);
-  let roomType = $state<'single' | 'double'>('single');
-  let checkInDate = $state('');
-  let checkOutDate = $state('');
-  let paymentMethod = $state<'cash' | 'mpesa' | 'bank'>('cash');
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    try {
-      // The customer is taken from the session server-side, never sent here.
-      await createBooking({
-        numberAdults,
-        numberKids,
-        roomType,
-        checkInDate,
-        checkOutDate,
-        paymentMethod,
-      });
-      toast.success('Booking created! Check your bookings for details.');
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    }
-  }
+  let roomTypes = $state<RoomType[]>([]);
+
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getRoomTypes()
+      .then((d) => { roomTypes = d; })
+      .catch(() => { roomTypes = []; });
+  });
 </script>
 
 <a href="/portal/bookings" class="back">← Back</a>
 <h1>New Booking</h1>
 
 <div class="layout">
-  <form onsubmit={submit} class="form">
-    <label>Adults <input type="number" bind:value={numberAdults} min="1" required /></label>
-    <label>Kids <input type="number" bind:value={numberKids} min="0" required /></label>
-    <label>
-      Room Type
-      <select bind:value={roomType}>
+  <!--
+    `{...createBooking.enhance(...)}` keeps the progressive-enhancement
+    fallback: with JavaScript disabled the browser posts the form normally.
+    The customer is resolved from the session server-side and is never sent.
+  -->
+  <form
+    {...createBooking.enhance(async ({ submit }) => {
+      try {
+        await submit();
+        toast.success('Booking created.');
+      } catch (e) {
+        toastError(e);
+      }
+    })}
+    class="form"
+  >
+    <Form.Message issues={createBooking.fields.allIssues?.()} />
+
+    <Form.Field>
+      <Label for="numberAdults">Adults</Label>
+      <Input id="numberAdults" min="1" {...createBooking.fields.numberAdults.as('number')} />
+      <Form.FieldErrors issues={createBooking.fields.numberAdults.issues()} />
+    </Form.Field>
+
+    <Form.Field>
+      <Label for="numberKids">Kids</Label>
+      <Input id="numberKids" min="0" {...createBooking.fields.numberKids.as('number')} />
+      <Form.FieldErrors issues={createBooking.fields.numberKids.issues()} />
+    </Form.Field>
+
+    <Form.Field>
+      <Label for="roomType">Room Type</Label>
+      <Select id="roomType" {...createBooking.fields.roomType.as('select')}>
         <option value="single">Single</option>
         <option value="double">Double</option>
-      </select>
-    </label>
-    <label>Check In <input type="date" bind:value={checkInDate} required /></label>
-    <label>Check Out <input type="date" bind:value={checkOutDate} required /></label>
-    <label>
-      Payment Method
-      <select bind:value={paymentMethod}>
+      </Select>
+      <Form.FieldErrors issues={createBooking.fields.roomType.issues()} />
+    </Form.Field>
+
+    <Form.Field>
+      <Label for="checkInDate">Check In</Label>
+      <Input id="checkInDate" {...createBooking.fields.checkInDate.as('date')} />
+      <Form.FieldErrors issues={createBooking.fields.checkInDate.issues()} />
+    </Form.Field>
+
+    <Form.Field>
+      <Label for="checkOutDate">Check Out</Label>
+      <Input id="checkOutDate" {...createBooking.fields.checkOutDate.as('date')} />
+      <Form.FieldErrors issues={createBooking.fields.checkOutDate.issues()} />
+    </Form.Field>
+
+    <Form.Field>
+      <Label for="paymentMethod">Payment Method</Label>
+      <Select id="paymentMethod" {...createBooking.fields.paymentMethod.as('select')}>
         <option value="cash">Cash</option>
         <option value="mpesa">M-Pesa</option>
         <option value="bank">Bank Transfer</option>
-      </select>
-    </label>
-    <button type="submit">Book Now</button>
+      </Select>
+      <Form.FieldErrors issues={createBooking.fields.paymentMethod.issues()} />
+    </Form.Field>
+
+    <Button type="submit" disabled={createBooking.pending > 0}>
+      {createBooking.pending > 0 ? 'Booking…' : 'Book Now'}
+    </Button>
   </form>
 
   <aside>
     <h3>Room Rates</h3>
-    {#await roomTypes}
-      <p>Loading…</p>
-    {:then data}
-      {#each data as rt}
-        <div class="rate-card">
-          <strong>{rt.title}</strong>
-          <span>KES {rt.rate?.toLocaleString()} / night</span>
-        </div>
-      {/each}
-    {/await}
+    {#each roomTypes as rt}
+      <div class="rate-card">
+        <strong>{rt.title}</strong>
+        <span>KES {rt.rate?.toLocaleString()} / night</span>
+      </div>
+    {:else}
+      <p class="muted">Loading…</p>
+    {/each}
   </aside>
 </div>
 
@@ -76,10 +103,8 @@
   h1 { margin: 1rem 0 1.5rem; color: #1a1a2e; }
   .layout { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; }
   .form { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 1rem; }
-  label { display: flex; flex-direction: column; gap: 0.25rem; font-size: 0.9rem; color: #555; }
-  input, select { padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 1rem; }
-  button { background: #1a1a2e; color: #fff; border: none; padding: 0.75rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
   aside { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 220px; }
   h3 { margin: 0 0 1rem; color: #1a1a2e; }
   .rate-card { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+  .muted { color: #999; font-size: 0.9rem; }
 </style>

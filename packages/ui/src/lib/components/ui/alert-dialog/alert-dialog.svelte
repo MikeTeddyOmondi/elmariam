@@ -14,6 +14,14 @@
     destructive?: boolean;
     /** Disables the confirm button, e.g. while the action is in flight. */
     pending?: boolean;
+    /**
+     * Id of a `<form>` this dialog should submit on confirm.
+     *
+     * The dialog content is portalled out of the DOM position it was written
+     * in, so it cannot be a descendant of the form. The HTML `form` attribute
+     * associates them by id regardless of nesting.
+     */
+    confirmForm?: string;
     onconfirm?: () => void;
     /** Optional extra content rendered between the description and the buttons. */
     children?: Snippet;
@@ -27,6 +35,7 @@
     cancelLabel = "Cancel",
     destructive = false,
     pending = false,
+    confirmForm,
     onconfirm,
     children
   }: Props = $props();
@@ -66,6 +75,8 @@
         <AlertDialogPrimitive.Action
           class={buttonVariants({ variant: destructive ? "destructive" : "default" })}
           disabled={pending}
+          type={confirmForm ? "submit" : "button"}
+          form={confirmForm}
           onclick={() => onconfirm?.()}
         >
           {confirmLabel}

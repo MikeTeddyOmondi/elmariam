@@ -18,6 +18,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `tailwindcss-animate` replaced by `tw-animate-css`; `tailwind-merge` bumped to v4-compatible v3
 - Added `bits-ui` and `tailwind-variants` to `packages/ui` for the shadcn-svelte component work
 
+### Changed — forms
+
+- `createUser` / `updateUser` / `deleteUser` (admin) and `createBooking` (website) converted from `command()` to `form()`, so those pages submit without JavaScript and render field-level validation inline
+- Domain failures now use `invalid()` instead of throwing `error(400)`, so they appear against the form rather than as an opaque error
+- Admin `/users` rebuilt on the shadcn components: `Form.Field` / `Form.FieldErrors`, `Input`, `Select`, `Skeleton`, and an `AlertDialog` replacing `window.confirm()`. Row actions are lucide icon buttons with `aria-label`s
+- Website portal pages rebuilt on `Card` / `Table` / `Badge` / `Skeleton`. They previously hardcoded `#fff` and `#1a1a2e`, so they ignored the dark theme entirely
+- Remote queries moved into `$effect` + `$state` across the website portal. Calling them at component top level fetches during SSR — Svelte warns *"Avoid calling `fetch` eagerly during server-side rendering"* and the result is not hydratable, which surfaced as `hydratable_missing_but_required` on `/portal/bookings`
+- `AlertDialog` gained `confirmForm`, associating its confirm button with a form by id — the dialog content is portalled, so it cannot be a descendant of the form it submits
+- The role `<Select>` on `/users` defaults explicitly to `receptionist`; without a default the first option won, silently making `admin` the default for every new user
+
 ### Added
 
 - `packages/auth/src/rbac.ts` — single source of truth for roles, permissions, per-app access and staff sections. Replaces six duplicated role arrays across `packages/auth`, `packages/db`, both staff guards and the admin picklists

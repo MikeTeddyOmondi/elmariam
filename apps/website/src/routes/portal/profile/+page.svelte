@@ -1,35 +1,63 @@
 <script lang="ts">
   import { getMyProfile } from '$lib/remote/account.remote';
+  import { Button, Card, CardContent, Separator, Skeleton, messageFor } from '@elmariam/ui';
+  import UserPen from 'lucide-svelte/icons/user-pen';
 
-  const profile = getMyProfile();
+  let profile = $state<Awaited<ReturnType<typeof getMyProfile>>>(null);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getMyProfile()
+      .then((d) => { profile = d; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
 </script>
 
-<h1>My Profile</h1>
+<h1 class="mb-6 text-2xl font-bold text-foreground">My Profile</h1>
 
-{#await profile}
-  <p>Loading…</p>
-{:then p}
-  {#if p}
-    <div class="card">
-      <div class="row"><span>Name</span><strong>{p.firstname} {p.lastname}</strong></div>
-      <div class="row"><span>Email</span><strong>{p.email}</strong></div>
-      <div class="row"><span>ID Number</span><strong>{p.id_number}</strong></div>
-      <div class="row"><span>Phone</span><strong>{p.phone_number || '—'}</strong></div>
-    </div>
-  {:else}
-    <div class="card">
-      <p>You haven't set up your profile yet. We need a few details before you can make a booking.</p>
-    </div>
-  {/if}
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  h1 { margin: 0 0 1.5rem; color: #1a1a2e; }
-  .card { background: #fff; border-radius: 8px; padding: 1.75rem; box-shadow: 0 1px 4px rgba(0,0,0,0.1); max-width: 440px; }
-  .row { display: flex; justify-content: space-between; padding: 0.6rem 0; border-bottom: 1px solid #eee; font-size: 0.95rem; color: #555; }
-  .row:last-child { border-bottom: none; }
-  .row strong { color: #1a1a2e; }
-  .error { color: red; }
-</style>
+<Card class="max-w-md">
+  <CardContent class="py-6">
+    {#if loading}
+      <div class="space-y-4">
+        {#each { length: 4 } as _}
+          <Skeleton class="h-5 w-full" />
+        {/each}
+      </div>
+    {:else if loadError}
+      <p class="text-sm text-destructive">{loadError}</p>
+    {:else if profile}
+      <dl class="text-sm">
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-muted-foreground">Name</dt>
+          <dd class="font-medium text-foreground">{profile.firstname} {profile.lastname}</dd>
+        </div>
+        <Separator />
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-muted-foreground">Email</dt>
+          <dd class="font-medium text-foreground">{profile.email}</dd>
+        </div>
+        <Separator />
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-muted-foreground">ID Number</dt>
+          <dd class="font-medium text-foreground">{profile.id_number}</dd>
+        </div>
+        <Separator />
+        <div class="flex items-center justify-between py-2">
+          <dt class="text-muted-foreground">Phone</dt>
+          <dd class="font-medium text-foreground">{profile.phone_number || '—'}</dd>
+        </div>
+      </dl>
+    {:else}
+      <div class="space-y-4 text-center">
+        <UserPen class="mx-auto size-8 text-muted-foreground" />
+        <p class="text-sm text-muted-foreground">
+          You haven't set up your profile yet. We need a few details before you can make a booking.
+        </p>
+        <Button disabled>Complete profile (coming soon)</Button>
+      </div>
+    {/if}
+  </CardContent>
+</Card>

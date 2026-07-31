@@ -188,7 +188,21 @@ export function permissionsFor(role: string | undefined): readonly Permission[] 
   return isRole(role) ? ROLE_PERMISSIONS[role] : [];
 }
 
-/** Roles an admin may assign. Every role except `customer`, which self-registers. */
-export const ASSIGNABLE_STAFF_ROLES: readonly Role[] = ROLES.filter(
-  (r) => r !== "customer",
-);
+/**
+ * Roles an admin may assign. Every role except `customer`, which self-registers
+ * through the issuer.
+ *
+ * Written as an explicit tuple rather than `ROLES.filter(...)` so the literal
+ * union survives — a filtered array widens to `Role[]`, which would let
+ * `v.picklist(ASSIGNABLE_STAFF_ROLES)` type-check `customer` as assignable even
+ * though it is rejected at runtime.
+ */
+export const ASSIGNABLE_STAFF_ROLES = [
+  "admin",
+  "management",
+  "receptionist",
+  "barista",
+  "waiter",
+] as const satisfies readonly Role[];
+
+export type AssignableRole = (typeof ASSIGNABLE_STAFF_ROLES)[number];

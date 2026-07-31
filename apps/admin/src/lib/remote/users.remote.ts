@@ -1,6 +1,6 @@
 import type { Result } from "better-result";
-import { query, command } from "$app/server";
-import { error as httpError } from "@sveltejs/kit";
+import { query, command, form } from "$app/server";
+import { error as httpError, invalid } from "@sveltejs/kit";
 import * as v from "valibot";
 import {
   listUsers,
@@ -17,6 +17,19 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
     err: (e) => {
       throw httpError(400, e.message);
     },
+  });
+}
+
+/**
+ * Unwraps inside a `form()` handler.
+ *
+ * Domain failures become `invalid()` so they render against the form the user
+ * is looking at, instead of the opaque 400 that `unwrap` throws.
+ */
+function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => invalid(e.message),
   });
 }
 
@@ -44,56 +57,72 @@ export const getUsers = query(async (): Promise<UserView[]> => {
   return unwrap(await listUsers()) as unknown as UserView[];
 });
 
-export const createUser = command(
+/**
+ * `form()` rather than `command()` so the page works without JavaScript and
+ * field-level issues render inline. Every value arrives from `FormData` as a
+ * string, hence the `v.pipe(v.string(), ...)` shapes below.
+ */
+export const createUser = form(
   v.object({
-    username: v.string(),
+    username: v.pipe(v.string(), v.minLength(1, "Username is required")),
     firstname: v.optional(v.string()),
     lastname: v.optional(v.string()),
-    email: v.pipe(v.string(), v.email()),
-    id_number: v.string(),
+    email: v.pipe(v.string(), v.email("Enter a valid email address")),
+    id_number: v.pipe(v.string(), v.minLength(1, "ID number is required")),
     phone_number: v.optional(v.string()),
     userType: v.picklist(ASSIGNABLE_STAFF_ROLES),
   }),
   async ({ phone_number, ...data }) => {
     requirePermission("users:write");
-    unwrap(
+
+    unwrapForm(
       await dbCreateUser({
         ...data,
         ...(phone_number ? { phone_number: Number(phone_number) } : {}),
       }),
     );
-    getUsers().refresh();
+
+    await getUsers().refresh();
+    return { created: data.username };
   },
 );
 
-export const updateUser = command(
+/** Use `updateUser.for(user.id)` so each row gets its own form instance. */
+export const updateUser = form(
   v.object({
     id: v.string(),
     firstname: v.optional(v.string()),
     lastname: v.optional(v.string()),
     phone_number: v.optional(v.string()),
     userType: v.optional(v.picklist(ASSIGNABLE_STAFF_ROLES)),
+    // `field.as('checkbox')` handles the on/absent FormData quirk, so the
+    // schema declares a plain boolean.
     isActive: v.optional(v.boolean()),
   }),
   async ({ id, phone_number, ...rest }) => {
     requirePermission("users:write");
-    return unwrap(
+
+    unwrapForm(
       await dbUpdateUser(id, {
         ...rest,
         ...(phone_number ? { phone_number: Number(phone_number) } : {}),
       }),
     );
+
+    await getUsers().refresh();
+    return { updated: id };
   },
 );
 
-export const deleteUser = command(
-  v.object({ id: v.string() }),
-  async ({ id }) => {
-    const actor = requirePermission("users:delete");
-    // Deleting yourself locks you out of the app you are using.
-    if (actor.id === id) {
-      throw httpError(400, "You cannot delete your own account");
-    }
-    unwrap(await dbDeleteUser(id));
-  },
-);
+/** Use `deleteUser.for(user.id)`. */
+export const deleteUser = form(v.object({ id: v.string() }), async ({ id }) => {
+  const actor = requirePermission("users:delete");
+
+  // Deleting yourself locks you out of the app you are using.
+  if (actor.id === id) invalid("You cannot delete your own account.");
+
+  unwrapForm(await dbDeleteUser(id));
+
+  await getUsers().refresh();
+  return { deleted: id };
+});

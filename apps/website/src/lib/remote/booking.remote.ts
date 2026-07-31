@@ -1,5 +1,5 @@
-import { query, command } from '$app/server';
-import { error as httpError } from '@sveltejs/kit';
+import { query, form } from '$app/server';
+import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
 import type { Result } from 'better-result';
 import {
@@ -61,23 +61,32 @@ export const getOneBooking = query(v.string(), async (bookingId: string): Promis
   return booking;
 });
 
-export const createBooking = command(
+export const createBooking = form(
   v.object({
     // `customerId` is deliberately absent: it is taken from the session, never
     // from the client, so a customer cannot book on someone else's account.
-    numberAdults:  v.pipe(v.number(), v.minValue(1)),
-    numberKids:    v.pipe(v.number(), v.minValue(0)),
+    //
+    // Declared as numbers, not coerced strings: `field.as('number')` on the
+    // input is what parses the FormData value, and it only type-checks against
+    // a numeric schema.
+    numberAdults:  v.pipe(v.number(), v.minValue(1, 'At least one adult is required')),
+    numberKids:    v.pipe(v.number(), v.minValue(0, 'Enter 0 or more')),
     roomType:      v.picklist(['single', 'double']),
-    checkInDate:   v.string(),
-    checkOutDate:  v.string(),
+    checkInDate:   v.pipe(v.string(), v.minLength(1, 'Pick a check-in date')),
+    checkOutDate:  v.pipe(v.string(), v.minLength(1, 'Pick a check-out date')),
     paymentMethod: v.picklist(['cash', 'mpesa', 'bank']),
   }),
   async (data) => {
     requirePermission('bookings:write');
     const customer = await requireOwnCustomer();
-    const created = unwrap(await dbCreateBooking({ ...data, customerId: customer.id_number }));
+
+    const result = await dbCreateBooking({ ...data, customerId: customer.id_number });
+    // Domain failures (no rooms free, dates in the past) belong on the form,
+    // not as an opaque 400.
+    if (result.isErr()) invalid(result.error.message);
+
     await getMyBookings().refresh();
     await getMyInvoices().refresh();
-    return created;
+    return { booked: true };
   }
 );

@@ -1,41 +1,58 @@
 <script lang="ts">
   import { getMyBookings, getMyInvoices } from '$lib/remote/booking.remote';
+  import { Button, Card, CardContent, CardHeader, CardTitle } from '@elmariam/ui';
+  import BedDouble from 'lucide-svelte/icons/bed-double';
+  import Receipt from 'lucide-svelte/icons/receipt';
+  import Plus from 'lucide-svelte/icons/plus';
 
-  const bookings = getMyBookings();
-  const invoices = getMyInvoices();
+  let bookingCount = $state(0);
+  let invoiceCount = $state(0);
+
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getMyBookings()
+      .then((d) => { bookingCount = d.length; })
+      .catch(() => { bookingCount = 0; });
+
+    getMyInvoices()
+      .then((d) => { invoiceCount = d.length; })
+      .catch(() => { invoiceCount = 0; });
+  });
 </script>
 
-<h1>Welcome Back</h1>
+<h1 class="mb-6 text-2xl font-bold text-foreground">Welcome Back</h1>
 
-<div class="grid">
-  {#await bookings then data}
-    <div class="card">
-      <h3>Bookings</h3>
-      <p class="number">{Array.isArray(data) ? data.length : 0}</p>
-      <a href="/portal/bookings">View all →</a>
-    </div>
-  {/await}
-  {#await invoices then data}
-    <div class="card">
-      <h3>Invoices</h3>
-      <p class="number">{Array.isArray(data) ? data.length : 0}</p>
-      <a href="/portal/invoices">View all →</a>
-    </div>
-  {/await}
-  <div class="card cta">
-    <h3>New Booking</h3>
-    <p>Book a room for your next stay.</p>
-    <a href="/portal/bookings/new" class="btn">Book Now</a>
-  </div>
+<div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <Card>
+    <CardHeader class="flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle class="text-sm font-medium text-muted-foreground">Bookings</CardTitle>
+      <BedDouble class="size-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <p class="text-3xl font-bold text-foreground">{bookingCount}</p>
+      <Button variant="link" href="/portal/bookings" class="px-0">View all →</Button>
+    </CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader class="flex-row items-center justify-between space-y-0 pb-2">
+      <CardTitle class="text-sm font-medium text-muted-foreground">Invoices</CardTitle>
+      <Receipt class="size-4 text-muted-foreground" />
+    </CardHeader>
+    <CardContent>
+      <p class="text-3xl font-bold text-foreground">{invoiceCount}</p>
+      <Button variant="link" href="/portal/invoices" class="px-0">View all →</Button>
+    </CardContent>
+  </Card>
+
+  <Card>
+    <CardHeader class="pb-2">
+      <CardTitle class="text-sm font-medium text-muted-foreground">New Booking</CardTitle>
+    </CardHeader>
+    <CardContent class="space-y-3">
+      <p class="text-sm text-muted-foreground">Book a room for your next stay.</p>
+      <Button href="/portal/bookings/new"><Plus /> Book Now</Button>
+    </CardContent>
+  </Card>
 </div>
-
-<style>
-  h1 { margin: 0 0 1.5rem; color: #1a1a2e; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
-  .card { background: #fff; border-radius: 8px; padding: 1.5rem; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  h3 { margin: 0 0 0.5rem; font-size: 0.9rem; text-transform: uppercase; color: #666; }
-  .number { font-size: 2rem; font-weight: 700; color: #1a1a2e; margin: 0 0 0.5rem; }
-  .card a { color: #c0392b; font-size: 0.9rem; }
-  .cta p { color: #666; font-size: 0.9rem; margin: 0 0 1rem; }
-  .btn { background: #1a1a2e; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; display: inline-block; }
-</style>

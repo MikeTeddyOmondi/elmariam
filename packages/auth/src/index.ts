@@ -22,6 +22,7 @@ export {
   canAccessStaffSection,
   permissionsFor,
   type Role,
+  type AssignableRole,
   type Permission,
   type AppId,
   type StaffSection,

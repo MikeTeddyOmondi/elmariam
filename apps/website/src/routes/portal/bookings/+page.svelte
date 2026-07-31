@@ -1,50 +1,94 @@
 <script lang="ts">
   import { getMyBookings } from '$lib/remote/booking.remote';
+  import {
+    Button,
+    Card,
+    CardContent,
+    Skeleton,
+    Table,
+    TableBody,
+    TableCell,
+    TableHead,
+    TableHeader,
+    TableRow,
+    messageFor
+  } from '@elmariam/ui';
+  import ArrowRight from 'lucide-svelte/icons/arrow-right';
+  import Plus from 'lucide-svelte/icons/plus';
 
-  const bookings = getMyBookings();
+  type Booking = Awaited<ReturnType<typeof getMyBookings>>[number];
+
+  let bookings = $state<Booking[]>([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable, which surfaces as
+  // `hydratable_missing_but_required` on the client.
+  $effect(() => {
+    getMyBookings()
+      .then((d) => { bookings = d; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
 </script>
 
-<div class="header">
-  <h1>My Bookings</h1>
-  <a href="/portal/bookings/new" class="btn">+ New Booking</a>
+<div class="mb-6 flex items-center justify-between">
+  <h1 class="text-2xl font-bold text-foreground">My Bookings</h1>
+  <Button href="/portal/bookings/new"><Plus /> New Booking</Button>
 </div>
 
-{#await bookings}
-  <p>Loading…</p>
-{:then data}
-  {#if data.length === 0}
-    <p class="empty">No bookings yet. <a href="/portal/bookings/new">Book a room</a>.</p>
-  {:else}
-    <table>
-      <thead>
-        <tr><th>Room Type</th><th>Check In</th><th>Check Out</th><th>Adults</th><th>Kids</th><th>Details</th></tr>
-      </thead>
-      <tbody>
-        {#each data as b}
-          <tr>
-            <td>{b.roomType}</td>
-            <td>{new Date(b.checkInDate).toLocaleDateString()}</td>
-            <td>{new Date(b.checkOutDate).toLocaleDateString()}</td>
-            <td>{b.numberAdults}</td>
-            <td>{b.numberKids}</td>
-            <td><a href="/portal/bookings/{b._id}">View →</a></td>
-          </tr>
+{#if loading}
+  <Card>
+    <CardContent class="space-y-3 py-6">
+      {#each { length: 4 } as _}
+        <Skeleton class="h-5 w-full" />
+      {/each}
+    </CardContent>
+  </Card>
+{:else if loadError}
+  <Card>
+    <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
+  </Card>
+{:else if bookings.length === 0}
+  <Card>
+    <CardContent class="py-10 text-center text-sm text-muted-foreground">
+      No bookings yet. <a class="text-accent underline" href="/portal/bookings/new">Book a room</a>.
+    </CardContent>
+  </Card>
+{:else}
+  <Card class="overflow-hidden">
+    <Table>
+      <TableHeader>
+        <TableRow>
+          <TableHead>Room Type</TableHead>
+          <TableHead>Check In</TableHead>
+          <TableHead>Check Out</TableHead>
+          <TableHead class="text-right">Adults</TableHead>
+          <TableHead class="text-right">Kids</TableHead>
+          <TableHead></TableHead>
+        </TableRow>
+      </TableHeader>
+      <TableBody>
+        {#each bookings as b}
+          <TableRow>
+            <TableCell class="font-medium capitalize">{b.roomType}</TableCell>
+            <TableCell>{new Date(b.checkInDate).toLocaleDateString()}</TableCell>
+            <TableCell>{new Date(b.checkOutDate).toLocaleDateString()}</TableCell>
+            <TableCell class="text-right">{b.numberAdults}</TableCell>
+            <TableCell class="text-right">{b.numberKids}</TableCell>
+            <TableCell class="text-right">
+              <Button
+                variant="ghost"
+                size="icon"
+                href="/portal/bookings/{b._id}"
+                aria-label="View booking details"
+              >
+                <ArrowRight />
+              </Button>
+            </TableCell>
+          </TableRow>
         {/each}
-      </tbody>
-    </table>
-  {/if}
-{:catch err}
-  <p class="error">{err.message}</p>
-{/await}
-
-<style>
-  .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; }
-  h1 { margin: 0; color: #1a1a2e; }
-  .btn { background: #1a1a2e; color: #fff; padding: 0.5rem 1rem; border-radius: 4px; text-decoration: none; font-size: 0.9rem; }
-  table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.1); }
-  th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  th { background: #f0f0f0; font-size: 0.85rem; text-transform: uppercase; color: #555; }
-  td a { color: #c0392b; }
-  .empty { color: #999; }
-  .error { color: red; }
-</style>
+      </TableBody>
+    </Table>
+  </Card>
+{/if}
