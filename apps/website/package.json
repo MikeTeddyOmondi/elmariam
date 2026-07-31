@@ -12,6 +12,7 @@
   "dependencies": {
     "@elmariam/auth": "workspace:*",
     "@elmariam/db": "workspace:*",
+    "@elmariam/queue": "workspace:^",
     "@elmariam/ui": "workspace:*",
     "@openauthjs/openauth": "^0.4.3",
     "better-result": "^2.9.2",

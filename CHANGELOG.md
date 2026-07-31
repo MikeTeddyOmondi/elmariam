@@ -29,6 +29,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Single-section roles no longer get a "Dashboard" entry, since `/` just redirects them to the section they are already on
 - `@elmariam/auth/rbac` subpath export added so components can import role helpers without pulling openauth into the client bundle
 
+### Added — contact form
+
+- `/contact` now works. It was a `// placeholder` that set `sent = true` and sent nothing, so every enquiry was silently discarded
+- `sendContactMessage` publishes to the `mails` queue; the SMTP consumer forwards the enquiry to `CONTACT_RECIPIENT` (falling back to `EMAIL_SENDER`) with `replyTo` set to the visitor, so replying from the inbox reaches them
+- On success the page thanks the sender and says the hotel will reach out soon. A queue failure surfaces as a form error rather than a false thank-you
+- New `contact-enquiry` mail type and Handlebars template in `services/integrations`
+
 ### Fixed — public website pages
 
 - **`/rooms` and `/restaurant` had been rendering empty.** Their `+page.server.ts` loads fetched `http://gateway:8009/api/public/{roomtypes,menu}` — a service removed in the rewrite — and swallowed the failure in a `catch` that returned `[]`. The pages showed "No room types available" and "Menu coming soon" indefinitely, with no error anywhere

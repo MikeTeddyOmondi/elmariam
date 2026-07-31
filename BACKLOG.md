@@ -85,7 +85,37 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 - [x] staff `barista/sales/new` — `checkoutBarSale`, dynamic cart via indexed `fields.checkoutDrinkItems[i]`
 - [x] staff `barista/drinks/new` — **deleted**. It POSTed to the removed gateway and drinks are admin-only; `barista` lost `drinks:write`
 - [x] staff `waiter/orders/new` — `createOrder`, dynamic line items via indexed `fields.items[i]`
-- [ ] website `contact` — placeholder, wire to the SMTP queue
+- [x] website `contact` — publishes to the `mails` queue and shows a thank-you confirmation
+
+## Planned — update & delete flows
+
+Creates and reads are done everywhere. Editing and removing records is the
+remaining gap. `management` must see these hidden/disabled (it holds no
+`*:write` or `*:delete`), and destructive actions use `AlertDialog` like
+admin `/users` already does.
+
+### `packages/db` — operations that do not exist yet
+
+- [ ] `operations/hotel.ts` — `updateCustomer`, `deleteCustomer`
+- [ ] `operations/hotel.ts` — `updateBooking`, `cancelBooking`, `checkOutBooking`
+- [ ] `operations/hotel.ts` — `updateRoom`, `deleteRoom`, `updateRoomType`, `deleteRoomType`
+- [ ] `operations/bar.ts` — `updateDrink`, `deleteDrink`, `updatePurchase`
+- [ ] `operations/restaurant.ts` — `deleteMenuItem`
+- Follow the existing `Result`-returning style used by `createBooking`
+
+### Remotes that exist but have no UI
+
+- [ ] admin `/users` — `updateUser` (edit-row form; `.for(user.id)`)
+- [ ] admin `/menu-items` — `updateMenuItem`
+- [ ] admin `/bar-sales` — `checkoutBarSale` (page is read-only today)
+- [ ] admin — no invoices route at all, though `getInvoices` exists and is guarded
+- [ ] `markOrderPaid` and `searchCustomer` in `packages/db` have no caller
+
+### New update/delete UI once the db ops land
+
+- [ ] admin: customers, bookings, rooms, room-types, bar-drinks, bar-purchases, menu-items
+- [ ] staff read-only pages get the row actions their role permits
+- [ ] website `portal/profile` — edit action (`createCustomer` exists for first-time setup; no update path)
 - [ ] login/register pages (×4) — replace ad-hoc `let error` state with `toastError`
 - [x] All three layouts render the shared `<Toaster />` from `@elmariam/ui`
 - [ ] Swap the remaining page-level `import { toast } from 'svelte-sonner'` to `@elmariam/ui`

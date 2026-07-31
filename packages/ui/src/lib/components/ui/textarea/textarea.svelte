@@ -2,8 +2,10 @@
   import type { HTMLTextareaAttributes } from "svelte/elements";
   import { cn } from "../../../utils.js";
 
+  // `value` is widened from `string`: `field.as('text')` spreads
+  // `string | number`, matching what `Input` already accepts.
   type Props = HTMLTextareaAttributes & {
-    value?: string;
+    value?: unknown;
     class?: string;
   };
 

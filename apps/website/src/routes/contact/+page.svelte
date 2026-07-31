@@ -1,71 +1,109 @@
 <script lang="ts">
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { sendContactMessage } from '$lib/remote/contact.remote';
+  import {
+    Button, Card, CardContent, Form, Input, Label, Textarea, toast, toastError
+  } from '@elmariam/ui';
+  import CheckCircle2 from 'lucide-svelte/icons/circle-check-big';
+  import Send from 'lucide-svelte/icons/send';
 
-  let name = $state('');
-  let email = $state('');
-  let message = $state('');
   let sent = $state(false);
-
-  function submit(e: SubmitEvent) {
-    e.preventDefault();
-    // placeholder — wire to API when available
-    sent = true;
-  }
-
-  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring transition-colors';
 </script>
 
 <svelte:head>
   <title>Contact Us — El'Mariam Hotel</title>
 </svelte:head>
 
-<div class="max-w-2xl mx-auto px-4 py-16">
-  <h1 class="text-3xl font-bold text-foreground mb-2">Contact Us</h1>
-  <p class="text-muted-foreground mb-8">
+<div class="mx-auto max-w-2xl px-4 py-16">
+  <h1 class="mb-2 text-3xl font-bold text-foreground">Contact Us</h1>
+  <p class="mb-8 text-muted-foreground">
     We'd love to hear from you. Reach out using the details below or send us a message.
   </p>
 
-  <!-- Contact info -->
-  <div class="bg-card border border-border rounded-xl px-5 py-4 mb-8 space-y-2 text-sm">
-    <div class="flex gap-3">
-      <span class="text-muted-foreground w-16 flex-shrink-0">Address</span>
-      <span class="text-foreground">El'Mariam Hotel, Nairobi, Kenya</span>
-    </div>
-    <div class="flex gap-3">
-      <span class="text-muted-foreground w-16 flex-shrink-0">Phone</span>
-      <span class="text-foreground">+254 700 000 000</span>
-    </div>
-    <div class="flex gap-3">
-      <span class="text-muted-foreground w-16 flex-shrink-0">Email</span>
-      <span class="text-foreground">info@elmariam.co.ke</span>
-    </div>
-  </div>
+  <Card class="mb-8">
+    <CardContent class="space-y-2 py-4 text-sm">
+      <div class="flex gap-3">
+        <span class="w-16 flex-shrink-0 text-muted-foreground">Address</span>
+        <span class="text-foreground">El'Mariam Hotel, Nairobi, Kenya</span>
+      </div>
+      <div class="flex gap-3">
+        <span class="w-16 flex-shrink-0 text-muted-foreground">Phone</span>
+        <span class="text-foreground">+254 700 000 000</span>
+      </div>
+      <div class="flex gap-3">
+        <span class="w-16 flex-shrink-0 text-muted-foreground">Email</span>
+        <span class="text-foreground">info@elmariam.co.ke</span>
+      </div>
+    </CardContent>
+  </Card>
 
-  <!-- Contact form -->
-  <h2 class="text-xl font-semibold text-foreground mb-4">Send a Message</h2>
+  <h2 class="mb-4 text-xl font-semibold text-foreground">Send a Message</h2>
 
   {#if sent}
-    <Alert>
-      <AlertDescription class="text-green-500">
-        Your message has been sent — we'll get back to you shortly.
-      </AlertDescription>
-    </Alert>
+    <Card>
+      <CardContent class="space-y-3 py-10 text-center">
+        <CheckCircle2 class="mx-auto size-10 text-emerald-500" />
+        <p class="text-lg font-semibold text-foreground">Thank you for contacting us</p>
+        <p class="text-sm text-muted-foreground">
+          We've received your message and will reach out to you soon.
+        </p>
+        <Button variant="outline" onclick={() => (sent = false)}>Send another message</Button>
+      </CardContent>
+    </Card>
   {:else}
-    <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm text-muted-foreground" for="name">Name</label>
-        <input id="name" type="text" bind:value={name} placeholder="Your name" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm text-muted-foreground" for="email">Email</label>
-        <input id="email" type="email" bind:value={email} placeholder="your@email.com" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-sm text-muted-foreground" for="message">Message</label>
-        <textarea id="message" bind:value={message} rows="5" placeholder="Your message…" required
-          class="{inputCls} resize-none"></textarea>
-      </div>
-      <Button type="submit" class="w-full">Send Message</Button>
-    </form>
+    <Card>
+      <CardContent class="py-6">
+        <!--
+          Previously a `// placeholder` that just set `sent = true` without
+          sending anything. It now publishes to the `mails` queue, which the
+          SMTP consumer forwards to the business inbox.
+        -->
+        <form
+          {...sendContactMessage.enhance(async ({ submit }) => {
+            try {
+              // `submit()` resolves false on validation issues; it does not throw.
+              const ok = await submit();
+              if (ok) {
+                sent = true;
+                toast.success('Message sent.');
+              }
+            } catch (e) {
+              toastError(e);
+            }
+          })}
+          class="space-y-4"
+        >
+          <Form.Message issues={sendContactMessage.fields.issues?.()} />
+
+          <Form.Field>
+            <Label for="name">Name</Label>
+            <Input id="name" placeholder="Your name" {...sendContactMessage.fields.name.as('text')} />
+            <Form.FieldErrors issues={sendContactMessage.fields.name.issues()} />
+          </Form.Field>
+
+          <Form.Field>
+            <Label for="email">Email</Label>
+            <Input id="email" placeholder="your@email.com" {...sendContactMessage.fields.email.as('email')} />
+            <Form.FieldErrors issues={sendContactMessage.fields.email.issues()} />
+          </Form.Field>
+
+          <Form.Field>
+            <Label for="message">Message</Label>
+            <Textarea
+              id="message"
+              rows={5}
+              placeholder="Your message…"
+              class="resize-none"
+              {...sendContactMessage.fields.message.as('text')}
+            />
+            <Form.FieldErrors issues={sendContactMessage.fields.message.issues()} />
+          </Form.Field>
+
+          <Button type="submit" class="w-full" disabled={sendContactMessage.pending > 0}>
+            <Send />
+            {sendContactMessage.pending > 0 ? 'Sending…' : 'Send Message'}
+          </Button>
+        </form>
+      </CardContent>
+    </Card>
   {/if}
 </div>
