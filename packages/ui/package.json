@@ -21,7 +21,6 @@
     "svelte": "^5.0.0",
     "svelte-check": "^3.6.0",
     "tailwindcss": "^4",
-    "tailwindcss-animate": "^1.0.7",
     "typescript": "^5.0.0"
   },
   "dependencies": {
