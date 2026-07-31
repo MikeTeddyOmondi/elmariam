@@ -70,13 +70,14 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 - [x] website `portal/bookings/new` — `createBooking` converted
 - [x] website `portal/{,bookings,invoices,profile}` — rebuilt on `Card`/`Table`/`Badge`/`Skeleton` + lucide icons; hardcoded `#fff`/`#1a1a2e` replaced with theme tokens so dark mode works
 - [ ] admin `/users` — `updateUser` still has no UI (edit-row form)
-- [ ] admin `/customers` — `createCustomer`
-- [ ] admin `/bookings` — `createBooking`
-- [ ] admin `/rooms` — `createRoom`
-- [ ] admin `/room-types` — `createRoomType`
-- [ ] admin `/bar-drinks` — `createDrink`; also delete the dead `+page.server.ts` stub
-- [ ] admin `/bar-purchases` — `createBarPurchase`
-- [ ] admin `/menu-items` — `createMenuItem`, `updateMenuItem` (no UI yet)
+- [x] admin `/customers` — `createCustomer`
+- [x] admin `/bookings` — `createBooking`
+- [x] admin `/rooms` — `createRoom`
+- [x] admin `/room-types` — `createRoomType`
+- [x] admin `/bar-drinks` — `createDrink`; dead `+page.server.ts` stub deleted
+- [x] admin `/bar-purchases` — `createBarPurchase`; product is now a drink picker rather than a free-text ObjectId box
+- [x] admin `/menu-items` — `createMenuItem`
+- [ ] admin `/menu-items` — `updateMenuItem` still has no UI
 - [ ] admin `/bar-sales` — wire the unused `checkoutBarSale`
 - [ ] staff `receptionist/customers/new` — `createCustomer`
 - [ ] staff `receptionist/bookings/new` — `createBooking`

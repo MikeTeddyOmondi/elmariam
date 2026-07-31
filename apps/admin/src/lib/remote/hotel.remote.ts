@@ -1,6 +1,6 @@
 import type { Result } from 'better-result';
-import { query, command } from '$app/server';
-import { error as httpError } from '@sveltejs/kit';
+import { query, command, form } from '$app/server';
+import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
 import {
   listCustomers,
@@ -21,6 +21,17 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
     err: (e) => { throw httpError(400, e.message); },
+  });
+}
+
+/**
+ * Unwraps inside a `form()` handler. Domain failures become `invalid()` so they
+ * render against the form rather than as an opaque 400.
+ */
+function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => invalid(e.message),
   });
 }
 
@@ -100,58 +111,73 @@ export const getOneBooking = query(v.string(), async (bookingId: string) => {
   return unwrap(await getBooking(bookingId));
 });
 
-export const createCustomer = command(
+// `form()` rather than `command()`: these submit without JavaScript and render
+// field-level issues inline. Numeric fields stay numeric in the schema —
+// `field.as('number')` on the input performs the FormData coercion.
+
+export const createCustomer = form(
   v.object({
-    firstname:    v.pipe(v.string(), v.minLength(1)),
-    lastname:     v.pipe(v.string(), v.minLength(1)),
-    id_number:    v.string(),
-    email:        v.pipe(v.string(), v.email()),
+    firstname:    v.pipe(v.string(), v.minLength(1, 'First name is required')),
+    lastname:     v.pipe(v.string(), v.minLength(1, 'Last name is required')),
+    id_number:    v.pipe(v.string(), v.minLength(1, 'ID number is required')),
+    email:        v.pipe(v.string(), v.email('Enter a valid email address')),
     phone_number: v.optional(v.string()),
   }),
   async (data) => {
     requirePermission('customers:write');
-    return unwrap(await dbCreateCustomer({
+    const created = unwrapForm(await dbCreateCustomer({
       ...data,
       phone_number: data.phone_number ? Number(data.phone_number) : undefined,
     }));
+    await getCustomers().refresh();
+    return created;
   }
 );
 
-export const createBooking = command(
+export const createBooking = form(
   v.object({
-    customerId:    v.string(),
-    numberAdults:  v.pipe(v.number(), v.minValue(1)),
-    numberKids:    v.pipe(v.number(), v.minValue(0)),
+    customerId:    v.pipe(v.string(), v.minLength(1, 'Select a customer')),
+    numberAdults:  v.pipe(v.number(), v.minValue(1, 'At least one adult is required')),
+    numberKids:    v.pipe(v.number(), v.minValue(0, 'Enter 0 or more')),
     roomType:      v.picklist(['single', 'double']),
-    checkInDate:   v.string(),
-    checkOutDate:  v.string(),
+    checkInDate:   v.pipe(v.string(), v.minLength(1, 'Pick a check-in date')),
+    checkOutDate:  v.pipe(v.string(), v.minLength(1, 'Pick a check-out date')),
     paymentMethod: v.picklist(['cash', 'mpesa', 'bank']),
   }),
   async (data) => {
     requirePermission('bookings:write');
-    return unwrap(await dbCreateBooking(data));
+    const created = unwrapForm(await dbCreateBooking(data));
+    await getBookings().refresh();
+    return created;
   }
 );
 
-export const createRoomType = command(
+export const createRoomType = form(
   v.object({
-    title:       v.string(),
-    description: v.string(),
-    rate:        v.number(),
-    capacity:    v.number(),
+    title:       v.pipe(v.string(), v.minLength(1, 'Title is required')),
+    description: v.pipe(v.string(), v.minLength(1, 'Description is required')),
+    rate:        v.pipe(v.number(), v.minValue(0, 'Rate cannot be negative')),
+    capacity:    v.pipe(v.number(), v.minValue(1, 'Capacity must be at least 1')),
     roomType:    v.picklist(['single', 'double']),
   }),
   async (data) => {
     requirePermission('roomtypes:write');
-    return unwrap(await dbCreateRoomType(data));
+    const created = unwrapForm(await dbCreateRoomType(data));
+    await getRoomTypes().refresh();
+    return created;
   }
 );
 
-export const createRoom = command(
-  v.object({ roomTypeId: v.string(), number: v.string() }),
+export const createRoom = form(
+  v.object({
+    roomTypeId: v.pipe(v.string(), v.minLength(1, 'Select a room type')),
+    number:     v.pipe(v.string(), v.minLength(1, 'Room number is required')),
+  }),
   async ({ roomTypeId, number }) => {
     requirePermission('rooms:write');
-    return unwrap(await dbCreateRoom(roomTypeId, { number }));
+    const created = unwrapForm(await dbCreateRoom(roomTypeId, { number }));
+    await getRooms().refresh();
+    return created;
   }
 );
 

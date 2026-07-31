@@ -1,6 +1,6 @@
 import type { Result } from 'better-result';
-import { query, command } from '$app/server';
-import { error as httpError } from '@sveltejs/kit';
+import { query, command, form } from '$app/server';
+import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
 import {
   listMenuItems, listOrders,
@@ -14,6 +14,14 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
     err: (e) => { throw httpError(400, e.message); },
+  });
+}
+
+/** Unwraps inside a `form()` handler — domain failures render on the form. */
+function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => invalid(e.message),
   });
 }
 
@@ -51,17 +59,20 @@ export const getOrders = query(async (): Promise<OrderView[]> => {
   return unwrap(await listOrders()) as unknown as OrderView[];
 });
 
-export const createMenuItem = command(
+export const createMenuItem = form(
   v.object({
-    name:        v.string(),
+    name:        v.pipe(v.string(), v.minLength(1, 'Name is required')),
     description: v.optional(v.string()),
     category:    v.picklist(['appetizer', 'main', 'dessert', 'beverage', 'side']),
-    price:       v.number(),
+    price:       v.pipe(v.number(), v.minValue(0, 'Price cannot be negative')),
+    // `field.as('checkbox')` handles the on/absent FormData quirk.
     isAvailable: v.optional(v.boolean()),
   }),
   async (data) => {
     requirePermission('menu:write');
-    return unwrap(await dbCreateMenuItem(data));
+    const created = unwrapForm(await dbCreateMenuItem(data));
+    await getMenuItems().refresh();
+    return created;
   }
 );
 

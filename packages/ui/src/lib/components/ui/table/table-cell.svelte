@@ -3,7 +3,11 @@
   import type { Snippet } from "svelte";
   import { cn } from "../../../utils.js";
 
+  // `HTMLAttributes` omits the cell-specific attributes, so they are declared
+  // here — empty-state rows need `colspan` to span the table.
   interface Props extends HTMLAttributes<HTMLTableCellElement> {
+    colspan?: number;
+    rowspan?: number;
     class?: string;
     children?: Snippet;
   }

@@ -1,38 +1,39 @@
 <script lang="ts">
-  import { Checkbox as CheckboxPrimitive } from "bits-ui";
-  import Check from "lucide-svelte/icons/check";
-  import Minus from "lucide-svelte/icons/minus";
+  import type { HTMLInputAttributes } from "svelte/elements";
   import { cn } from "../../../utils.js";
 
-  type Props = Omit<CheckboxPrimitive.RootProps, "children"> & { class?: string };
+  /**
+   * A styled native checkbox.
+   *
+   * Deliberately not the bits-ui checkbox: that renders a `<button>`, so it
+   * cannot accept the `type="checkbox"` / `checked` attributes that
+   * `field.as('checkbox')` spreads, and it submits nothing with JavaScript
+   * disabled. Remote `form()` submissions need a real input.
+   */
+  type Props = HTMLInputAttributes & {
+    checked?: boolean;
+    class?: string;
+  };
 
-  let {
-    checked = $bindable(false),
-    indeterminate = $bindable(false),
-    class: className,
-    ...restProps
-  }: Props = $props();
+  // `checked` is passed through rather than bound: `field.as('checkbox')`
+  // supplies it, and a `bind:` with its own default would clobber that value
+  // every time the form re-rendered after a submission.
+  let { checked = false, class: className, ...restProps }: Props = $props();
 </script>
 
-<CheckboxPrimitive.Root
-  bind:checked
-  bind:indeterminate
+<input
+  type="checkbox"
+  {checked}
   class={cn(
-    "peer size-4 shrink-0 rounded-sm border border-primary ring-offset-background",
+    "size-4 shrink-0 cursor-pointer appearance-none rounded-sm border border-primary",
+    "ring-offset-background transition-colors",
     "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
     "disabled:cursor-not-allowed disabled:opacity-50",
-    "data-[state=checked]:bg-primary data-[state=checked]:text-primary-foreground",
+    "checked:bg-primary checked:text-primary-foreground",
+    // The tick is drawn with a background image so no extra markup is needed.
+    "checked:bg-[url('data:image/svg+xml;charset=utf-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 24 24%22 fill=%22none%22 stroke=%22white%22 stroke-width=%223%22 stroke-linecap=%22round%22 stroke-linejoin=%22round%22%3E%3Cpolyline points=%2220 6 9 17 4 12%22/%3E%3C/svg%3E')]",
+    "checked:bg-center checked:bg-no-repeat",
     className
   )}
   {...restProps}
->
-  {#snippet children()}
-    <div class="flex size-full items-center justify-center text-current">
-      {#if indeterminate}
-        <Minus class="size-3.5" />
-      {:else if checked}
-        <Check class="size-3.5" />
-      {/if}
-    </div>
-  {/snippet}
-</CheckboxPrimitive.Root>
+/>

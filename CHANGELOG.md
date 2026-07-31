@@ -29,6 +29,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Single-section roles no longer get a "Dashboard" entry, since `/` just redirects them to the section they are already on
 - `@elmariam/auth/rbac` subpath export added so components can import role helpers without pulling openauth into the client bundle
 
+### Changed — admin forms
+
+- All seven admin create forms (`customers`, `bookings`, `rooms`, `room-types`, `bar-drinks`, `bar-purchases`, `menu-items`) converted to `form()` remote functions and rebuilt on shadcn components
+- Forms now sit in a **width-constrained `Card` (`max-w-2xl`)** with a two-column grid that collapses to one column on mobile, instead of stretching the full page width. Lists stay full width and scroll horizontally on small screens
+- Lists rebuilt on `Table`/`Badge`/`Skeleton`; row actions and submit buttons use lucide icons
+- Bar purchases: the "Product (Drink ID)" free-text box is now a select over the drinks catalogue — it previously required typing a raw ObjectId
+- Menu items: availability is a checkbox rather than a Yes/No select
+- Selects that map to a picklist now pass an explicit default (`as('select', 'single')`) so the first option is not silently chosen
+- `TableCell` / `TableHead` accept `colspan`/`rowspan`; `HTMLAttributes` omits them, so empty-state rows could not span the table
+- `Checkbox` is a styled native input rather than the bits-ui button: `field.as('checkbox')` supplies `type`/`checked` attributes a `<button>` cannot take, and a JS-driven control submits nothing with JavaScript disabled
+- Deleted the dead `apps/admin/src/routes/bar-drinks/+page.server.ts` stub
+
 ### Changed — forms
 
 - `createUser` / `updateUser` / `deleteUser` (admin) and `createBooking` (website) converted from `command()` to `form()`, so those pages submit without JavaScript and render field-level validation inline

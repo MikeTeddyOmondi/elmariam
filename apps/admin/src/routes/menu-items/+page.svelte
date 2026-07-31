@@ -1,125 +1,138 @@
 <script lang="ts">
   import { getMenuItems, createMenuItem, type MenuItemView } from '$lib/remote/restaurant.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import {
+    Badge, Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Form, Input, Label, Select,
+    Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    messageFor, toast, toastError
+  } from '@elmariam/ui';
+  import Plus from 'lucide-svelte/icons/plus';
 
-  let menuItems: MenuItemView[] = $state([]);
+  let items: MenuItemView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getMenuItems()
-      .then(d => { menuItems = d; loading = false; })
-      .catch(e => { loadError = e.message; loading = false; });
+      .then((d) => { items = d; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
   });
 
-  let name = $state('');
-  let category = $state<'appetizer'|'main'|'dessert'|'beverage'|'side'>('main');
-  let price = $state(0);
-  let description = $state('');
-  let isAvailable = $state(true);
-  let saving = $state(false);
-
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    saving = true;
-    try {
-      await createMenuItem({ name, category, price, description: description || undefined, isAvailable });
-      toast.success('Menu item added.');
-      name = ''; price = 0; description = ''; isAvailable = true;
-      getMenuItems().then(d => { menuItems = d; }).catch(() => {});
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    } finally { saving = false; }
-  }
-
-  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
-  const selectCls = `${inputCls} cursor-pointer`;
+  const CATEGORIES = ['appetizer', 'main', 'dessert', 'beverage', 'side'] as const;
 </script>
 
 <div class="space-y-6">
-  <h1 class="text-2xl font-bold text-foreground">Menu Items</h1>
-
-  <!-- Create form -->
-  <div class="bg-card border border-border rounded-xl p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4">Add Menu Item</h2>
-    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="mname">Name</label>
-        <input id="mname" bind:value={name} placeholder="e.g. Grilled Chicken" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="cat">Category</label>
-        <select id="cat" bind:value={category} required class={selectCls}>
-          {#each ['appetizer','main','dessert','beverage','side'] as c}
-            <option value={c}>{c}</option>
-          {/each}
-        </select>
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="mprice">Price (KES)</label>
-        <input id="mprice" type="number" min="0" step="0.01" bind:value={price} required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5 sm:col-span-2">
-        <label class="text-xs text-muted-foreground" for="desc">Description (optional)</label>
-        <input id="desc" bind:value={description} placeholder="Short description…" class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="avail">Available</label>
-        <select id="avail" bind:value={isAvailable} class={selectCls}>
-          <option value={true}>Yes</option>
-          <option value={false}>No</option>
-        </select>
-      </div>
-      <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
-        <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add Item'}</Button>
-      </div>
-    </form>
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Menu Items</h1>
+    <p class="mt-1 text-sm text-muted-foreground">Restaurant menu and pricing</p>
   </div>
 
-  <!-- List -->
-  <div class="bg-card border border-border rounded-xl overflow-hidden">
+  <Card class="max-w-2xl">
+    <CardHeader>
+      <CardTitle class="text-base">Add Menu Item</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <form
+        {...createMenuItem.enhance(async ({ submit }) => {
+          try {
+            const ok = await submit();
+            if (ok) toast.success('Menu item created.');
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="grid gap-4 sm:grid-cols-2"
+      >
+        <div class="sm:col-span-2 empty:hidden">
+          <Form.Message issues={createMenuItem.fields.issues?.()} />
+        </div>
+
+        <Form.Field>
+          <Label for="mname">Name</Label>
+          <Input id="mname" placeholder="e.g. Grilled Chicken" {...createMenuItem.fields.name.as('text')} />
+          <Form.FieldErrors issues={createMenuItem.fields.name.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="cat">Category</Label>
+          <Select id="cat" class="capitalize" {...createMenuItem.fields.category.as('select', 'main')}>
+            {#each CATEGORIES as c}<option value={c}>{c}</option>{/each}
+          </Select>
+          <Form.FieldErrors issues={createMenuItem.fields.category.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="mprice">Price (KES)</Label>
+          <Input id="mprice" min="0" step="0.01" {...createMenuItem.fields.price.as('number')} />
+          <Form.FieldErrors issues={createMenuItem.fields.price.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="desc">Description <span class="text-muted-foreground">(optional)</span></Label>
+          <Input id="desc" placeholder="Short description…" {...createMenuItem.fields.description.as('text')} />
+          <Form.FieldErrors issues={createMenuItem.fields.description.issues()} />
+        </Form.Field>
+
+        <div class="flex items-center gap-2 sm:col-span-2">
+          <!-- A checkbox rather than a Yes/No select: `as('checkbox')` handles
+               the on/absent FormData quirk so the schema stays a plain boolean. -->
+          <Checkbox id="avail" {...createMenuItem.fields.isAvailable.as('checkbox')} />
+          <Label for="avail">Available on the menu</Label>
+        </div>
+
+        <div class="sm:col-span-2 flex justify-end">
+          <Button type="submit" disabled={createMenuItem.pending > 0}>
+            <Plus />
+            {createMenuItem.pending > 0 ? 'Saving…' : 'Add Item'}
+          </Button>
+        </div>
+      </form>
+    </CardContent>
+  </Card>
+
+  <Card class="overflow-hidden">
     {#if loading}
-      <div class="divide-y divide-border">
-        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
-        {#each Array(5) as _}
-          <div class="flex gap-4 px-4 py-3">
-            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
-          </div>
+      <CardContent class="space-y-3 py-6">
+        {#each { length: 5 } as _}
+          <Skeleton class="h-5 w-full" />
         {/each}
-      </div>
+      </CardContent>
     {:else if loadError}
-      <div class="p-6 text-sm text-destructive">{loadError}</div>
+      <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
     {:else}
-      <table class="w-full text-sm">
-        <thead class="bg-secondary/50 border-b border-border">
-          <tr>
-            {#each ['Name','Category','Price (KES)','Available','Description'] as h}
-              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+      <div class="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>Category</TableHead>
+              <TableHead class="text-right">Price (KES)</TableHead>
+              <TableHead>Available</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {#each items as item}
+              <TableRow>
+                <TableCell class="font-medium text-foreground">{item.name}</TableCell>
+                <TableCell class="capitalize text-muted-foreground">{item.category}</TableCell>
+                <TableCell class="text-right text-muted-foreground">{item.price?.toLocaleString()}</TableCell>
+                <TableCell>
+                  <Badge variant={item.isAvailable ? 'success' : 'secondary'}>
+                    {item.isAvailable ? 'Yes' : 'No'}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            {:else}
+              <TableRow>
+                <TableCell colspan={4} class="py-6 text-center text-muted-foreground">
+                  No menu items found
+                </TableCell>
+              </TableRow>
             {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each menuItems as item}
-            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-foreground font-medium">{item.name}</td>
-              <td class="px-4 py-3 text-muted-foreground capitalize">{item.category}</td>
-              <td class="px-4 py-3 text-foreground">{item.price?.toLocaleString()}</td>
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                  {item.isAvailable ? 'bg-green-500/15 text-green-500' : 'bg-red-500/15 text-red-500'}">
-                  {item.isAvailable ? 'Yes' : 'No'}
-                </span>
-              </td>
-              <td class="px-4 py-3 text-muted-foreground">{item.description || '—'}</td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+          </TableBody>
+        </Table>
+      </div>
     {/if}
-  </div>
+  </Card>
 </div>

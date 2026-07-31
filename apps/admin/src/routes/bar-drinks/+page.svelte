@@ -1,136 +1,158 @@
 <script lang="ts">
   import { getDrinks, createDrink, type DrinkView } from '$lib/remote/bar.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import {
+    Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    messageFor, toast, toastError
+  } from '@elmariam/ui';
+  import Plus from 'lucide-svelte/icons/plus';
 
   let drinks: DrinkView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getDrinks()
-      .then(d => { drinks = d; loading = false; })
-      .catch(e => { loadError = e.message; loading = false; });
+      .then((d) => { drinks = d; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
   });
 
-  let drinkName         = $state('');
-  let drinkCode         = $state('');
-  let typeOfDrink       = $state<'spirit'|'beer'|'rtd'|'wine'|'water'>('beer');
-  let uom               = $state<'bottles'|'crates'|'pack'>('bottles');
-  let packageQty        = $state(24);
-  let buyingStockPrice  = $state(0);
-  let sellingStockPrice = $state(0);
-  let saving            = $state(false);
-
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    saving = true;
-    try {
-      await createDrink({ drinkName, drinkCode, typeOfDrink, uom, packageQty, buyingStockPrice, sellingStockPrice });
-      toast.success('Drink added successfully.');
-      drinkName = ''; drinkCode = ''; packageQty = 24; buyingStockPrice = 0; sellingStockPrice = 0;
-      getDrinks().then(d => { drinks = d; }).catch(() => {});
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    } finally { saving = false; }
-  }
-
-  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
-  const selectCls = `${inputCls} cursor-pointer`;
+  const DRINK_TYPES = ['spirit', 'beer', 'rtd', 'wine', 'water'] as const;
+  const UNITS = ['bottles', 'crates', 'pack'] as const;
 </script>
 
 <div class="space-y-6">
-  <h1 class="text-2xl font-bold text-foreground">Bar Drinks</h1>
-
-  <!-- Create form -->
-  <div class="bg-card border border-border rounded-xl p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4">Add Drink</h2>
-    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="drinkName">Name</label>
-        <input id="drinkName" bind:value={drinkName} placeholder="e.g. Tusker Lager" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="drinkCode">Code</label>
-        <input id="drinkCode" bind:value={drinkCode} placeholder="e.g. TUS001" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="typeOfDrink">Type</label>
-        <select id="typeOfDrink" bind:value={typeOfDrink} required class={selectCls}>
-          {#each ['spirit','beer','rtd','wine','water'] as t}<option value={t}>{t}</option>{/each}
-        </select>
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="uom">Unit of Measure</label>
-        <select id="uom" bind:value={uom} required class={selectCls}>
-          {#each ['bottles','crates','pack'] as u}<option value={u}>{u}</option>{/each}
-        </select>
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="packageQty">Package Qty</label>
-        <input id="packageQty" bind:value={packageQty} type="number" min="1" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="buyingPrice">Buying Price (KES)</label>
-        <input id="buyingPrice" bind:value={buyingStockPrice} type="number" min="0" step="0.01" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="sellingPrice">Selling Price (KES)</label>
-        <input id="sellingPrice" bind:value={sellingStockPrice} type="number" min="0" step="0.01" required class={inputCls} />
-      </div>
-      <div class="sm:col-span-2 flex items-end">
-        <Button type="submit" class="w-full" disabled={saving}>{saving ? 'Saving…' : 'Add Drink'}</Button>
-      </div>
-    </form>
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Bar Drinks</h1>
+    <p class="mt-1 text-sm text-muted-foreground">Bar inventory catalogue</p>
   </div>
 
-  <!-- List -->
-  <div class="bg-card border border-border rounded-xl overflow-hidden">
+  <Card class="max-w-2xl">
+    <CardHeader>
+      <CardTitle class="text-base">Add Drink</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <form
+        {...createDrink.enhance(async ({ submit }) => {
+          try {
+            const ok = await submit();
+            if (ok) toast.success('Drink created.');
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="grid gap-4 sm:grid-cols-2"
+      >
+        <div class="sm:col-span-2 empty:hidden">
+          <Form.Message issues={createDrink.fields.issues?.()} />
+        </div>
+
+        <Form.Field>
+          <Label for="drinkName">Name</Label>
+          <Input id="drinkName" placeholder="e.g. Tusker Lager" {...createDrink.fields.drinkName.as('text')} />
+          <Form.FieldErrors issues={createDrink.fields.drinkName.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="drinkCode">Code</Label>
+          <Input id="drinkCode" placeholder="e.g. TUS001" {...createDrink.fields.drinkCode.as('text')} />
+          <Form.FieldErrors issues={createDrink.fields.drinkCode.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="typeOfDrink">Type</Label>
+          <Select id="typeOfDrink" class="capitalize" {...createDrink.fields.typeOfDrink.as('select', 'beer')}>
+            {#each DRINK_TYPES as t}<option value={t}>{t}</option>{/each}
+          </Select>
+          <Form.FieldErrors issues={createDrink.fields.typeOfDrink.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="uom">Unit of Measure</Label>
+          <Select id="uom" class="capitalize" {...createDrink.fields.uom.as('select', 'bottles')}>
+            {#each UNITS as u}<option value={u}>{u}</option>{/each}
+          </Select>
+          <Form.FieldErrors issues={createDrink.fields.uom.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="packageQty">Package Qty</Label>
+          <Input id="packageQty" min="1" {...createDrink.fields.packageQty.as('number')} />
+          <Form.FieldErrors issues={createDrink.fields.packageQty.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="buyingPrice">Buying Price (KES)</Label>
+          <Input id="buyingPrice" min="0" step="0.01" {...createDrink.fields.buyingStockPrice.as('number')} />
+          <Form.FieldErrors issues={createDrink.fields.buyingStockPrice.issues()} />
+        </Form.Field>
+
+        <Form.Field class="sm:col-span-2">
+          <Label for="sellingPrice">Selling Price (KES)</Label>
+          <Input id="sellingPrice" min="0" step="0.01" {...createDrink.fields.sellingStockPrice.as('number')} />
+          <Form.FieldErrors issues={createDrink.fields.sellingStockPrice.issues()} />
+        </Form.Field>
+
+        <div class="sm:col-span-2 flex justify-end">
+          <Button type="submit" disabled={createDrink.pending > 0}>
+            <Plus />
+            {createDrink.pending > 0 ? 'Saving…' : 'Add Drink'}
+          </Button>
+        </div>
+      </form>
+    </CardContent>
+  </Card>
+
+  <Card class="overflow-hidden">
     {#if loading}
-      <div class="divide-y divide-border">
-        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
-        {#each Array(5) as _}
-          <div class="flex gap-3 px-4 py-3">
-            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-16 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-16 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-20 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-12 bg-secondary animate-pulse rounded"></div>
-          </div>
+      <CardContent class="space-y-3 py-6">
+        {#each { length: 5 } as _}
+          <Skeleton class="h-5 w-full" />
         {/each}
-      </div>
+      </CardContent>
     {:else if loadError}
-      <div class="p-6 text-sm text-destructive">{loadError}</div>
+      <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
     {:else}
-      <table class="w-full text-sm">
-        <thead class="bg-secondary/50 border-b border-border">
-          <tr>
-            {#each ['Code','Name','Type','UOM','Stock','Selling Price','In Stock'] as h}
-              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+      <div class="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Code</TableHead>
+              <TableHead>Name</TableHead>
+              <TableHead>Type</TableHead>
+              <TableHead>UOM</TableHead>
+              <TableHead class="text-right">Stock Qty</TableHead>
+              <TableHead class="text-right">Selling Price</TableHead>
+              <TableHead>In Stock</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {#each drinks as drink}
+              <TableRow>
+                <TableCell class="font-mono text-xs text-muted-foreground">{drink.drinkCode}</TableCell>
+                <TableCell class="font-medium text-foreground">{drink.drinkName}</TableCell>
+                <TableCell class="capitalize text-muted-foreground">{drink.typeOfDrink}</TableCell>
+                <TableCell class="capitalize text-muted-foreground">{drink.uom}</TableCell>
+                <TableCell class="text-right text-muted-foreground">{drink.stockQty}</TableCell>
+                <TableCell class="text-right text-muted-foreground">KES {drink.sellingPrice?.toLocaleString()}</TableCell>
+                <TableCell>
+                  <Badge variant={drink.inStock ? 'success' : 'destructive'}>
+                    {drink.inStock ? 'Yes' : 'No'}
+                  </Badge>
+                </TableCell>
+              </TableRow>
+            {:else}
+              <TableRow>
+                <TableCell colspan={7} class="py-6 text-center text-muted-foreground">
+                  No drinks found
+                </TableCell>
+              </TableRow>
             {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each drinks as d}
-            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{d.drinkCode}</td>
-              <td class="px-4 py-3 text-foreground font-medium">{d.drinkName}</td>
-              <td class="px-4 py-3 text-muted-foreground capitalize">{d.typeOfDrink}</td>
-              <td class="px-4 py-3 text-muted-foreground capitalize">{d.uom}</td>
-              <td class="px-4 py-3 text-foreground">{d.stockQty ?? 0}</td>
-              <td class="px-4 py-3 text-foreground">KES {d.sellingPrice?.toLocaleString()}</td>
-              <td class="px-4 py-3">
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
-                  {d.inStock ? 'bg-green-500/15 text-green-500' : 'bg-red-500/15 text-red-500'}">
-                  {d.inStock ? 'Yes' : 'No'}
-                </span>
-              </td>
-            </tr>
-          {/each}
-        </tbody>
-      </table>
+          </TableBody>
+        </Table>
+      </div>
     {/if}
-  </div>
+  </Card>
 </div>

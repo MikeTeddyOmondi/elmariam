@@ -1,113 +1,135 @@
 <script lang="ts">
   import { getCustomers, createCustomer, type CustomerView } from '$lib/remote/hotel.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import {
+    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Skeleton,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    messageFor, toast, toastError
+  } from '@elmariam/ui';
+  import UserPlus from 'lucide-svelte/icons/user-plus';
 
   let customers: CustomerView[] = $state([]);
   let loading = $state(true);
   let loadError = $state('');
 
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getCustomers()
-      .then(d => { customers = d; loading = false; })
-      .catch(e => { loadError = e.message; loading = false; });
+      .then((d) => { customers = d; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
   });
-
-  let firstname    = $state('');
-  let lastname     = $state('');
-  let id_number    = $state('');
-  let email        = $state('');
-  let phone_number = $state('');
-  let saving       = $state(false);
-
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    saving = true;
-    try {
-      await createCustomer({ firstname, lastname, id_number, email, phone_number: phone_number || undefined });
-      toast.success('Customer added.');
-      firstname = ''; lastname = ''; id_number = ''; email = ''; phone_number = '';
-      getCustomers().then(d => { customers = d; }).catch(() => {});
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    } finally { saving = false; }
-  }
-
-  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
 </script>
 
 <div class="space-y-6">
   <div>
     <h1 class="text-2xl font-bold text-foreground">Customers</h1>
-    <p class="text-sm text-muted-foreground mt-1">Registered hotel guests</p>
+    <p class="mt-1 text-sm text-muted-foreground">Registered hotel guests</p>
   </div>
 
-  <!-- Create form -->
-  <div class="bg-card border border-border rounded-xl p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4">Add Customer</h2>
-    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="fname">First Name</label>
-        <input id="fname" bind:value={firstname} placeholder="John" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="lname">Last Name</label>
-        <input id="lname" bind:value={lastname} placeholder="Doe" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="idno">ID Number</label>
-        <input id="idno" bind:value={id_number} placeholder="12345678" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="cemail">Email</label>
-        <input id="cemail" type="email" bind:value={email} placeholder="john@example.com" required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="phone">Phone (optional)</label>
-        <input id="phone" bind:value={phone_number} placeholder="+254700000000" class={inputCls} />
-      </div>
-      <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Add Customer'}</Button>
-    </form>
-  </div>
+  <!--
+    Constrained width rather than the full page: a six-field form stretched
+    across a wide monitor is hard to scan, and the two-column grid collapses to
+    one on mobile.
+  -->
+  <Card class="max-w-2xl">
+    <CardHeader>
+      <CardTitle class="text-base">Add Customer</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <form
+        {...createCustomer.enhance(async ({ submit }) => {
+          try {
+            // `submit()` resolves false on validation issues; it does not throw.
+            const ok = await submit();
+            if (ok) toast.success('Customer created.');
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="grid gap-4 sm:grid-cols-2"
+      >
+        <div class="sm:col-span-2 empty:hidden">
+          <Form.Message issues={createCustomer.fields.issues?.()} />
+        </div>
 
-  <!-- List -->
-  <div class="bg-card border border-border rounded-xl overflow-hidden">
+        <Form.Field>
+          <Label for="fname">First Name</Label>
+          <Input id="fname" placeholder="John" {...createCustomer.fields.firstname.as('text')} />
+          <Form.FieldErrors issues={createCustomer.fields.firstname.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="lname">Last Name</Label>
+          <Input id="lname" placeholder="Doe" {...createCustomer.fields.lastname.as('text')} />
+          <Form.FieldErrors issues={createCustomer.fields.lastname.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="idno">ID Number</Label>
+          <Input id="idno" placeholder="12345678" {...createCustomer.fields.id_number.as('text')} />
+          <Form.FieldErrors issues={createCustomer.fields.id_number.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="cemail">Email</Label>
+          <Input id="cemail" placeholder="john@example.com" {...createCustomer.fields.email.as('email')} />
+          <Form.FieldErrors issues={createCustomer.fields.email.issues()} />
+        </Form.Field>
+
+        <Form.Field class="sm:col-span-2">
+          <Label for="phone">Phone <span class="text-muted-foreground">(optional)</span></Label>
+          <Input id="phone" placeholder="+254700000000" {...createCustomer.fields.phone_number.as('tel')} />
+          <Form.FieldErrors issues={createCustomer.fields.phone_number.issues()} />
+        </Form.Field>
+
+        <div class="sm:col-span-2 flex justify-end">
+          <Button type="submit" disabled={createCustomer.pending > 0}>
+            <UserPlus />
+            {createCustomer.pending > 0 ? 'Saving…' : 'Add Customer'}
+          </Button>
+        </div>
+      </form>
+    </CardContent>
+  </Card>
+
+  <Card class="overflow-hidden">
     {#if loading}
-      <div class="divide-y divide-border">
-        <div class="h-10 bg-secondary/50 animate-pulse rounded"></div>
-        {#each Array(5) as _}
-          <div class="flex gap-4 px-4 py-3">
-            <div class="h-4 flex-1 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-28 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-40 bg-secondary animate-pulse rounded"></div>
-            <div class="h-4 w-24 bg-secondary animate-pulse rounded"></div>
-          </div>
+      <CardContent class="space-y-3 py-6">
+        {#each { length: 5 } as _}
+          <Skeleton class="h-5 w-full" />
         {/each}
-      </div>
+      </CardContent>
     {:else if loadError}
-      <div class="p-6 text-sm text-destructive">{loadError}</div>
+      <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
     {:else}
-      <table class="w-full text-sm">
-        <thead class="bg-secondary/50 border-b border-border">
-          <tr>
-            {#each ['Name','ID Number','Email','Phone'] as h}
-              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+      <div class="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Name</TableHead>
+              <TableHead>ID Number</TableHead>
+              <TableHead>Email</TableHead>
+              <TableHead>Phone</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {#each customers as c}
+              <TableRow>
+                <TableCell class="font-medium text-foreground">{c.firstname} {c.lastname}</TableCell>
+                <TableCell class="font-mono text-xs text-muted-foreground">{c.id_number}</TableCell>
+                <TableCell class="text-muted-foreground">{c.email}</TableCell>
+                <TableCell class="text-muted-foreground">{c.phone_number || '—'}</TableCell>
+              </TableRow>
+            {:else}
+              <TableRow>
+                <TableCell colspan={4} class="py-6 text-center text-muted-foreground">
+                  No customers found
+                </TableCell>
+              </TableRow>
             {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each customers as c}
-            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-foreground font-medium">{c.firstname} {c.lastname}</td>
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{c.id_number}</td>
-              <td class="px-4 py-3 text-muted-foreground">{c.email}</td>
-              <td class="px-4 py-3 text-muted-foreground">{c.phone_number || '—'}</td>
-            </tr>
-          {:else}
-            <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-muted-foreground">No customers found</td></tr>
-          {/each}
-        </tbody>
-      </table>
+          </TableBody>
+        </Table>
+      </div>
     {/if}
-  </div>
+  </Card>
 </div>

@@ -1,150 +1,169 @@
 <script lang="ts">
-  import { getBookings, createBooking, getCustomers, type BookingView, type CustomerView } from '$lib/remote/hotel.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import { getBookings, getCustomers, createBooking, type BookingView, type CustomerView } from '$lib/remote/hotel.remote';
+  import {
+    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+    messageFor, toast, toastError
+  } from '@elmariam/ui';
+  import CalendarPlus from 'lucide-svelte/icons/calendar-plus';
 
   let bookings: BookingView[] = $state([]);
-  let bookingsLoading = $state(true);
-  let bookingsError = $state('');
-
   let customers: CustomerView[] = $state([]);
-  let customersLoading = $state(true);
+  let loading = $state(true);
+  let loadError = $state('');
 
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
-    getBookings()
-      .then(d => { bookings = d; bookingsLoading = false; })
-      .catch(e => { bookingsError = e.message; bookingsLoading = false; });
-    getCustomers()
-      .then(d => { customers = d; customersLoading = false; })
-      .catch(() => { customersLoading = false; });
+    Promise.all([getBookings(), getCustomers()])
+      .then(([b, c]) => { bookings = b; customers = c; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
   });
-
-  let customerId    = $state('');
-  let numberAdults  = $state(1);
-  let numberKids    = $state(0);
-  let roomType      = $state<'single'|'double'>('single');
-  let checkInDate   = $state('');
-  let checkOutDate  = $state('');
-  let paymentMethod = $state<'cash'|'mpesa'|'bank'>('cash');
-  let saving        = $state(false);
-
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    saving = true;
-    try {
-      await createBooking({ customerId, numberAdults, numberKids, roomType, checkInDate, checkOutDate, paymentMethod });
-      toast.success('Booking created.');
-      customerId = ''; numberAdults = 1; numberKids = 0; checkInDate = ''; checkOutDate = '';
-      getBookings().then(d => { bookings = d; }).catch(() => {});
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    } finally { saving = false; }
-  }
-
-  const inputCls = 'w-full bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-ring';
-  const selectCls = `${inputCls} cursor-pointer`;
 </script>
 
 <div class="space-y-6">
   <div>
     <h1 class="text-2xl font-bold text-foreground">Bookings</h1>
-    <p class="text-sm text-muted-foreground mt-1">All hotel bookings</p>
+    <p class="mt-1 text-sm text-muted-foreground">Room reservations and stays</p>
   </div>
 
-  <!-- Create form -->
-  <div class="bg-card border border-border rounded-xl p-5">
-    <h2 class="text-base font-semibold text-foreground mb-4">New Booking</h2>
-    <form onsubmit={submit} class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-end">
-      <div class="flex flex-col gap-1.5 sm:col-span-2 lg:col-span-1">
-        <label class="text-xs text-muted-foreground" for="bcust">Customer (ID Number)</label>
-        {#if customersLoading}
-          <select disabled class={selectCls}><option>Loading…</option></select>
-        {:else}
-          <select id="bcust" bind:value={customerId} required class={selectCls}>
-            <option value="">Select customer</option>
-            {#each customers as c}<option value={c.id_number}>{c.firstname} {c.lastname} — {c.id_number}</option>{/each}
-          </select>
-        {/if}
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="btype">Room Type</label>
-        <select id="btype" bind:value={roomType} required class={selectCls}>
-          <option value="single">Single</option>
-          <option value="double">Double</option>
-        </select>
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="bpay">Payment Method</label>
-        <select id="bpay" bind:value={paymentMethod} required class={selectCls}>
-          <option value="cash">Cash</option>
-          <option value="mpesa">M-Pesa</option>
-          <option value="bank">Bank</option>
-        </select>
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="bcin">Check In</label>
-        <input id="bcin" type="date" bind:value={checkInDate} required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="bcout">Check Out</label>
-        <input id="bcout" type="date" bind:value={checkOutDate} required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="badults">Adults</label>
-        <input id="badults" type="number" min="1" bind:value={numberAdults} required class={inputCls} />
-      </div>
-      <div class="flex flex-col gap-1.5">
-        <label class="text-xs text-muted-foreground" for="bkids">Kids</label>
-        <input id="bkids" type="number" min="0" bind:value={numberKids} class={inputCls} />
-      </div>
-      <div class="sm:col-span-2 lg:col-span-3 flex justify-end">
-        <Button type="submit" disabled={saving}>{saving ? 'Saving…' : 'Create Booking'}</Button>
-      </div>
-    </form>
-  </div>
+  <Card class="max-w-2xl">
+    <CardHeader>
+      <CardTitle class="text-base">Create Booking</CardTitle>
+    </CardHeader>
+    <CardContent>
+      <form
+        {...createBooking.enhance(async ({ submit }) => {
+          try {
+            const ok = await submit();
+            if (ok) toast.success('Booking created.');
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="grid gap-4 sm:grid-cols-2"
+      >
+        <div class="sm:col-span-2 empty:hidden">
+          <Form.Message issues={createBooking.fields.issues?.()} />
+        </div>
 
-  <!-- List -->
-  <div class="bg-card border border-border rounded-xl overflow-hidden">
-    {#if bookingsLoading}
-      <div class="divide-y divide-border">
-        <div class="h-10 bg-secondary/50 animate-pulse"></div>
-        {#each {length: 5} as _}
-          <div class="flex gap-3 px-4 py-3">
-            <div class="h-4 w-24 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 flex-1 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 w-16 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 w-20 rounded bg-muted animate-pulse"></div>
-            <div class="h-4 w-20 rounded bg-muted animate-pulse"></div>
-          </div>
-        {/each}
-      </div>
-    {:else if bookingsError}
-      <div class="p-6 text-sm text-destructive">{bookingsError}</div>
-    {:else}
-      <table class="w-full text-sm">
-        <thead class="bg-secondary/50 border-b border-border">
-          <tr>
-            {#each ['Booking ID','Customer','Room Type','Check In','Check Out','Adults','Kids'] as h}
-              <th class="text-left px-4 py-3 text-xs font-medium text-muted-foreground uppercase">{h}</th>
+        <Form.Field class="sm:col-span-2">
+          <Label for="bcustomer">Customer</Label>
+          <!-- `createBooking` looks the customer up by ID number, not ObjectId. -->
+          <Select id="bcustomer" disabled={loading} {...createBooking.fields.customerId.as('select')}>
+            <option value="">{loading ? 'Loading…' : 'Select customer'}</option>
+            {#each customers as c}
+              <option value={c.id_number}>{c.firstname} {c.lastname} — {c.id_number}</option>
             {/each}
-          </tr>
-        </thead>
-        <tbody>
-          {#each bookings as b}
-            <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
-              <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{b.id}</td>
-              <td class="px-4 py-3 text-foreground">{b.customer?.firstname ?? '—'} {b.customer?.lastname ?? ''}</td>
-              <td class="px-4 py-3 text-muted-foreground capitalize">{b.roomType?.roomType ?? b.roomType ?? '—'}</td>
-              <td class="px-4 py-3 text-muted-foreground">{b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '—'}</td>
-              <td class="px-4 py-3 text-muted-foreground">{b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '—'}</td>
-              <td class="px-4 py-3 text-foreground">{b.numberAdults ?? 0}</td>
-              <td class="px-4 py-3 text-foreground">{b.numberKids ?? 0}</td>
-            </tr>
-          {:else}
-            <tr><td colspan="7" class="px-4 py-6 text-center text-sm text-muted-foreground">No bookings found</td></tr>
-          {/each}
-        </tbody>
-      </table>
+          </Select>
+          <Form.FieldErrors issues={createBooking.fields.customerId.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="badults">Adults</Label>
+          <Input id="badults" min="1" {...createBooking.fields.numberAdults.as('number')} />
+          <Form.FieldErrors issues={createBooking.fields.numberAdults.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="bkids">Kids</Label>
+          <Input id="bkids" min="0" {...createBooking.fields.numberKids.as('number')} />
+          <Form.FieldErrors issues={createBooking.fields.numberKids.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="broomtype">Room Type</Label>
+          <Select id="broomtype" {...createBooking.fields.roomType.as('select', 'single')}>
+            <option value="single">Single</option>
+            <option value="double">Double</option>
+          </Select>
+          <Form.FieldErrors issues={createBooking.fields.roomType.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="bpay">Payment Method</Label>
+          <Select id="bpay" {...createBooking.fields.paymentMethod.as('select', 'cash')}>
+            <option value="cash">Cash</option>
+            <option value="mpesa">M-Pesa</option>
+            <option value="bank">Bank Transfer</option>
+          </Select>
+          <Form.FieldErrors issues={createBooking.fields.paymentMethod.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="bcheckin">Check In</Label>
+          <Input id="bcheckin" {...createBooking.fields.checkInDate.as('date')} />
+          <Form.FieldErrors issues={createBooking.fields.checkInDate.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="bcheckout">Check Out</Label>
+          <Input id="bcheckout" {...createBooking.fields.checkOutDate.as('date')} />
+          <Form.FieldErrors issues={createBooking.fields.checkOutDate.issues()} />
+        </Form.Field>
+
+        <div class="sm:col-span-2 flex justify-end">
+          <Button type="submit" disabled={createBooking.pending > 0}>
+            <CalendarPlus />
+            {createBooking.pending > 0 ? 'Saving…' : 'Create Booking'}
+          </Button>
+        </div>
+      </form>
+    </CardContent>
+  </Card>
+
+  <Card class="overflow-hidden">
+    {#if loading}
+      <CardContent class="space-y-3 py-6">
+        {#each { length: 5 } as _}
+          <Skeleton class="h-5 w-full" />
+        {/each}
+      </CardContent>
+    {:else if loadError}
+      <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
+    {:else}
+      <div class="overflow-x-auto">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Booking ID</TableHead>
+              <TableHead>Customer</TableHead>
+              <TableHead>Room Type</TableHead>
+              <TableHead>Check In</TableHead>
+              <TableHead>Check Out</TableHead>
+              <TableHead class="text-right">Adults</TableHead>
+              <TableHead class="text-right">Kids</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {#each bookings as b}
+              <TableRow>
+                <TableCell class="font-mono text-xs text-muted-foreground">{b.id}</TableCell>
+                <TableCell class="text-foreground">
+                  {b.customer?.firstname ?? '—'} {b.customer?.lastname ?? ''}
+                </TableCell>
+                <TableCell class="capitalize text-muted-foreground">
+                  {b.roomType?.roomType ?? b.roomType ?? '—'}
+                </TableCell>
+                <TableCell class="text-muted-foreground">
+                  {b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '—'}
+                </TableCell>
+                <TableCell class="text-muted-foreground">
+                  {b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '—'}
+                </TableCell>
+                <TableCell class="text-right text-foreground">{b.numberAdults ?? 0}</TableCell>
+                <TableCell class="text-right text-foreground">{b.numberKids ?? 0}</TableCell>
+              </TableRow>
+            {:else}
+              <TableRow>
+                <TableCell colspan={7} class="py-6 text-center text-muted-foreground">
+                  No bookings found
+                </TableCell>
+              </TableRow>
+            {/each}
+          </TableBody>
+        </Table>
+      </div>
     {/if}
-  </div>
+  </Card>
 </div>

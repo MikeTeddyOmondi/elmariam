@@ -1,6 +1,6 @@
 import type { Result } from 'better-result';
-import { query, command } from '$app/server';
-import { error as httpError } from '@sveltejs/kit';
+import { query, form } from '$app/server';
+import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { listDrinks, listPurchases, listSales, createDrink as dbCreateDrink, createPurchase, createSale } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
@@ -9,6 +9,14 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
     err: (e) => { throw httpError(400, e.message); },
+  });
+}
+
+/** Unwraps inside a `form()` handler — domain failures render on the form. */
+function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => invalid(e.message),
   });
 }
 
@@ -64,41 +72,51 @@ export const getBarSales = query(async (): Promise<BarSaleView[]> => {
   return unwrap(await listSales()) as unknown as BarSaleView[];
 });
 
-export const createDrink = command(
+export const createDrink = form(
   v.object({
-    drinkName:         v.string(),
-    drinkCode:         v.string(),
+    drinkName:         v.pipe(v.string(), v.minLength(1, 'Name is required')),
+    drinkCode:         v.pipe(v.string(), v.minLength(1, 'Code is required')),
     typeOfDrink:       v.picklist(['spirit', 'beer', 'rtd', 'wine', 'water']),
     uom:               v.picklist(['bottles', 'crates', 'pack']),
-    packageQty:        v.number(),
-    buyingStockPrice:  v.number(),
-    sellingStockPrice: v.number(),
+    packageQty:        v.pipe(v.number(), v.minValue(1, 'Must be at least 1')),
+    buyingStockPrice:  v.pipe(v.number(), v.minValue(0, 'Cannot be negative')),
+    sellingStockPrice: v.pipe(v.number(), v.minValue(0, 'Cannot be negative')),
   }),
   async (data) => {
     requirePermission('drinks:write');
-    return unwrap(await dbCreateDrink(data));
+    const created = unwrapForm(await dbCreateDrink(data));
+    await getDrinks().refresh();
+    return created;
   }
 );
 
-export const createBarPurchase = command(
+export const createBarPurchase = form(
   v.object({
-    receiptNumber: v.string(),
-    product:       v.string(),
-    quantity:      v.number(),
-    supplier:      v.string(),
+    receiptNumber: v.pipe(v.string(), v.minLength(1, 'Receipt number is required')),
+    product:       v.pipe(v.string(), v.minLength(1, 'Select a product')),
+    quantity:      v.pipe(v.number(), v.minValue(1, 'Must be at least 1')),
+    supplier:      v.pipe(v.string(), v.minLength(1, 'Supplier is required')),
   }),
   async (data) => {
     requirePermission('bar_purchases:write');
-    return unwrap(await createPurchase(data));
+    const created = unwrapForm(await createPurchase(data));
+    await getBarPurchases().refresh();
+    return created;
   }
 );
 
-export const checkoutBarSale = command(
+/**
+ * The cart is a dynamic list built in the browser rather than flat FormData
+ * fields, so this one stays JS-driven and is submitted via `enhance`.
+ */
+export const checkoutBarSale = form(
   v.object({
     checkoutDrinkItems: v.array(v.object({ drinkId: v.string(), quantity: v.number() })),
   }),
   async (data) => {
     requirePermission('bar_sales:write');
-    return unwrap(await createSale(data));
+    const created = unwrapForm(await createSale(data));
+    await getBarSales().refresh();
+    return created;
   }
 );

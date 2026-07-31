@@ -4,6 +4,9 @@
   import { cn } from "../../../utils.js";
 
   interface Props extends HTMLAttributes<HTMLTableCellElement> {
+    colspan?: number;
+    rowspan?: number;
+    scope?: 'col' | 'row' | 'colgroup' | 'rowgroup';
     class?: string;
     children?: Snippet;
   }
