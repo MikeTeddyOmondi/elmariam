@@ -29,6 +29,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Single-section roles no longer get a "Dashboard" entry, since `/` just redirects them to the section they are already on
 - `@elmariam/auth/rbac` subpath export added so components can import role helpers without pulling openauth into the client bundle
 
+### Fixed — public website pages
+
+- **`/rooms` and `/restaurant` had been rendering empty.** Their `+page.server.ts` loads fetched `http://gateway:8009/api/public/{roomtypes,menu}` — a service removed in the rewrite — and swallowed the failure in a `catch` that returned `[]`. The pages showed "No room types available" and "Menu coming soon" indefinitely, with no error anywhere
+- Both now read from new public remote queries in `apps/website/src/lib/remote/catalog.remote.ts`, called in `$effect`; the `+page.server.ts` files are deleted
+- `getRoomTypes` moved out of `booking.remote.ts` into `catalog.remote.ts` so the public page and the portal booking form share one query
+- `/rooms`, `/restaurant` and `/about` rebuilt on `Card`/`Badge`/`Skeleton` with theme tokens — they hardcoded `#fff`, `#1a1a2e` and `#666`, so they ignored dark mode entirely
+
 ### Changed — staff forms
 
 - All five remaining staff create forms converted to `form()` remote functions and rebuilt on shadcn components in `max-w-lg`/`max-w-xl` cards

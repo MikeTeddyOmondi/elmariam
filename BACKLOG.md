@@ -94,9 +94,11 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 ### Website public pages still on hardcoded colours (broken in dark mode)
 
 - [x] `portal/bookings/new`, `portal/bookings/[id]`
-- [ ] `rooms/+page.svelte` (9 hardcoded values)
-- [ ] `restaurant/+page.svelte` (7)
-- [ ] `about/+page.svelte` (4)
+- [x] `rooms/+page.svelte` — also fixed: was fetching the removed gateway and silently rendering empty
+- [x] `restaurant/+page.svelte` — same gateway fix
+- [x] `about/+page.svelte`
+
+No `GATEWAY_URL` / `:8009` reference remains anywhere in `apps/` or `packages/`.
 
 ### Deferred
 

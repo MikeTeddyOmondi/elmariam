@@ -1,5 +1,6 @@
 <script lang="ts">
-  import { createBooking, getRoomTypes } from '$lib/remote/booking.remote';
+  import { createBooking } from '$lib/remote/booking.remote';
+  import { getRoomTypes } from '$lib/remote/catalog.remote';
   import { Button, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
 
   type RoomType = Awaited<ReturnType<typeof getRoomTypes>>[number];

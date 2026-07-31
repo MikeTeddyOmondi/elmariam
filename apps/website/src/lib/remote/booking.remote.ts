@@ -41,10 +41,8 @@ export const getMyInvoices = query(async (): Promise<IInvoice[]> => {
   return unwrap(await listInvoices({ customerId: customer.id }));
 });
 
-// Room types are public catalogue data — no ownership to scope.
-export const getRoomTypes = query(async (): Promise<IRoomType[]> => {
-  return unwrap(await listRoomTypes());
-});
+// Room types are public catalogue data and live in `catalog.remote.ts`,
+// shared with the public /rooms page — import `getRoomTypes` from there.
 
 export const getOneBooking = query(v.string(), async (bookingId: string): Promise<IBooking> => {
   requirePermission('bookings:read');

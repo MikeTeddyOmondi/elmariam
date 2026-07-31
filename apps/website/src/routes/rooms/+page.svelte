@@ -1,42 +1,62 @@
 <script lang="ts">
-  let { data } = $props();
+  import { getRoomTypes } from '$lib/remote/catalog.remote';
+  import { Badge, Button, Card, CardContent, Skeleton, messageFor } from '@elmariam/ui';
+
+  type RoomType = Awaited<ReturnType<typeof getRoomTypes>>[number];
+
+  let roomTypes = $state<RoomType[]>([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
+  //
+  // This replaces a `+page.server.ts` load that fetched
+  // `http://gateway:8009/api/public/roomtypes` — a service removed in the
+  // rewrite — and swallowed the failure in a `catch` returning an empty array,
+  // so the page rendered "No room types available" indefinitely.
+  $effect(() => {
+    getRoomTypes()
+      .then((d) => { roomTypes = d; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
 </script>
 
-<div class="page">
-  <h1>Our Rooms</h1>
-  <p class="subtitle">All rooms are fully furnished with modern amenities.</p>
+<div class="mx-auto max-w-6xl px-8 py-12">
+  <h1 class="mb-2 text-3xl font-bold text-foreground">Our Rooms</h1>
+  <p class="mb-8 text-muted-foreground">All rooms are fully furnished with modern amenities.</p>
 
-  <div class="grid">
-    {#each data.roomTypes as rt}
-      <div class="card">
-        <div class="room-type">{rt.roomType}</div>
-        <h2>{rt.title}</h2>
-        <p>{rt.description}</p>
-        <div class="details">
-          <span>Capacity: {rt.capacity} guests</span>
-          <span class="rate">KES {rt.rate?.toLocaleString()} / night</span>
-        </div>
-        <a href="/login" class="btn">Book This Room</a>
-      </div>
-    {/each}
-  </div>
-
-  {#if data.roomTypes.length === 0}
-    <p class="empty">No room types available at this time.</p>
+  {#if loading}
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {#each { length: 3 } as _}
+        <Card><CardContent class="space-y-3 py-6">
+          <Skeleton class="h-4 w-20" />
+          <Skeleton class="h-6 w-3/4" />
+          <Skeleton class="h-16 w-full" />
+          <Skeleton class="h-10 w-full" />
+        </CardContent></Card>
+      {/each}
+    </div>
+  {:else if loadError}
+    <p class="text-sm text-destructive">{loadError}</p>
+  {:else if roomTypes.length === 0}
+    <p class="mt-8 text-center text-muted-foreground">No room types available at this time.</p>
+  {:else}
+    <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {#each roomTypes as rt}
+        <Card class="flex flex-col">
+          <CardContent class="flex flex-1 flex-col gap-3 py-6">
+            <Badge variant="secondary" class="w-fit uppercase tracking-widest">{rt.roomType}</Badge>
+            <h2 class="text-xl font-semibold text-foreground">{rt.title}</h2>
+            <p class="flex-1 text-sm leading-relaxed text-muted-foreground">{rt.description}</p>
+            <div class="flex items-center justify-between text-sm">
+              <span class="text-muted-foreground">Capacity: {rt.capacity} guests</span>
+              <span class="font-bold text-foreground">KES {rt.rate?.toLocaleString()} / night</span>
+            </div>
+            <Button href="/login" class="w-full">Book This Room</Button>
+          </CardContent>
+        </Card>
+      {/each}
+    </div>
   {/if}
 </div>
-
-<style>
-  .page { max-width: 1100px; margin: 0 auto; padding: 3rem 2rem; }
-  h1 { margin: 0 0 0.5rem; font-size: 2rem; color: #1a1a2e; }
-  .subtitle { color: #666; margin: 0 0 2rem; }
-  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; }
-  .card { background: #fff; border-radius: 8px; padding: 1.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.08); display: flex; flex-direction: column; gap: 0.75rem; }
-  .room-type { text-transform: uppercase; font-size: 0.75rem; font-weight: 700; color: #c0392b; letter-spacing: 0.1em; }
-  h2 { margin: 0; font-size: 1.3rem; color: #1a1a2e; }
-  .card p { margin: 0; color: #666; line-height: 1.5; flex: 1; }
-  .details { display: flex; justify-content: space-between; font-size: 0.9rem; color: #555; }
-  .rate { font-weight: 700; color: #1a1a2e; }
-  .btn { background: #1a1a2e; color: #fff; padding: 0.6rem 1.25rem; border-radius: 4px; text-decoration: none; text-align: center; font-size: 0.9rem; }
-  .empty { color: #999; text-align: center; margin-top: 2rem; }
-</style>
