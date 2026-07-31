@@ -7,7 +7,19 @@ import { MongoStorage } from "./mongo-storage.js";
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from "@elmariam/queue";
 import { isRole, type Role } from "@elmariam/auth";
 
-const DATABASE_NAME = "elmariam";
+/** Application data — the `users` collection lives here. */
+const DATABASE_NAME = process.env.OPENAUTH_USERS_DB || "elmariam";
+
+/**
+ * Auth storage — password hashes, signing/encryption keys and refresh tokens.
+ *
+ * This is deliberately a *separate* database from the application data, and
+ * defaults to `openauth` because that is where the existing credentials are.
+ * Pointing it at the wrong database does not error: the issuer simply finds no
+ * `email/<address>/password` entry and reports every password as incorrect,
+ * while silently minting a new signing key.
+ */
+const STORAGE_DATABASE_NAME = process.env.OPENAUTH_STORAGE_DB || "openauth";
 const PORT = process.env.PORT || 3100;
 const DATABASE_URL = process.env.DATABASE_URL || "mongodb://mongo:27017";
 const IS_DEV = process.env.NODE_ENV !== "production";
@@ -86,7 +98,7 @@ async function getOrCreateUser(email: string) {
 
 const mongoStorage = MongoStorage({
   uri: DATABASE_URL,
-  database: DATABASE_NAME,
+  database: STORAGE_DATABASE_NAME,
   collection: "sessions",
   client: mongoClient,
 });

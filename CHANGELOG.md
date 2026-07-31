@@ -44,6 +44,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `infra/openauth` auto-provisioned users with `{email, userType, createdAt}` only, omitting the schema-required `username`/`id_number` and colliding on the non-sparse unique `id_number` index from the second signup onward
 - `infra/openauth` did not check `isActive`, so deactivated accounts could still log in
 - `sendCode` only logged verification codes to stdout; it now publishes to the `mails` queue in production
+- **"Password is incorrect" for valid passwords.** The issuer's storage adapter was pointed at the `elmariam` database while every credential lives in `openauth`. Nothing errors in that state — the issuer finds no `email/<address>/password` entry, rejects every login, and quietly mints a fresh signing key. Storage now defaults to `openauth` and is separate from the users database, both overridable via `OPENAUTH_STORAGE_DB` / `OPENAUTH_USERS_DB`
 - Staff app read `OPENAUTH_ISSUER` from bare `process.env` rather than `$env/dynamic/private`
 - `docker-compose.yml` did not set `NODE_ENV` for the issuer, which would have left dev-only behaviour active in production
 
