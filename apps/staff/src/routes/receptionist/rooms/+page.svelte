@@ -1,9 +1,19 @@
 <script lang="ts">
   import { getRooms, getRoomTypes } from '$lib/remote/hotel.remote';
-  import { Alert, AlertDescription } from '@elmariam/ui';
+  import { Alert, AlertDescription, messageFor } from '@elmariam/ui';
 
-  const rooms = getRooms();
-  const roomTypes = getRoomTypes();
+  let rooms = $state<Awaited<ReturnType<typeof getRooms>>>([] as never);
+  let roomTypes = $state<Awaited<ReturnType<typeof getRoomTypes>>>([] as never);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them
+  // eagerly fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    Promise.all([getRooms(), getRoomTypes()])
+      .then(([r, rt]) => { rooms = r; roomTypes = rt; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
 </script>
 
 <div class="space-y-8">
@@ -14,9 +24,12 @@
 
   <section class="space-y-3">
     <h2 class="text-base font-semibold text-foreground">All Rooms</h2>
-    {#await rooms}
+    {#if loading}
       <p class="text-sm text-muted-foreground">Loading…</p>
-    {:then data}
+    {:else if loadError}
+      <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
+    {:else}
+      {@const data = rooms}
       <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
         <table class="w-full text-sm">
           <thead class="bg-secondary/50">
@@ -40,16 +53,17 @@
           </tbody>
         </table>
       </div>
-    {:catch err}
-      <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
-    {/await}
+    {/if}
   </section>
 
   <section class="space-y-3">
     <h2 class="text-base font-semibold text-foreground">Room Types</h2>
-    {#await roomTypes}
+    {#if loading}
       <p class="text-sm text-muted-foreground">Loading…</p>
-    {:then data}
+    {:else if loadError}
+      <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
+    {:else}
+      {@const data = roomTypes}
       <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
         <table class="w-full text-sm">
           <thead class="bg-secondary/50">
@@ -71,8 +85,6 @@
           </tbody>
         </table>
       </div>
-    {:catch err}
-      <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
-    {/await}
+    {/if}
   </section>
 </div>

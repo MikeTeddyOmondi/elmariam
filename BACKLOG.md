@@ -49,9 +49,12 @@ already uses: `$state` + `$effect`, with `{#if loading}` / `{:else if loadError}
 markup instead of `{#await}`.
 
 - [x] website — 6 call sites across `portal/{,bookings,bookings/new,invoices,profile}`
-- [ ] staff `receptionist/` — 9 call sites (`+page`, `customers`, `bookings`, `bookings/new`, `invoices`, `rooms`)
-- [ ] staff `waiter/` — 5 call sites (`+page`, `menu`, `orders`, `orders/new`)
-- [ ] staff `barista/` — 9 call sites (`+page`, `drinks`, `purchases`, `purchases/new`, `sales`, `sales/new`)
+- [x] staff `receptionist/` — 9 call sites (`+page`, `customers`, `bookings`, `bookings/new`, `invoices`, `rooms`)
+- [x] staff `waiter/` — 5 call sites (`+page`, `menu`, `orders`, `orders/new`)
+- [x] staff `barista/` — 9 call sites (`+page`, `drinks`, `purchases`, `purchases/new`, `sales`, `sales/new`)
+
+No `{#await}` on a remote query remains in either app; `grep -rn "{#await"` over
+`apps/*/src/routes` returns nothing.
 
 ### Conversion checklist — each form to `form()` + shadcn components
 

@@ -1,9 +1,20 @@
 <script lang="ts">
   import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button, Alert, AlertDescription, messageFor } from '@elmariam/ui';
 
-  const orders = getOrders();
+  type Row = Awaited<ReturnType<typeof getOrders>>[number];
 
+  let orders = $state<Row[]>([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them
+  // eagerly fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getOrders()
+      .then((d) => { orders = d as Row[]; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
   type OrderStatus = 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
   const TRANSITIONS: Partial<Record<OrderStatus, OrderStatus[]>> = {
     pending:   ['preparing', 'cancelled'],
@@ -53,9 +64,12 @@
     </Alert>
   {/if}
 
-  {#await orders}
+  {#if loading}
     <p class="text-sm text-muted-foreground">Loading…</p>
-  {:then data}
+  {:else if loadError}
+    <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
+  {:else}
+      {@const data = orders}
     <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
       <table class="w-full text-sm">
         <thead class="bg-secondary/50">
@@ -89,7 +103,5 @@
         </tbody>
       </table>
     </div>
-  {:catch err}
-    <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
-  {/await}
+  {/if}
 </div>

@@ -1,8 +1,20 @@
 <script lang="ts">
   import { getCustomers } from '$lib/remote/hotel.remote';
-  import { Alert, AlertDescription } from '@elmariam/ui';
+  import { Alert, AlertDescription, messageFor } from '@elmariam/ui';
 
-  const customers = getCustomers();
+  type Row = Awaited<ReturnType<typeof getCustomers>>[number];
+
+  let customers = $state<Row[]>([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them
+  // eagerly fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getCustomers()
+      .then((d) => { customers = d as Row[]; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
 </script>
 
 <div class="space-y-6">
@@ -17,9 +29,12 @@
     </a>
   </div>
 
-  {#await customers}
+  {#if loading}
     <p class="text-sm text-muted-foreground">Loading…</p>
-  {:then data}
+  {:else if loadError}
+    <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
+  {:else}
+      {@const data = customers}
     <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
       <table class="w-full text-sm">
         <thead class="bg-secondary/50">
@@ -41,7 +56,5 @@
         </tbody>
       </table>
     </div>
-  {:catch err}
-    <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
-  {/await}
+  {/if}
 </div>

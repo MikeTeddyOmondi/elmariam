@@ -3,8 +3,23 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const customers = getCustomers();
+  let customers = $state<Awaited<ReturnType<typeof getCustomers>>>([] as never);
 
+  let loading = $state(true);
+
+  // Queries run in $effect, not at component top level: calling them
+
+  // eagerly fetches during SSR and the result is not hydratable.
+
+  $effect(() => {
+
+    getCustomers()
+
+      .then((d) => { customers = d; loading = false; })
+
+      .catch(() => { loading = false; });
+
+  });
   let customerId = $state('');
   let numberAdults = $state(1);
   let numberKids = $state(0);
@@ -32,16 +47,16 @@
   <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
     <div class="flex flex-col gap-1.5">
       <label class="text-sm text-muted-foreground" for="customer">Customer</label>
-      {#await customers}
+      {#if loading}
         <select id="customer" disabled class="bg-background border border-input rounded-md px-3 py-2 text-sm text-muted-foreground"><option>Loading…</option></select>
-      {:then data}
+      {:else}
         <select id="customer" bind:value={customerId} required class="bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring">
           <option value="">Select customer</option>
-          {#each data as c}
+          {#each customers as c}
             <option value={c._id}>{c.firstname} {c.lastname} — {c.id_number}</option>
           {/each}
         </select>
-      {/await}
+      {/if}
     </div>
     <div class="grid grid-cols-2 gap-4">
       <div class="flex flex-col gap-1.5">

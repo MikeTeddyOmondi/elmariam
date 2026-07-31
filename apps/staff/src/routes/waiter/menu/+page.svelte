@@ -1,8 +1,20 @@
 <script lang="ts">
   import { getMenuItems } from '$lib/remote/restaurant.remote';
-  import { Alert, AlertDescription } from '@elmariam/ui';
+  import { Alert, AlertDescription, messageFor } from '@elmariam/ui';
 
-  const menuItems = getMenuItems();
+  type Row = Awaited<ReturnType<typeof getMenuItems>>[number];
+
+  let menuItems = $state<Row[]>([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them
+  // eagerly fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getMenuItems()
+      .then((d) => { menuItems = d as Row[]; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
 </script>
 
 <div class="space-y-6">
@@ -11,9 +23,12 @@
     <p class="text-sm text-muted-foreground mt-1">Available restaurant items</p>
   </div>
 
-  {#await menuItems}
+  {#if loading}
     <p class="text-sm text-muted-foreground">Loading…</p>
-  {:then data}
+  {:else if loadError}
+    <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
+  {:else}
+      {@const data = menuItems}
     <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
       <table class="w-full text-sm">
         <thead class="bg-secondary/50">
@@ -40,7 +55,5 @@
         </tbody>
       </table>
     </div>
-  {:catch err}
-    <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
-  {/await}
+  {/if}
 </div>

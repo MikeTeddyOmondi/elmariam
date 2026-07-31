@@ -1,8 +1,20 @@
 <script lang="ts">
   import { getBookings, initiateMpesaPayment, sendSmsNotification } from '$lib/remote/hotel.remote';
-  import { Button, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button, Alert, AlertDescription, messageFor } from '@elmariam/ui';
 
-  const bookings = getBookings();
+  type Row = Awaited<ReturnType<typeof getBookings>>[number];
+
+  let bookings = $state<Row[]>([]);
+  let loading = $state(true);
+  let loadError = $state('');
+
+  // Queries run in $effect, not at component top level: calling them
+  // eagerly fetches during SSR and the result is not hydratable.
+  $effect(() => {
+    getBookings()
+      .then((d) => { bookings = d as Row[]; loading = false; })
+      .catch((e) => { loadError = messageFor(e); loading = false; });
+  });
   let actionMsg = $state('');
   let actionError = $state(false);
 
@@ -47,9 +59,12 @@
     </Alert>
   {/if}
 
-  {#await bookings}
+  {#if loading}
     <p class="text-sm text-muted-foreground">Loading…</p>
-  {:then data}
+  {:else if loadError}
+    <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
+  {:else}
+      {@const data = bookings}
     <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
       <table class="w-full text-sm">
         <thead class="bg-secondary/50">
@@ -79,7 +94,5 @@
         </tbody>
       </table>
     </div>
-  {:catch err}
-    <Alert variant="destructive"><AlertDescription>{err.message}</AlertDescription></Alert>
-  {/await}
+  {/if}
 </div>

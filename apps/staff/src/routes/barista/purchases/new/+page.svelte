@@ -3,8 +3,23 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const drinks = getDrinks();
+  let drinks = $state<Awaited<ReturnType<typeof getDrinks>>>([] as never);
 
+  let loading = $state(true);
+
+  // Queries run in $effect, not at component top level: calling them
+
+  // eagerly fetches during SSR and the result is not hydratable.
+
+  $effect(() => {
+
+    getDrinks()
+
+      .then((d) => { drinks = d; loading = false; })
+
+      .catch(() => { loading = false; });
+
+  });
   let receiptNumber = $state('');
   let product = $state('');
   let quantity = $state(1);
@@ -38,16 +53,16 @@
     </div>
     <div class="flex flex-col gap-1.5">
       <label class="text-sm text-muted-foreground" for="product">Product</label>
-      {#await drinks}
+      {#if loading}
         <select id="product" disabled class={inputCls}><option>Loading…</option></select>
-      {:then data}
+      {:else}
         <select id="product" bind:value={product} required class={inputCls}>
           <option value="">Select drink</option>
-          {#each data as d}
+          {#each drinks as d}
             <option value={d._id}>{d.drinkName} ({d.drinkCode})</option>
           {/each}
         </select>
-      {/await}
+      {/if}
     </div>
     <div class="flex flex-col gap-1.5">
       <label class="text-sm text-muted-foreground" for="qty">Quantity</label>

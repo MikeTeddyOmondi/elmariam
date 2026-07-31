@@ -3,8 +3,23 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const drinks = getDrinks();
+  let drinks = $state<Awaited<ReturnType<typeof getDrinks>>>([] as never);
 
+  let loading = $state(true);
+
+  // Queries run in $effect, not at component top level: calling them
+
+  // eagerly fetches during SSR and the result is not hydratable.
+
+  $effect(() => {
+
+    getDrinks()
+
+      .then((d) => { drinks = d; loading = false; })
+
+      .catch(() => { loading = false; });
+
+  });
   type LineItem = { drinkId: string; quantity: number };
   let items = $state<LineItem[]>([{ drinkId: '', quantity: 1 }]);
 
@@ -35,12 +50,11 @@
   </div>
 
   <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
-    {#await drinks then drinkList}
-      {#each items as item, i}
+          {#each items as item, i}
         <div class="flex gap-2 items-center">
           <select bind:value={item.drinkId} required class={selectCls}>
             <option value="">Select drink</option>
-            {#each drinkList as d}
+            {#each drinks as d}
               <option value={d._id}>{d.drinkName} ({d.drinkCode}) — stock: {d.stockQty}</option>
             {/each}
           </select>
@@ -49,7 +63,7 @@
             class="px-2 py-2 rounded-md text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">✕</button>
         </div>
       {/each}
-    {/await}
+
     <button type="button" onclick={addItem}
       class="text-sm text-muted-foreground hover:text-foreground border border-border rounded-md px-3 py-2 transition-colors">
       + Add Item

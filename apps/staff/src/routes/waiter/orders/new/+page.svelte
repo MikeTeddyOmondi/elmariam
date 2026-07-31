@@ -3,8 +3,23 @@
   import { Button } from '@elmariam/ui';
   import { toast } from 'svelte-sonner';
 
-  const menuItems = getMenuItems();
+  let menuItems = $state<Awaited<ReturnType<typeof getMenuItems>>>([] as never);
 
+  let loading = $state(true);
+
+  // Queries run in $effect, not at component top level: calling them
+
+  // eagerly fetches during SSR and the result is not hydratable.
+
+  $effect(() => {
+
+    getMenuItems()
+
+      .then((d) => { menuItems = d; loading = false; })
+
+      .catch(() => { loading = false; });
+
+  });
   type LineItem = { menuItemId: string; quantity: number };
   let items = $state<LineItem[]>([{ menuItemId: '', quantity: 1 }]);
   let tableNumber = $state<number | undefined>(undefined);
@@ -42,12 +57,11 @@
       <input id="table" type="number" bind:value={tableNumber} min="1" class="w-32 {inputCls}" />
     </div>
 
-    {#await menuItems then menu}
-      {#each items as item, i}
+          {#each items as item, i}
         <div class="flex gap-2 items-center">
           <select bind:value={item.menuItemId} required class={selectCls}>
             <option value="">Select item</option>
-            {#each menu.filter((m: any) => m.isAvailable) as m}
+            {#each menuItems.filter((m: any) => m.isAvailable) as m}
               <option value={m._id}>{m.name} — KES {m.price?.toLocaleString()}</option>
             {/each}
           </select>
@@ -56,7 +70,7 @@
             class="px-2 py-2 rounded-md text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">✕</button>
         </div>
       {/each}
-    {/await}
+
 
     <button type="button" onclick={addItem}
       class="text-sm text-muted-foreground hover:text-foreground border border-border rounded-md px-3 py-2 transition-colors">
