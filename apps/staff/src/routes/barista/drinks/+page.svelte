@@ -18,15 +18,11 @@
 </script>
 
 <div class="space-y-6">
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-bold text-foreground">Drinks</h1>
-      <p class="text-sm text-muted-foreground mt-1">Bar inventory catalog</p>
-    </div>
-    <a href="/barista/drinks/new"
-      class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
-      + Add Drink
-    </a>
+  <div>
+    <h1 class="text-2xl font-bold text-foreground">Drinks</h1>
+    <!-- Read-only for baristas: new drinks are added in the admin app. Stock
+         moves through purchases and sales, not through the catalogue. -->
+    <p class="mt-1 text-sm text-muted-foreground">Bar inventory catalog</p>
   </div>
 
   {#if loading}

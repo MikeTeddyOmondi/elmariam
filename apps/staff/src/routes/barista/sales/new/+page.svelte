@@ -1,73 +1,98 @@
 <script lang="ts">
   import { checkoutBarSale, getDrinks } from '$lib/remote/bar.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import { Button, Card, CardContent, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import Plus from 'lucide-svelte/icons/plus';
+  import X from 'lucide-svelte/icons/x';
 
   let drinks = $state<Awaited<ReturnType<typeof getDrinks>>>([] as never);
-
   let loading = $state(true);
 
-  // Queries run in $effect, not at component top level: calling them
-
-  // eagerly fetches during SSR and the result is not hydratable.
-
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
-
     getDrinks()
-
       .then((d) => { drinks = d; loading = false; })
-
       .catch(() => { loading = false; });
-
   });
-  type LineItem = { drinkId: string; quantity: number };
-  let items = $state<LineItem[]>([{ drinkId: '', quantity: 1 }]);
 
-  function addItem() { items = [...items, { drinkId: '', quantity: 1 }]; }
-  function removeItem(i: number) { items = items.filter((_, idx) => idx !== i); }
+  // Only the row count is client state. The values themselves live on the form
+  // fields, so `fields.checkoutDrinkItems[i]` generates the indexed input names
+  // the server schema expects.
+  let rowCount = $state(1);
 
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    const valid = items.filter((it) => it.drinkId && it.quantity > 0);
-    if (!valid.length) { toast.error('Add at least one item.'); return; }
-    try {
-      await checkoutBarSale({ checkoutDrinkItems: valid });
-      toast.success('Sale recorded.');
-      items = [{ drinkId: '', quantity: 1 }];
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    }
-  }
-
-  const selectCls = 'flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring';
-  const inputCls = 'w-20 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring';
+  const rows = $derived(Array.from({ length: rowCount }, (_, i) => i));
 </script>
 
-<div class="space-y-6 max-w-xl">
+<div class="max-w-xl space-y-6">
   <div>
-    <a href="/barista/sales" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
-    <h1 class="text-2xl font-bold text-foreground mt-2">New Sale</h1>
+    <a href="/barista/sales" class="text-sm text-muted-foreground transition-colors hover:text-foreground">
+      ← Back
+    </a>
+    <h1 class="mt-2 text-2xl font-bold text-foreground">New Sale</h1>
   </div>
 
-  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
-          {#each items as item, i}
-        <div class="flex gap-2 items-center">
-          <select bind:value={item.drinkId} required class={selectCls}>
-            <option value="">Select drink</option>
-            {#each drinks as d}
-              <option value={d._id}>{d.drinkName} ({d.drinkCode}) — stock: {d.stockQty}</option>
-            {/each}
-          </select>
-          <input type="number" bind:value={item.quantity} min="1" placeholder="Qty" required class={inputCls} />
-          <button type="button" onclick={() => removeItem(i)}
-            class="px-2 py-2 rounded-md text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">✕</button>
-        </div>
-      {/each}
+  <Card>
+    <CardContent class="py-6">
+      <form
+        {...checkoutBarSale.enhance(async ({ submit }) => {
+          try {
+            const ok = await submit();
+            if (ok) {
+              toast.success('Sale recorded.');
+              rowCount = 1;
+            }
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="space-y-4"
+      >
+        <Form.Message issues={checkoutBarSale.fields.issues?.()} />
 
-    <button type="button" onclick={addItem}
-      class="text-sm text-muted-foreground hover:text-foreground border border-border rounded-md px-3 py-2 transition-colors">
-      + Add Item
-    </button>
-    <Button type="submit" class="w-full">Checkout</Button>
-  </form>
+        <div class="space-y-3">
+          {#each rows as i (i)}
+            {@const row = checkoutBarSale.fields.checkoutDrinkItems[i]}
+            <div class="flex items-end gap-2">
+              <div class="flex-1 space-y-2">
+                <Label class="sr-only" for="drink-{i}">Drink</Label>
+                <Select id="drink-{i}" disabled={loading} {...row.drinkId.as('select')}>
+                  <option value="">{loading ? 'Loading…' : 'Select drink'}</option>
+                  {#each drinks as d}
+                    <option value={d.id}>{d.drinkName} ({d.drinkCode}) — stock: {d.stockQty}</option>
+                  {/each}
+                </Select>
+                <Form.FieldErrors issues={row.drinkId.issues()} />
+              </div>
+
+              <div class="w-24 space-y-2">
+                <Label class="sr-only" for="qty-{i}">Quantity</Label>
+                <Input id="qty-{i}" min="1" placeholder="Qty" {...row.quantity.as('number', 1)} />
+                <Form.FieldErrors issues={row.quantity.issues()} />
+              </div>
+
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="text-destructive hover:text-destructive"
+                aria-label="Remove item {i + 1}"
+                disabled={rowCount === 1}
+                onclick={() => (rowCount -= 1)}
+              >
+                <X />
+              </Button>
+            </div>
+          {/each}
+        </div>
+
+        <Button type="button" variant="outline" onclick={() => (rowCount += 1)}>
+          <Plus /> Add Item
+        </Button>
+
+        <Button type="submit" class="w-full" disabled={checkoutBarSale.pending > 0}>
+          {checkoutBarSale.pending > 0 ? 'Processing…' : 'Checkout'}
+        </Button>
+      </form>
+    </CardContent>
+  </Card>
 </div>

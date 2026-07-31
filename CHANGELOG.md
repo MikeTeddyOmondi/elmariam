@@ -29,6 +29,19 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Single-section roles no longer get a "Dashboard" entry, since `/` just redirects them to the section they are already on
 - `@elmariam/auth/rbac` subpath export added so components can import role helpers without pulling openauth into the client bundle
 
+### Changed — staff forms
+
+- All five remaining staff create forms converted to `form()` remote functions and rebuilt on shadcn components in `max-w-lg`/`max-w-xl` cards
+- `barista/sales/new` and `waiter/orders/new` keep their dynamic line-item lists, but the values now live on indexed form fields (`fields.items[i].quantity`) rather than client `$state`, so the server schema receives them through normal FormData
+- `waiter/orders/new` enforces "at least one item" in the schema instead of a client-side check
+- `barista/purchases/new` product is a drink picker
+
+### Removed
+
+- `apps/staff/src/routes/barista/drinks/new` — it POSTed a multipart body to the API gateway on `:8009`, which was removed in the rewrite, so the page had been dead. New drinks are added in the admin app only
+- `createDrink` from the staff bar remotes, and `drinks:write` from the `barista` role — a barista reads the catalogue and moves stock through purchases and sales, but does not define new products
+- The drink image upload that went with that page. Nothing server-side accepts one today
+
 ### Changed — admin forms
 
 - All seven admin create forms (`customers`, `bookings`, `rooms`, `room-types`, `bar-drinks`, `bar-purchases`, `menu-items`) converted to `form()` remote functions and rebuilt on shadcn components

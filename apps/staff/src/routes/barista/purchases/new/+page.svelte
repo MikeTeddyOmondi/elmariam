@@ -1,77 +1,81 @@
 <script lang="ts">
   import { createBarPurchase, getDrinks } from '$lib/remote/bar.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import { Button, Card, CardContent, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import Plus from 'lucide-svelte/icons/plus';
 
   let drinks = $state<Awaited<ReturnType<typeof getDrinks>>>([] as never);
-
   let loading = $state(true);
 
-  // Queries run in $effect, not at component top level: calling them
-
-  // eagerly fetches during SSR and the result is not hydratable.
-
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
-
     getDrinks()
-
       .then((d) => { drinks = d; loading = false; })
-
       .catch(() => { loading = false; });
-
   });
-  let receiptNumber = $state('');
-  let product = $state('');
-  let quantity = $state(1);
-  let supplier = $state('');
-
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    try {
-      await createBarPurchase({ receiptNumber, product, quantity, supplier });
-      toast.success('Purchase recorded.');
-      receiptNumber = product = supplier = '';
-      quantity = 1;
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    }
-  }
-
-  const inputCls = 'bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-full';
 </script>
 
-<div class="space-y-6 max-w-lg">
+<div class="max-w-lg space-y-6">
   <div>
-    <a href="/barista/purchases" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
-    <h1 class="text-2xl font-bold text-foreground mt-2">New Purchase</h1>
+    <a href="/barista/purchases" class="text-sm text-muted-foreground transition-colors hover:text-foreground">
+      ← Back
+    </a>
+    <h1 class="mt-2 text-2xl font-bold text-foreground">Record Purchase</h1>
   </div>
 
-  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm text-muted-foreground" for="receipt">Receipt #</label>
-      <input id="receipt" bind:value={receiptNumber} required class={inputCls} />
-    </div>
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm text-muted-foreground" for="product">Product</label>
-      {#if loading}
-        <select id="product" disabled class={inputCls}><option>Loading…</option></select>
-      {:else}
-        <select id="product" bind:value={product} required class={inputCls}>
-          <option value="">Select drink</option>
-          {#each drinks as d}
-            <option value={d._id}>{d.drinkName} ({d.drinkCode})</option>
-          {/each}
-        </select>
-      {/if}
-    </div>
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm text-muted-foreground" for="qty">Quantity</label>
-      <input id="qty" type="number" bind:value={quantity} min="1" required class={inputCls} />
-    </div>
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm text-muted-foreground" for="supplier">Supplier</label>
-      <input id="supplier" bind:value={supplier} required class={inputCls} />
-    </div>
-    <Button type="submit" class="w-full">Record Purchase</Button>
-  </form>
+  <Card>
+    <CardContent class="py-6">
+      <form
+        {...createBarPurchase.enhance(async ({ submit }) => {
+          try {
+            const ok = await submit();
+            if (ok) toast.success('Purchase recorded.');
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="grid gap-4 sm:grid-cols-2"
+      >
+        <div class="sm:col-span-2 empty:hidden">
+          <Form.Message issues={createBarPurchase.fields.issues?.()} />
+        </div>
+
+        <Form.Field class="sm:col-span-2">
+          <Label for="receipt">Receipt #</Label>
+          <Input id="receipt" placeholder="REC-001" {...createBarPurchase.fields.receiptNumber.as('text')} />
+          <Form.FieldErrors issues={createBarPurchase.fields.receiptNumber.issues()} />
+        </Form.Field>
+
+        <Form.Field class="sm:col-span-2">
+          <Label for="product">Product</Label>
+          <Select id="product" disabled={loading} {...createBarPurchase.fields.product.as('select')}>
+            <option value="">{loading ? 'Loading…' : 'Select drink'}</option>
+            {#each drinks as d}
+              <option value={d.id}>{d.drinkName} ({d.drinkCode})</option>
+            {/each}
+          </Select>
+          <Form.FieldErrors issues={createBarPurchase.fields.product.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="qty">Quantity</Label>
+          <Input id="qty" min="1" {...createBarPurchase.fields.quantity.as('number')} />
+          <Form.FieldErrors issues={createBarPurchase.fields.quantity.issues()} />
+        </Form.Field>
+
+        <Form.Field>
+          <Label for="supplier">Supplier</Label>
+          <Input id="supplier" placeholder="Supplier name" {...createBarPurchase.fields.supplier.as('text')} />
+          <Form.FieldErrors issues={createBarPurchase.fields.supplier.issues()} />
+        </Form.Field>
+
+        <div class="sm:col-span-2 flex justify-end">
+          <Button type="submit" disabled={createBarPurchase.pending > 0}>
+            <Plus />
+            {createBarPurchase.pending > 0 ? 'Saving…' : 'Record Purchase'}
+          </Button>
+        </div>
+      </form>
+    </CardContent>
+  </Card>
 </div>

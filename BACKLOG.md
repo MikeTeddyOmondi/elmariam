@@ -79,12 +79,12 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 - [x] admin `/menu-items` — `createMenuItem`
 - [ ] admin `/menu-items` — `updateMenuItem` still has no UI
 - [ ] admin `/bar-sales` — wire the unused `checkoutBarSale`
-- [ ] staff `receptionist/customers/new` — `createCustomer`
-- [ ] staff `receptionist/bookings/new` — `createBooking`
-- [ ] staff `barista/purchases/new` — `createBarPurchase`
-- [ ] staff `barista/sales/new` — `checkoutBarSale`
-- [ ] staff `barista/drinks/new` — **broken**, still POSTs to the removed gateway; `createDrink` remote now exists
-- [ ] staff `waiter/orders/new` — `createOrder`
+- [x] staff `receptionist/customers/new` — `createCustomer`
+- [x] staff `receptionist/bookings/new` — `createBooking`
+- [x] staff `barista/purchases/new` — `createBarPurchase`; product is a drink picker
+- [x] staff `barista/sales/new` — `checkoutBarSale`, dynamic cart via indexed `fields.checkoutDrinkItems[i]`
+- [x] staff `barista/drinks/new` — **deleted**. It POSTed to the removed gateway and drinks are admin-only; `barista` lost `drinks:write`
+- [x] staff `waiter/orders/new` — `createOrder`, dynamic line items via indexed `fields.items[i]`
 - [ ] website `contact` — placeholder, wire to the SMTP queue
 - [ ] login/register pages (×4) — replace ad-hoc `let error` state with `toastError`
 - [x] All three layouts render the shared `<Toaster />` from `@elmariam/ui`

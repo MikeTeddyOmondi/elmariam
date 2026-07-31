@@ -1,91 +1,119 @@
 <script lang="ts">
   import { createOrder, getMenuItems } from '$lib/remote/restaurant.remote';
-  import { Button } from '@elmariam/ui';
-  import { toast } from 'svelte-sonner';
+  import { Button, Card, CardContent, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import Plus from 'lucide-svelte/icons/plus';
+  import X from 'lucide-svelte/icons/x';
 
   let menuItems = $state<Awaited<ReturnType<typeof getMenuItems>>>([] as never);
-
   let loading = $state(true);
 
-  // Queries run in $effect, not at component top level: calling them
-
-  // eagerly fetches during SSR and the result is not hydratable.
-
+  // Queries run in $effect, not at component top level: calling them eagerly
+  // fetches during SSR and the result is not hydratable.
   $effect(() => {
-
     getMenuItems()
-
       .then((d) => { menuItems = d; loading = false; })
-
       .catch(() => { loading = false; });
-
   });
-  type LineItem = { menuItemId: string; quantity: number };
-  let items = $state<LineItem[]>([{ menuItemId: '', quantity: 1 }]);
-  let tableNumber = $state<number | undefined>(undefined);
-  let paymentMethod = $state<'cash' | 'mpesa' | 'bank'>('cash');
-  function addItem() { items = [...items, { menuItemId: '', quantity: 1 }]; }
-  function removeItem(i: number) { items = items.filter((_, idx) => idx !== i); }
 
-  async function submit(e: SubmitEvent) {
-    e.preventDefault();
-    const valid = items.filter((it) => it.menuItemId && it.quantity > 0);
-    if (!valid.length) { toast.error('Add at least one item.'); return; }
-    try {
-      await createOrder({ items: valid, tableNumber, paymentMethod });
-      toast.success('Order created.');
-      items = [{ menuItemId: '', quantity: 1 }];
-      tableNumber = undefined;
-    } catch (err: any) {
-      toast.error(err.message || 'An error occurred');
-    }
-  }
+  const available = $derived(menuItems.filter((m: { isAvailable?: boolean }) => m.isAvailable));
 
-  const selectCls = 'flex-1 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring';
-  const inputCls = 'bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring w-full';
+  // Only the row count is client state. The values live on the form fields, so
+  // `fields.items[i]` generates the indexed input names the schema expects.
+  let rowCount = $state(1);
+
+  const rows = $derived(Array.from({ length: rowCount }, (_, i) => i));
 </script>
 
-<div class="space-y-6 max-w-xl">
+<div class="max-w-xl space-y-6">
   <div>
-    <a href="/waiter/orders" class="text-sm text-muted-foreground hover:text-foreground transition-colors">← Back</a>
-    <h1 class="text-2xl font-bold text-foreground mt-2">New Order</h1>
+    <a href="/waiter/orders" class="text-sm text-muted-foreground transition-colors hover:text-foreground">
+      ← Back
+    </a>
+    <h1 class="mt-2 text-2xl font-bold text-foreground">New Order</h1>
   </div>
 
-  <form onsubmit={submit} class="bg-card border border-border rounded-xl p-6 space-y-4">
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm text-muted-foreground" for="table">Table # <span class="text-xs">(optional)</span></label>
-      <input id="table" type="number" bind:value={tableNumber} min="1" class="w-32 {inputCls}" />
-    </div>
+  <Card>
+    <CardContent class="py-6">
+      <form
+        {...createOrder.enhance(async ({ submit }) => {
+          try {
+            const ok = await submit();
+            if (ok) {
+              toast.success('Order created.');
+              rowCount = 1;
+            }
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="space-y-4"
+      >
+        <Form.Message issues={createOrder.fields.issues?.()} />
 
-          {#each items as item, i}
-        <div class="flex gap-2 items-center">
-          <select bind:value={item.menuItemId} required class={selectCls}>
-            <option value="">Select item</option>
-            {#each menuItems.filter((m: any) => m.isAvailable) as m}
-              <option value={m._id}>{m.name} — KES {m.price?.toLocaleString()}</option>
-            {/each}
-          </select>
-          <input type="number" bind:value={item.quantity} min="1" placeholder="Qty" required class="w-20 bg-background border border-input rounded-md px-3 py-2 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-ring" />
-          <button type="button" onclick={() => removeItem(i)}
-            class="px-2 py-2 rounded-md text-xs bg-destructive/10 text-destructive hover:bg-destructive/20 transition-colors">✕</button>
+        <div class="grid gap-4 sm:grid-cols-2">
+          <Form.Field>
+            <Label for="table">Table # <span class="text-muted-foreground">(optional)</span></Label>
+            <Input id="table" min="1" {...createOrder.fields.tableNumber.as('number')} />
+            <Form.FieldErrors issues={createOrder.fields.tableNumber.issues()} />
+          </Form.Field>
+
+          <Form.Field>
+            <Label for="pay">Payment Method</Label>
+            <Select id="pay" {...createOrder.fields.paymentMethod.as('select', 'cash')}>
+              <option value="cash">Cash</option>
+              <option value="mpesa">M-Pesa</option>
+              <option value="bank">Bank Transfer</option>
+            </Select>
+            <Form.FieldErrors issues={createOrder.fields.paymentMethod.issues()} />
+          </Form.Field>
         </div>
-      {/each}
 
+        <div class="space-y-3">
+          <Label>Items</Label>
+          {#each rows as i (i)}
+            {@const row = createOrder.fields.items[i]}
+            <div class="flex items-end gap-2">
+              <div class="flex-1 space-y-2">
+                <Label class="sr-only" for="item-{i}">Menu item</Label>
+                <Select id="item-{i}" disabled={loading} {...row.menuItemId.as('select')}>
+                  <option value="">{loading ? 'Loading…' : 'Select item'}</option>
+                  {#each available as m}
+                    <option value={m.id}>{m.name} — KES {m.price?.toLocaleString()}</option>
+                  {/each}
+                </Select>
+                <Form.FieldErrors issues={row.menuItemId.issues()} />
+              </div>
 
-    <button type="button" onclick={addItem}
-      class="text-sm text-muted-foreground hover:text-foreground border border-border rounded-md px-3 py-2 transition-colors">
-      + Add Item
-    </button>
+              <div class="w-24 space-y-2">
+                <Label class="sr-only" for="iqty-{i}">Quantity</Label>
+                <Input id="iqty-{i}" min="1" placeholder="Qty" {...row.quantity.as('number', 1)} />
+                <Form.FieldErrors issues={row.quantity.issues()} />
+              </div>
 
-    <div class="flex flex-col gap-1.5">
-      <label class="text-sm text-muted-foreground" for="pay">Payment Method</label>
-      <select id="pay" bind:value={paymentMethod} class={inputCls}>
-        <option value="cash">Cash</option>
-        <option value="mpesa">M-Pesa</option>
-        <option value="bank">Bank</option>
-      </select>
-    </div>
+              <Button
+                type="button"
+                variant="ghost"
+                size="icon"
+                class="text-destructive hover:text-destructive"
+                aria-label="Remove item {i + 1}"
+                disabled={rowCount === 1}
+                onclick={() => (rowCount -= 1)}
+              >
+                <X />
+              </Button>
+            </div>
+          {/each}
+          <Form.FieldErrors issues={createOrder.fields.items.allIssues?.()} />
+        </div>
 
-    <Button type="submit" class="w-full">Place Order</Button>
-  </form>
+        <Button type="button" variant="outline" onclick={() => (rowCount += 1)}>
+          <Plus /> Add Item
+        </Button>
+
+        <Button type="submit" class="w-full" disabled={createOrder.pending > 0}>
+          {createOrder.pending > 0 ? 'Creating…' : 'Create Order'}
+        </Button>
+      </form>
+    </CardContent>
+  </Card>
 </div>

@@ -1,6 +1,6 @@
 import type { Result } from 'better-result';
-import { query, command } from '$app/server';
-import { error as httpError } from '@sveltejs/kit';
+import { query, command, form } from '$app/server';
+import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { listMenuItems, listOrders, createOrder as dbCreateOrder, updateOrderStatus as dbUpdateOrderStatus } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
@@ -9,6 +9,14 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
     err: (e) => { throw httpError(400, e.message); },
+  });
+}
+
+/** Unwraps inside a `form()` handler — domain failures render on the form. */
+function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
+  return result.match({
+    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
+    err: (e) => invalid(e.message),
   });
 }
 
@@ -37,18 +45,28 @@ export const getOrders = query(async (): Promise<OrderView[]> => {
   return unwrap(await listOrders()) as unknown as OrderView[];
 });
 
-export const createOrder = command(
+/**
+ * The order lines are a dynamic list built in the browser rather than flat
+ * FormData fields, so this is submitted through `enhance` and has no no-JS
+ * fallback.
+ */
+export const createOrder = form(
   v.object({
     tableNumber:   v.optional(v.union([v.string(), v.number()])),
-    items:         v.array(v.object({ menuItemId: v.string(), quantity: v.number() })),
+    items:         v.pipe(
+      v.array(v.object({ menuItemId: v.string(), quantity: v.number() })),
+      v.minLength(1, 'Add at least one item')
+    ),
     paymentMethod: v.optional(v.picklist(['cash', 'mpesa', 'bank'])),
   }),
   async ({ tableNumber, ...data }) => {
     requirePermission('orders:write');
-    return unwrap(await dbCreateOrder({
+    const created = unwrapForm(await dbCreateOrder({
       ...data,
       tableNumber: tableNumber !== undefined ? String(tableNumber) : undefined,
     }));
+    await getOrders().refresh();
+    return created;
   }
 );
 
