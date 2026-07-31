@@ -1,5 +1,5 @@
 import { createClient } from "@openauthjs/openauth/client";
-import { subjects } from "./subjects";
+import { subjects } from "./subjects.js";
 
 const OPENAUTH_ISSUER =
   process.env.OPENAUTH_ISSUER || "http://openauth:3100";

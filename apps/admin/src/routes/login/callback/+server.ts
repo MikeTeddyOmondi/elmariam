@@ -1,7 +1,7 @@
 import { dev } from '$app/environment';
 import { redirect, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@openauthjs/openauth/client';
-import { subjects } from '$lib/subjects';
+import { canAccessApp, subjects } from '@elmariam/auth';
 import { env } from '$env/dynamic/private';
 
 const client = createClient({
@@ -37,7 +37,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   }
 
   const verified = await client.verify(subjects, result.tokens.access);
-  if (verified.err || verified.subject.properties.userType !== 'management') {
+  if (verified.err || !canAccessApp(verified.subject.properties.userType, 'admin')) {
     throw redirect(302, '/login?error=unauthorized');
   }
 

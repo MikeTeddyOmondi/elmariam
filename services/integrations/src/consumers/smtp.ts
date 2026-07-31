@@ -4,9 +4,13 @@ import fs from "fs";
 import path from "path";
 import { env } from "../config/env";
 
-const templatePath = path.join(__dirname, "../templates/email.hbs");
-const templateSource = fs.readFileSync(templatePath, "utf-8");
-const template = Handlebars.compile(templateSource);
+function loadTemplate(name: string) {
+  const templatePath = path.join(__dirname, `../templates/${name}.hbs`);
+  return Handlebars.compile(fs.readFileSync(templatePath, "utf-8"));
+}
+
+const template = loadTemplate("email");
+const verificationCodeTemplate = loadTemplate("verification-code");
 
 function capitalize(str: string): string {
   if (!str) return str;
@@ -23,19 +27,36 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-export async function handleSmtp(data: { username: string; url: string }) {
-  const html = template({
-    title: "Registration Successful ✔",
-    username: capitalize(data.username),
-    url: data.url,
-  });
+type RegistrationMail = { type?: "registration"; username: string; url: string };
+type VerificationCodeMail = { type: "verification-code"; username: string; code: string };
+export type MailMessage = RegistrationMail | VerificationCodeMail;
+
+export async function handleSmtp(data: MailMessage) {
+  const { subject, html } =
+    data.type === "verification-code"
+      ? {
+          subject: "Your verification code",
+          html: verificationCodeTemplate({
+            title: "Your verification code",
+            username: capitalize(data.username),
+            code: data.code,
+          }),
+        }
+      : {
+          subject: "Registration Successful",
+          html: template({
+            title: "Registration Successful ✔",
+            username: capitalize(data.username),
+            url: data.url,
+          }),
+        };
 
   await transporter.sendMail({
     from: env.EMAIL_SENDER,
     to: data.username,
-    subject: "Registration Successful",
+    subject,
     html,
   });
 
-  console.log(`✅  Email sent to ${data.username}`);
+  console.log(`✅  Email sent to ${data.username} (${data.type ?? "registration"})`);
 }

@@ -54,6 +54,11 @@ export interface MongoStorageOptions {
    * Additional MongoDB client options.
    */
   clientOptions?: Partial<MongoClientOptions>;
+  /**
+   * An already-connected client to reuse. Without this the adapter opens a
+   * second connection to the same database as the caller.
+   */
+  client?: MongoClient;
 }
 
 /**
@@ -76,7 +81,7 @@ export function MongoStorage(options: MongoStorageOptions): StorageAdapter {
   const databaseName = options.database || "openauth";
   const collectionName = options.collection || "sessions";
 
-  let client: MongoClient | null = null;
+  let client: MongoClient | null = options.client ?? null;
   let db: Db | null = null;
   let collection: Collection<StorageDocument> | null = null;
 

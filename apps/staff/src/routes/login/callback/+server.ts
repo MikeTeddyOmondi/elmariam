@@ -1,13 +1,12 @@
 import { dev } from '$app/environment';
 import { redirect, type RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@openauthjs/openauth/client';
-import { subjects } from '$lib/subjects';
-
-const STAFF_TYPES = ['receptionist', 'barista', 'waiter', 'management'];
+import { canAccessApp, subjects } from '@elmariam/auth';
+import { env } from '$env/dynamic/private';
 
 const client = createClient({
   clientID: 'staff',
-  issuer: process.env.OPENAUTH_ISSUER || 'http://openauth:3100',
+  issuer: env.OPENAUTH_ISSUER || 'http://openauth:3100',
 });
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
@@ -38,17 +37,13 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   }
 
   const verified = await client.verify(subjects, result.tokens.access);
-  if (verified.err || !('subject' in verified) || !STAFF_TYPES.includes(verified.subject.properties.userType)) {
+  if (verified.err || !('subject' in verified) || !canAccessApp(verified.subject.properties.userType, 'staff')) {
     throw redirect(302, '/login?error=unauthorized');
   }
 
-  const userType = verified.subject.properties.userType;
   const opts = { path: '/', httpOnly: true, secure: !dev, sameSite: 'lax' as const };
   cookies.set('access_token', result.tokens.access, { ...opts, maxAge: 60 * 60 * 24 * 7 });
   cookies.set('refresh_token', result.tokens.refresh, { ...opts, maxAge: 60 * 60 * 24 * 30 });
-  cookies.set('user_type', userType, {
-    path: '/', httpOnly: false, secure: !dev, sameSite: 'lax' as const, maxAge: 60 * 60 * 24 * 7,
-  });
   cookies.delete('pkce_verifier', { path: '/' });
   cookies.delete('oauth_redirect_uri', { path: '/' });
 

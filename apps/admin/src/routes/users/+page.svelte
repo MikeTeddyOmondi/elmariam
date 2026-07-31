@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getUsers, createUser, deleteUser, type UserView } from "$lib/remote/users.remote";
   import { Button } from "@elmariam/ui";
+  import { ASSIGNABLE_STAFF_ROLES, type Role } from "@elmariam/auth";
   import { toast } from "svelte-sonner";
 
   let users: UserView[] = $state([]);
@@ -19,7 +20,7 @@
   let email = $state('');
   let id_number = $state('');
   let phone_number = $state('');
-  let userType = $state<'admin'|'receptionist'|'barista'|'waiter'|'management'>('receptionist');
+  let userType = $state<Role>('receptionist');
   let saving = $state(false);
   let deleting = $state<string | null>(null);
 
@@ -97,7 +98,7 @@
       <div class="flex flex-col gap-1.5">
         <label class="text-xs text-muted-foreground" for="utype">Role</label>
         <select id="utype" bind:value={userType} required class={selectCls}>
-          {#each ['admin','receptionist','barista','waiter','management'] as t}
+          {#each ASSIGNABLE_STAFF_ROLES as t}
             <option value={t}>{t}</option>
           {/each}
         </select>

@@ -101,11 +101,24 @@ services:
       dockerfile: infra/openauth/Dockerfile
     restart: always
     environment:
+      # Required: without it the issuer logs verification codes to stdout
+      # instead of publishing them to the mail queue.
+      - NODE_ENV=production
+      # Set to "true" only when pointing local dev apps at this issuer, so
+      # http://localhost:* is accepted as a redirect target. Leave unset (false)
+      # for a real deployment.
+      - OPENAUTH_ALLOW_LOCALHOST=${OPENAUTH_ALLOW_LOCALHOST:-false}
       - PORT=3100
       - DATABASE_URL=mongodb://mongo:27017/auth
       - OPENAUTH_ISSUER=https://auth.otienoobogeandcompany.com
     ports:
       - "3100:3100"
+    healthcheck:
+      test: ["CMD", "bun", "-e", "await fetch('http://localhost:3100/health').then(r=>{if(!r.ok)process.exit(1)})"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.auth.rule=Host(`auth.otienoobogeandcompany.com`)"

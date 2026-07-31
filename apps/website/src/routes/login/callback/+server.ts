@@ -2,11 +2,12 @@ import { dev } from '$app/environment';
 import { redirect } from '@sveltejs/kit';
 import type { RequestHandler } from '@sveltejs/kit';
 import { createClient } from '@openauthjs/openauth/client';
-import { subjects } from '$lib/subjects';
+import { canAccessApp, subjects } from '@elmariam/auth';
+import { env } from '$env/dynamic/private';
 
 const client = createClient({
   clientID: 'website',
-  issuer: process.env.OPENAUTH_ISSUER || 'http://openauth:3100',
+  issuer: env.OPENAUTH_ISSUER || 'http://openauth:3100',
 });
 
 export const GET: RequestHandler = async ({ url, cookies }) => {
@@ -37,7 +38,7 @@ export const GET: RequestHandler = async ({ url, cookies }) => {
   }
 
   const verified = await client.verify(subjects, result.tokens.access);
-  if (verified.err || !('subject' in verified) || verified.subject.properties.userType !== 'customer') {
+  if (verified.err || !('subject' in verified) || !canAccessApp(verified.subject.properties.userType, 'website')) {
     throw redirect(302, '/login?error=unauthorized');
   }
 

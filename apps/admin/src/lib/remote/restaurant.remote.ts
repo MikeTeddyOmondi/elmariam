@@ -8,6 +8,7 @@ import {
   updateMenuItem as dbUpdateMenuItem,
   updateOrderStatus as dbUpdateOrderStatus,
 } from '@elmariam/db';
+import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
@@ -40,8 +41,15 @@ export type OrderView = {
   updatedAt: Date;
 };
 
-export const getMenuItems = query(async (): Promise<MenuItemView[]> => unwrap(await listMenuItems()) as unknown as MenuItemView[]);
-export const getOrders    = query(async (): Promise<OrderView[]> => unwrap(await listOrders()) as unknown as OrderView[]);
+export const getMenuItems = query(async (): Promise<MenuItemView[]> => {
+  requirePermission('menu:read');
+  return unwrap(await listMenuItems()) as unknown as MenuItemView[];
+});
+
+export const getOrders = query(async (): Promise<OrderView[]> => {
+  requirePermission('orders:read');
+  return unwrap(await listOrders()) as unknown as OrderView[];
+});
 
 export const createMenuItem = command(
   v.object({
@@ -51,7 +59,10 @@ export const createMenuItem = command(
     price:       v.number(),
     isAvailable: v.optional(v.boolean()),
   }),
-  async (data) => unwrap(await dbCreateMenuItem(data))
+  async (data) => {
+    requirePermission('menu:write');
+    return unwrap(await dbCreateMenuItem(data));
+  }
 );
 
 export const updateMenuItem = command(
@@ -63,7 +74,10 @@ export const updateMenuItem = command(
     price:       v.optional(v.number()),
     isAvailable: v.optional(v.boolean()),
   }),
-  async ({ id, ...rest }) => unwrap(await dbUpdateMenuItem(id, rest))
+  async ({ id, ...rest }) => {
+    requirePermission('menu:write');
+    return unwrap(await dbUpdateMenuItem(id, rest));
+  }
 );
 
 export const updateOrderStatus = command(
@@ -71,5 +85,8 @@ export const updateOrderStatus = command(
     orderId: v.string(),
     status:  v.picklist(['pending', 'preparing', 'ready', 'served', 'cancelled']),
   }),
-  async ({ orderId, status }) => unwrap(await dbUpdateOrderStatus(orderId, status))
+  async ({ orderId, status }) => {
+    requirePermission('orders:status');
+    return unwrap(await dbUpdateOrderStatus(orderId, status));
+  }
 );

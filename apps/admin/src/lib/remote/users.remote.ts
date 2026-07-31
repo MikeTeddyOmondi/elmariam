@@ -8,6 +8,8 @@ import {
   updateUser as dbUpdateUser,
   deleteUser as dbDeleteUser,
 } from "@elmariam/db";
+import { ASSIGNABLE_STAFF_ROLES, type Role } from "@elmariam/auth";
+import { requirePermission } from "$lib/server/guard";
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
@@ -26,23 +28,21 @@ export type UserView = {
   email: string;
   id_number: string;
   phone_number?: number;
-  userType:
-    | "admin"
-    | "customer"
-    | "receptionist"
-    | "barista"
-    | "waiter"
-    | "management";
+  userType: Role;
   isActive: boolean;
   isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
 };
 
-export const getUsers = query(
-  async (): Promise<UserView[]> =>
-    unwrap(await listUsers()) as unknown as UserView[],
-);
+// Remote functions are their own HTTP endpoints and are NOT covered by
+// `+layout.server.ts`. Without these guards any authenticated session — a
+// customer included — could call `createUser`/`updateUser` and self-promote.
+
+export const getUsers = query(async (): Promise<UserView[]> => {
+  requirePermission("users:read");
+  return unwrap(await listUsers()) as unknown as UserView[];
+});
 
 export const createUser = command(
   v.object({
@@ -52,15 +52,10 @@ export const createUser = command(
     email: v.pipe(v.string(), v.email()),
     id_number: v.string(),
     phone_number: v.optional(v.string()),
-    userType: v.picklist([
-      "admin",
-      "receptionist",
-      "barista",
-      "waiter",
-      "management",
-    ]),
+    userType: v.picklist(ASSIGNABLE_STAFF_ROLES),
   }),
   async ({ phone_number, ...data }) => {
+    requirePermission("users:write");
     unwrap(
       await dbCreateUser({
         ...data,
@@ -77,23 +72,28 @@ export const updateUser = command(
     firstname: v.optional(v.string()),
     lastname: v.optional(v.string()),
     phone_number: v.optional(v.string()),
-    userType: v.optional(
-      v.picklist(["admin", "receptionist", "barista", "waiter", "management"]),
-    ),
+    userType: v.optional(v.picklist(ASSIGNABLE_STAFF_ROLES)),
     isActive: v.optional(v.boolean()),
   }),
-  async ({ id, phone_number, ...rest }) =>
-    unwrap(
+  async ({ id, phone_number, ...rest }) => {
+    requirePermission("users:write");
+    return unwrap(
       await dbUpdateUser(id, {
         ...rest,
         ...(phone_number ? { phone_number: Number(phone_number) } : {}),
       }),
-    ),
+    );
+  },
 );
 
 export const deleteUser = command(
   v.object({ id: v.string() }),
   async ({ id }) => {
+    const actor = requirePermission("users:delete");
+    // Deleting yourself locks you out of the app you are using.
+    if (actor.id === id) {
+      throw httpError(400, "You cannot delete your own account");
+    }
     unwrap(await dbDeleteUser(id));
   },
 );

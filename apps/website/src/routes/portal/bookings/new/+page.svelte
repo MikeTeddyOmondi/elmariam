@@ -1,10 +1,8 @@
 <script lang="ts">
   import { createBooking, getRoomTypes } from '$lib/remote/booking.remote';
-  import { getMyProfile } from '$lib/remote/account.remote';
   import { toast } from 'svelte-sonner';
 
   const roomTypes = getRoomTypes();
-  const profile = getMyProfile();
 
   let numberAdults = $state(1);
   let numberKids = $state(0);
@@ -15,9 +13,8 @@
   async function submit(e: SubmitEvent) {
     e.preventDefault();
     try {
-      const p = await profile;
+      // The customer is taken from the session server-side, never sent here.
       await createBooking({
-        customerId: p._id,
         numberAdults,
         numberKids,
         roomType,

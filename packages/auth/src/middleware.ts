@@ -1,4 +1,5 @@
 import { Request, Response, NextFunction } from "express";
+import { APP_ACCESS, STAFF_SECTIONS, type Role } from "./rbac.js";
 
 export interface GatewayUser {
   id: string;
@@ -48,13 +49,10 @@ export function requireUserType(...allowed: string[]) {
   };
 }
 
-export const requireStaff = requireUserType(
-  "receptionist",
-  "barista",
-  "waiter",
-  "management"
-);
-export const requireAdmin = requireUserType("management");
-export const requireReceptionist = requireUserType("receptionist", "management");
-export const requireBarista = requireUserType("barista", "management");
-export const requireWaiter = requireUserType("waiter", "management");
+// Derived from `rbac.ts` rather than hardcoded, so these can never drift from
+// the role lists the SvelteKit apps enforce.
+export const requireStaff = requireUserType(...APP_ACCESS.staff);
+export const requireAdmin = requireUserType("admin" satisfies Role);
+export const requireReceptionist = requireUserType(...STAFF_SECTIONS.receptionist);
+export const requireBarista = requireUserType(...STAFF_SECTIONS.barista);
+export const requireWaiter = requireUserType(...STAFF_SECTIONS.waiter);

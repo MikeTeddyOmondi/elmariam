@@ -1,23 +1,6 @@
-<script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-
-  onMount(() => {
-    const userType = document.cookie
-      .split('; ')
-      .find((c) => c.startsWith('user_type='))
-      ?.split('=')[1];
-
-    if (userType === 'receptionist' || userType === 'management') {
-      goto('/receptionist');
-    } else if (userType === 'barista') {
-      goto('/barista');
-    } else if (userType === 'waiter') {
-      goto('/waiter');
-    } else {
-      goto('/login');
-    }
-  });
-</script>
-
+<!--
+  Routing happens server-side in `+page.server.ts` using the verified session,
+  so this is only ever seen mid-redirect. It previously sniffed a `user_type`
+  cookie, which was both client-tamperable and missing an `admin` branch.
+-->
 <p>Redirecting…</p>

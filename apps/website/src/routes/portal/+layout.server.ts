@@ -1,9 +1,8 @@
-import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { permissionsOf, requireAppAccess } from '$lib/server/guard';
 
 export const load: LayoutServerLoad = async ({ locals }) => {
-  if (!locals.user) throw redirect(302, '/login');
-  if (locals.user.userType !== 'customer') throw redirect(302, '/login?error=unauthorized');
+  const user = requireAppAccess(locals);
 
-  return { user: locals.user };
+  return { user, permissions: permissionsOf(user) };
 };

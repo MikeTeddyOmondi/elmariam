@@ -123,13 +123,26 @@ export async function createCustomer(input: CreateCustomerInput) {
 
 // ── Bookings ──────────────────────────────────────────────────────────────────
 
-export async function listBookings() {
+/**
+ * Restricts a listing to a single customer. Callers acting on behalf of a
+ * customer (the public website) MUST pass this — without it every customer can
+ * read every other customer's bookings and invoices.
+ */
+export interface OwnerScope {
+  /** A `Customer` `_id`. */
+  customerId?: string;
+}
+
+export async function listBookings(scope: OwnerScope = {}) {
   return Result.tryPromise({
-    try: async () => (await Booking.find()
-      .populate("occupant")
-      .populate("room-type")
-      .populate("invoice")
-      .lean<IBooking[]>({ virtuals: true })).map(withId),
+    try: async () => {
+      const filter = scope.customerId ? { customer: scope.customerId } : {};
+      return (await Booking.find(filter)
+        .populate("occupant")
+        .populate("room-type")
+        .populate("invoice")
+        .lean<IBooking[]>({ virtuals: true })).map(withId);
+    },
     catch: (e) => dbErr("listBookings", e),
   });
 }
@@ -298,9 +311,19 @@ export async function createBooking(input: CreateBookingInput) {
 
 // ── Invoices ──────────────────────────────────────────────────────────────────
 
-export async function listInvoices() {
+export async function listInvoices(scope: OwnerScope = {}) {
   return Result.tryPromise({
-    try: async () => (await Invoice.find().sort({ createdAt: -1 }).lean<IInvoice[]>({ virtuals: true })).map(withId),
+    try: async () => {
+      let filter: Record<string, unknown> = {};
+
+      if (scope.customerId) {
+        // Invoices have no customer of their own — they hang off a booking.
+        const bookingIds = await Booking.find({ customer: scope.customerId }).distinct("_id");
+        filter = { bookingRef: { $in: bookingIds } };
+      }
+
+      return (await Invoice.find(filter).sort({ createdAt: -1 }).lean<IInvoice[]>({ virtuals: true })).map(withId);
+    },
     catch: (e) => dbErr("listInvoices", e),
   });
 }

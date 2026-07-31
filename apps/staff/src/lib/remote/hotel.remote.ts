@@ -13,6 +13,7 @@ import {
   listInvoices,
 } from '@elmariam/db';
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from '@elmariam/queue';
+import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
@@ -34,15 +35,38 @@ type BookingView = {
   updatedAt: Date;
 };
 
-export const getCustomers = query(async () => unwrap(await listCustomers()));
-export const getBookings  = query(async (): Promise<BookingView[]> => unwrap(await listBookings()) as unknown as BookingView[]);
-export const getRooms     = query(async () => unwrap(await listRooms()));
-export const getRoomTypes = query(async () => unwrap(await listRoomTypes()));
-export const getInvoices  = query(async () => unwrap(await listInvoices()));
+// Remote functions are their own HTTP endpoints and are NOT covered by
+// `+layout.server.ts`, so every one of them guards itself.
 
-export const getOneBooking = query(v.string(), async (bookingId: string) =>
-  unwrap(await getBooking(bookingId))
-);
+export const getCustomers = query(async () => {
+  requirePermission('customers:read');
+  return unwrap(await listCustomers());
+});
+
+export const getBookings = query(async (): Promise<BookingView[]> => {
+  requirePermission('bookings:read');
+  return unwrap(await listBookings()) as unknown as BookingView[];
+});
+
+export const getRooms = query(async () => {
+  requirePermission('rooms:read');
+  return unwrap(await listRooms());
+});
+
+export const getRoomTypes = query(async () => {
+  requirePermission('roomtypes:read');
+  return unwrap(await listRoomTypes());
+});
+
+export const getInvoices = query(async () => {
+  requirePermission('invoices:read');
+  return unwrap(await listInvoices());
+});
+
+export const getOneBooking = query(v.string(), async (bookingId: string) => {
+  requirePermission('bookings:read');
+  return unwrap(await getBooking(bookingId));
+});
 
 export const createCustomer = command(
   v.object({
@@ -52,10 +76,13 @@ export const createCustomer = command(
     email:        v.pipe(v.string(), v.email()),
     phone_number: v.optional(v.string()),
   }),
-  async (data) => unwrap(await dbCreateCustomer({
-    ...data,
-    phone_number: data.phone_number ? Number(data.phone_number) : undefined,
-  }))
+  async (data) => {
+    requirePermission('customers:write');
+    return unwrap(await dbCreateCustomer({
+      ...data,
+      phone_number: data.phone_number ? Number(data.phone_number) : undefined,
+    }));
+  }
 );
 
 export const createBooking = command(
@@ -68,12 +95,16 @@ export const createBooking = command(
     checkOutDate:  v.string(),
     paymentMethod: v.picklist(['cash', 'mpesa', 'bank']),
   }),
-  async (data) => unwrap(await dbCreateBooking(data))
+  async (data) => {
+    requirePermission('bookings:write');
+    return unwrap(await dbCreateBooking(data));
+  }
 );
 
 export const initiateMpesaPayment = command(
   v.object({ bookingId: v.string() }),
   async ({ bookingId }) => {
+    requirePermission('payments:initiate');
     const booking = unwrap(await getBooking(bookingId));
     const customer = (booking as any).occupant ?? {};
     const invoice  = (booking as any).invoice  ?? {};
@@ -98,6 +129,7 @@ export const initiateMpesaPayment = command(
 export const sendSmsNotification = command(
   v.object({ bookingId: v.string() }),
   async ({ bookingId }) => {
+    requirePermission('notifications:send');
     const booking  = unwrap(await getBooking(bookingId));
     const customer = (booking as any).occupant ?? {};
     const invoice  = (booking as any).invoice  ?? {};

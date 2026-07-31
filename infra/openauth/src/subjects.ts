@@ -1,10 +1,4 @@
-import { object, string } from "valibot";
-import { createSubjects } from "@openauthjs/openauth/subject";
-
-export const subjects = createSubjects({
-  user: object({
-    id: string(),
-    email: string(),
-    userType: string(), // "customer" | "receptionist" | "barista" | "waiter" | "management"
-  }),
-});
+// Re-exported from `@elmariam/auth` so the issuer and all three apps agree on
+// one subject shape. Previously this was declared separately here and in each
+// app, which let them drift.
+export { subjects } from "@elmariam/auth";

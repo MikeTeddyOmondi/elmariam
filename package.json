@@ -5,9 +5,12 @@
     "dev": "turbo dev",
     "build": "turbo build",
     "lint": "turbo lint",
-    "typecheck": "turbo typecheck"
+    "typecheck": "turbo typecheck",
+    "roles": "node scripts/seed-roles.mjs"
   },
   "devDependencies": {
+    "@elmariam/auth": "workspace:*",
+    "mongodb": "^6.20.0",
     "turbo": "^2.0.0"
   },
   "packageManager": "pnpm@9.0.0"

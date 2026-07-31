@@ -3,6 +3,7 @@ import { query, command } from '$app/server';
 import { error as httpError } from '@sveltejs/kit';
 import * as v from 'valibot';
 import { listDrinks, listPurchases, listSales, createDrink as dbCreateDrink, createPurchase, createSale } from '@elmariam/db';
+import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
@@ -48,9 +49,20 @@ export type BarSaleView = {
   updatedAt: Date;
 };
 
-export const getDrinks       = query(async (): Promise<DrinkView[]> => unwrap(await listDrinks()) as unknown as DrinkView[]);
-export const getBarPurchases = query(async (): Promise<BarPurchaseView[]> => unwrap(await listPurchases()) as unknown as BarPurchaseView[]);
-export const getBarSales     = query(async (): Promise<BarSaleView[]> => unwrap(await listSales()) as unknown as BarSaleView[]);
+export const getDrinks = query(async (): Promise<DrinkView[]> => {
+  requirePermission('drinks:read');
+  return unwrap(await listDrinks()) as unknown as DrinkView[];
+});
+
+export const getBarPurchases = query(async (): Promise<BarPurchaseView[]> => {
+  requirePermission('bar_purchases:read');
+  return unwrap(await listPurchases()) as unknown as BarPurchaseView[];
+});
+
+export const getBarSales = query(async (): Promise<BarSaleView[]> => {
+  requirePermission('bar_sales:read');
+  return unwrap(await listSales()) as unknown as BarSaleView[];
+});
 
 export const createDrink = command(
   v.object({
@@ -62,7 +74,10 @@ export const createDrink = command(
     buyingStockPrice:  v.number(),
     sellingStockPrice: v.number(),
   }),
-  async (data) => unwrap(await dbCreateDrink(data))
+  async (data) => {
+    requirePermission('drinks:write');
+    return unwrap(await dbCreateDrink(data));
+  }
 );
 
 export const createBarPurchase = command(
@@ -72,12 +87,18 @@ export const createBarPurchase = command(
     quantity:      v.number(),
     supplier:      v.string(),
   }),
-  async (data) => unwrap(await createPurchase(data))
+  async (data) => {
+    requirePermission('bar_purchases:write');
+    return unwrap(await createPurchase(data));
+  }
 );
 
 export const checkoutBarSale = command(
   v.object({
     checkoutDrinkItems: v.array(v.object({ drinkId: v.string(), quantity: v.number() })),
   }),
-  async (data) => unwrap(await createSale(data))
+  async (data) => {
+    requirePermission('bar_sales:write');
+    return unwrap(await createSale(data));
+  }
 );

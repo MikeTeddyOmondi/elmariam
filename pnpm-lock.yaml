@@ -8,6 +8,12 @@ importers:
 
   .:
     devDependencies:
+      '@elmariam/auth':
+        specifier: workspace:*
+        version: link:packages/auth
+      mongodb:
+        specifier: ^6.20.0
+        version: 6.20.0
       turbo:
         specifier: ^2.0.0
         version: 2.9.12
@@ -197,12 +203,18 @@ importers:
 
   infra/openauth:
     dependencies:
+      '@elmariam/auth':
+        specifier: workspace:*
+        version: link:../../packages/auth
       '@elmariam/db':
         specifier: workspace:*
         version: link:../../packages/db
+      '@elmariam/queue':
+        specifier: workspace:*
+        version: link:../../packages/queue
       '@openauthjs/openauth':
-        specifier: ^0.3.0
-        version: 0.3.9(arctic@2.3.4)(hono@4.12.18)
+        specifier: ^0.4.3
+        version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       bcryptjs:
         specifier: ^2.4.3
         version: 2.4.3
@@ -226,8 +238,8 @@ importers:
   packages/auth:
     dependencies:
       '@openauthjs/openauth':
-        specifier: ^0.3.0
-        version: 0.3.9(arctic@2.3.4)(hono@4.12.18)
+        specifier: ^0.4.3
+        version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       express:
         specifier: ^4.18.0
         version: 4.22.2
@@ -525,12 +537,6 @@ packages:
   '@nodelib/fs.walk@1.2.8':
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
-
-  '@openauthjs/openauth@0.3.9':
-    resolution: {integrity: sha512-a8UGz9iLQnB8TmY4bMDkCvMEWLHPEtDlXGnYNoFbEOxO13cCPu1pSS0DcUvKzHBAhXWnAMU01sSDMNZQr+aKWg==}
-    peerDependencies:
-      arctic: ^2.2.2
-      hono: ^4.0.0
 
   '@openauthjs/openauth@0.4.3':
     resolution: {integrity: sha512-RlnjqvHzqcbFVymEwhlUEuac4utA5h4nhSK/i2szZuQmxTIqbGUxZ+nM+avM+VV4Ing+/ZaNLKILoXS3yrkOOw==}
@@ -2158,14 +2164,6 @@ snapshots:
     dependencies:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.20.1
-
-  '@openauthjs/openauth@0.3.9(arctic@2.3.4)(hono@4.12.18)':
-    dependencies:
-      '@standard-schema/spec': 1.0.0-beta.3
-      arctic: 2.3.4
-      aws4fetch: 1.0.20
-      hono: 4.12.18
-      jose: 5.9.6
 
   '@openauthjs/openauth@0.4.3(arctic@2.3.4)(hono@4.12.18)':
     dependencies:

@@ -1,12 +1,13 @@
-import { redirect } from '@sveltejs/kit';
 import type { LayoutServerLoad } from './$types';
+import { permissionsOf, requireAppAccess } from '$lib/server/guard';
 
 export const load: LayoutServerLoad = async ({ locals, url }) => {
   const isLoginRoute = url.pathname.startsWith('/login');
   if (isLoginRoute) return {};
 
-  if (!locals.user) throw redirect(302, '/login');
-  if (locals.user.userType !== 'management') throw redirect(302, '/login?error=unauthorized');
+  const user = requireAppAccess(locals);
 
-  return { user: locals.user };
+  // `permissions` drives which action buttons the UI renders. The server-side
+  // `requirePermission` guards remain authoritative — this is cosmetic only.
+  return { user, permissions: permissionsOf(user) };
 };

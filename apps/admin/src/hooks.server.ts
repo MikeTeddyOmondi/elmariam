@@ -1,7 +1,7 @@
 import { dev } from '$app/environment';
 import { sequence } from '@sveltejs/kit/hooks';
 import { createClient } from '@openauthjs/openauth/client';
-import { subjects } from '$lib/subjects';
+import { subjects } from '@elmariam/auth';
 import { connectDB } from '@elmariam/db';
 import { env } from '$env/dynamic/private';
 import type { Handle } from '@sveltejs/kit';

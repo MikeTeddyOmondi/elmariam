@@ -8,6 +8,45 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Added
+
+- `packages/auth/src/rbac.ts` — single source of truth for roles, permissions, per-app access and staff sections. Replaces six duplicated role arrays across `packages/auth`, `packages/db`, both staff guards and the admin picklists
+- Role model: `admin` holds every permission and may log into all three apps; `management` is read-only (every `*:read`, no writes); `receptionist`/`barista`/`waiter` hold granular staff permissions; `customer` is scoped to the website portal
+- `src/lib/server/guard.ts` in each app — `requireUser`, `requirePermission`, `requireAppAccess`, plus `requireStaffSection` in staff. Callable from inside remote functions
+- `+layout.server.ts` guards for `/receptionist`, `/barista` and `/waiter` in the staff app
+- `apps/website/src/lib/server/customer.ts` — `requireOwnCustomer()`, resolving the session's `Customer` record for ownership scoping
+- `OwnerScope` filter on `listBookings` / `listInvoices` in `packages/db`
+- `scripts/seed-roles.mjs` (`pnpm roles`) — list / set / activate / repair user roles. The issuer only ever auto-provisions `customer`, so this is how the first admin account is created
+- `/health` endpoint on `infra/openauth` plus a docker-compose healthcheck
+- `OPENAUTH_ALLOW_LOCALHOST` env flag, defaulting to `false`, gating whether `http://localhost:*` is an acceptable redirect target
+- Verification-code email template and `mails` queue payload type in `services/integrations`
+
+### Changed
+
+- All 10 `.remote.ts` files now guard every query and mutation with `requirePermission`
+- `subjects` collapsed from five copies into `@elmariam/auth`, with `userType` typed as a picklist of `ROLES` instead of a bare string
+- App login callbacks and layout guards now use `canAccessApp` instead of hardcoded role lists
+- Staff landing page redirects server-side from the verified session instead of reading a client-visible `user_type` cookie
+- `packages/auth` is now ESM with subpath exports, so the SvelteKit apps no longer pull `express` into their server bundle
+- `@openauthjs/openauth` aligned to `^0.4.3` in `packages/auth` and `infra/openauth` (were on `^0.3.0`, incompatible with the clients)
+- `infra/openauth` reuses a single MongoDB client instead of opening a second connection
+- `infra/openauth` sets explicit access/refresh TTLs; redirect URIs must now be https on the allowed host unless `OPENAUTH_ALLOW_LOCALHOST=true`
+- `infra/openauth/Dockerfile` builds `@elmariam/auth` and `@elmariam/queue`, which the issuer now depends on
+
+### Fixed
+
+- **Every mutation was unauthenticated.** Remote functions are their own HTTP endpoints and are not covered by `+layout.server.ts`, so any authenticated session could call `createUser`/`updateUser`/`deleteUser` and self-promote to admin
+- **Website leaked every customer's data.** `getMyBookings` / `getMyInvoices` called `listBookings()` / `listInvoices()` with no owner filter; `getOneBooking` had no ownership check; `createBooking` accepted an arbitrary `customerId` from the client
+- **Unverified JWT.** `apps/website/src/lib/server/auth.ts` decoded the token with `atob()` and trusted the payload without checking the signature. That file and its two dead siblings are deleted
+- **Broken verifier.** `apps/staff/src/lib/server/auth.ts` called `client.verify(token, token)`, passing the token where `subjects` belongs
+- **`admin` was locked out of every app.** The role existed in the `User` enum and admin picklists but no guard accepted it
+- A waiter could open the `/barista` and `/receptionist` sections
+- `infra/openauth` auto-provisioned users with `{email, userType, createdAt}` only, omitting the schema-required `username`/`id_number` and colliding on the non-sparse unique `id_number` index from the second signup onward
+- `infra/openauth` did not check `isActive`, so deactivated accounts could still log in
+- `sendCode` only logged verification codes to stdout; it now publishes to the `mails` queue in production
+- Staff app read `OPENAUTH_ISSUER` from bare `process.env` rather than `$env/dynamic/private`
+- `docker-compose.yml` did not set `NODE_ENV` for the issuer, which would have left dev-only behaviour active in production
+
 ## [v0.1.0] — 2026-06-17 (`feat/simplifying-stack`)
 
 ### Added

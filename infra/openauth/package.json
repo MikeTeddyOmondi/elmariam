@@ -10,8 +10,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@elmariam/auth": "workspace:*",
     "@elmariam/db": "workspace:*",
-    "@openauthjs/openauth": "^0.3.0",
+    "@elmariam/queue": "workspace:*",
+    "@openauthjs/openauth": "^0.4.3",
     "bcryptjs": "^2.4.3",
     "valibot": "^1.1.0",
     "mongodb": "7.2.0"

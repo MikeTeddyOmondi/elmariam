@@ -1,6 +1,7 @@
 import type { Result } from 'better-result';
 import { query } from '$app/server';
 import { listBookings, listInvoices, listSales, listOrders } from '@elmariam/db';
+import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
@@ -10,6 +11,7 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
 }
 
 export const getDashboardStats = query(async () => {
+  requirePermission('analytics:read');
   const [bookings, invoices, sales, orders] = await Promise.all([
     listBookings().then(unwrap),
     listInvoices().then(unwrap),
