@@ -8,6 +8,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Changed — Tailwind v4
+
+- Migrated all three apps and `packages/ui` from Tailwind v3 to v4. Tailwind now runs as a Vite plugin (`@tailwindcss/vite`); `postcss.config.cjs`, `autoprefixer`, `postcss` and all four `tailwind.config.ts` files are deleted
+- The theme moved into `packages/ui/src/app.css` using `@theme inline` + `@custom-variant dark`. `inline` is required because the colour tokens reference custom properties that `.dark` redefines — without it dark mode resolves once at build time and stops switching
+- The four duplicated `app.css` files collapsed to one: each app's `src/app.css` is now just `@import "@elmariam/ui/app.css"`, so `+layout.svelte` imports are unchanged
+- `@source "./lib"` added to the shared stylesheet: `packages/ui` is symlinked into `node_modules`, which Tailwind's automatic content detection skips, so its classes would otherwise be purged
+- Explicit `border-color` base rule added — v3 defaulted `border-*` to gray-200, v4 defaults to `currentColor`, which would have made every existing `border` utility inherit the text colour
+- `tailwindcss-animate` replaced by `tw-animate-css`; `tailwind-merge` bumped to v4-compatible v3
+- Added `bits-ui` and `tailwind-variants` to `packages/ui` for the shadcn-svelte component work
+
 ### Added
 
 - `packages/auth/src/rbac.ts` — single source of truth for roles, permissions, per-app access and staff sections. Replaces six duplicated role arrays across `packages/auth`, `packages/db`, both staff guards and the admin picklists

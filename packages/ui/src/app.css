@@ -1,86 +1,158 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
 
-@layer base {
-  :root {
-    /* Light theme */
-    --background: 0 0% 100%;
-    --foreground: 222 47% 11%;
-    --card: 0 0% 100%;
-    --card-foreground: 222 47% 11%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 222 47% 11%;
-    --primary: 222 47% 11%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96%;
-    --secondary-foreground: 222 47% 11%;
-    --muted: 210 40% 96%;
-    --muted-foreground: 215 16% 47%;
-    --accent: 5 64% 46%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 214 32% 91%;
-    --input: 214 32% 91%;
-    --ring: 222 47% 50%;
-    --radius: 0.5rem;
-    --sidebar-background: 210 40% 98%;
-    --sidebar-foreground: 222 47% 20%;
-    --sidebar-primary: 222 47% 11%;
-    --sidebar-primary-foreground: 210 40% 98%;
-    --sidebar-accent: 210 40% 94%;
-    --sidebar-accent-foreground: 222 47% 11%;
-    --sidebar-border: 214 32% 88%;
-    --sidebar-ring: 222 47% 50%;
-    /* Chart colors */
-    --chart-1: 217 91% 60%;
-    --chart-2: 142 71% 45%;
-    --chart-3: 271 91% 65%;
-    --chart-4: 32 95% 53%;
-    --chart-5: 346 77% 50%;
-  }
+/*
+  Single source of truth for the design system. All three apps import this via
+  `@elmariam/ui/app.css` — do not copy it back into an app.
 
-  .dark {
-    /* Dark theme — El'Mariam */
-    --background: 222 47% 6%;
-    --foreground: 210 40% 96%;
-    --card: 222 47% 9%;
-    --card-foreground: 210 40% 96%;
-    --popover: 222 47% 9%;
-    --popover-foreground: 210 40% 96%;
-    --primary: 210 40% 96%;
-    --primary-foreground: 222 47% 6%;
-    --secondary: 217 33% 17%;
-    --secondary-foreground: 210 40% 96%;
-    --muted: 217 33% 17%;
-    --muted-foreground: 215 20% 60%;
-    --accent: 5 64% 46%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 217 33% 18%;
-    --input: 217 33% 18%;
-    --ring: 215 20% 65%;
-    --radius: 0.5rem;
-    --sidebar-background: 222 47% 8%;
-    --sidebar-foreground: 210 40% 88%;
-    --sidebar-primary: 210 40% 96%;
-    --sidebar-primary-foreground: 222 47% 6%;
-    --sidebar-accent: 217 33% 14%;
-    --sidebar-accent-foreground: 210 40% 96%;
-    --sidebar-border: 217 33% 16%;
-    --sidebar-ring: 215 20% 65%;
-    /* Chart colors */
-    --chart-1: 217 91% 65%;
-    --chart-2: 142 76% 50%;
-    --chart-3: 271 91% 70%;
-    --chart-4: 32 95% 58%;
-    --chart-5: 346 84% 60%;
-  }
+  This package is symlinked into node_modules, which Tailwind's automatic
+  content detection skips, so its components must be declared explicitly or
+  every class used only inside @elmariam/ui would be purged.
+*/
+@source "./lib";
+
+/* Tailwind v4 has no `darkMode: "class"` option; it is a custom variant. */
+@custom-variant dark (&:is(.dark *));
+
+:root {
+  /* Light theme */
+  --background: 0 0% 100%;
+  --foreground: 222 47% 11%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 47% 11%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 47% 11%;
+  --primary: 222 47% 11%;
+  --primary-foreground: 210 40% 98%;
+  --secondary: 210 40% 96%;
+  --secondary-foreground: 222 47% 11%;
+  --muted: 210 40% 96%;
+  --muted-foreground: 215 16% 47%;
+  --accent: 5 64% 46%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --ring: 222 47% 50%;
+  --radius: 0.5rem;
+  --sidebar-background: 210 40% 98%;
+  --sidebar-foreground: 222 47% 20%;
+  --sidebar-primary: 222 47% 11%;
+  --sidebar-primary-foreground: 210 40% 98%;
+  --sidebar-accent: 210 40% 94%;
+  --sidebar-accent-foreground: 222 47% 11%;
+  --sidebar-border: 214 32% 88%;
+  --sidebar-ring: 222 47% 50%;
+  /* Chart colors */
+  --chart-1: 217 91% 60%;
+  --chart-2: 142 71% 45%;
+  --chart-3: 271 91% 65%;
+  --chart-4: 32 95% 53%;
+  --chart-5: 346 77% 50%;
+}
+
+.dark {
+  /* Dark theme — El'Mariam */
+  --background: 222 47% 6%;
+  --foreground: 210 40% 96%;
+  --card: 222 47% 9%;
+  --card-foreground: 210 40% 96%;
+  --popover: 222 47% 9%;
+  --popover-foreground: 210 40% 96%;
+  --primary: 210 40% 96%;
+  --primary-foreground: 222 47% 6%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 96%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 60%;
+  --accent: 5 64% 46%;
+  --accent-foreground: 0 0% 98%;
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 98%;
+  --border: 217 33% 18%;
+  --input: 217 33% 18%;
+  --ring: 215 20% 65%;
+  --radius: 0.5rem;
+  --sidebar-background: 222 47% 8%;
+  --sidebar-foreground: 210 40% 88%;
+  --sidebar-primary: 210 40% 96%;
+  --sidebar-primary-foreground: 222 47% 6%;
+  --sidebar-accent: 217 33% 14%;
+  --sidebar-accent-foreground: 210 40% 96%;
+  --sidebar-border: 217 33% 16%;
+  --sidebar-ring: 215 20% 65%;
+  /* Chart colors */
+  --chart-1: 217 91% 65%;
+  --chart-2: 142 76% 50%;
+  --chart-3: 271 91% 70%;
+  --chart-4: 32 95% 58%;
+  --chart-5: 346 84% 60%;
+}
+
+/*
+  `inline` matters: the values below reference custom properties that `.dark`
+  redefines. Without it Tailwind resolves them once at build time and dark mode
+  stops switching.
+*/
+@theme inline {
+  --color-border: hsl(var(--border));
+  --color-input: hsl(var(--input));
+  --color-ring: hsl(var(--ring));
+  --color-background: hsl(var(--background));
+  --color-foreground: hsl(var(--foreground));
+
+  --color-primary: hsl(var(--primary));
+  --color-primary-foreground: hsl(var(--primary-foreground));
+  --color-secondary: hsl(var(--secondary));
+  --color-secondary-foreground: hsl(var(--secondary-foreground));
+  --color-destructive: hsl(var(--destructive));
+  --color-destructive-foreground: hsl(var(--destructive-foreground));
+  --color-muted: hsl(var(--muted));
+  --color-muted-foreground: hsl(var(--muted-foreground));
+  --color-accent: hsl(var(--accent));
+  --color-accent-foreground: hsl(var(--accent-foreground));
+  --color-popover: hsl(var(--popover));
+  --color-popover-foreground: hsl(var(--popover-foreground));
+  --color-card: hsl(var(--card));
+  --color-card-foreground: hsl(var(--card-foreground));
+
+  --color-sidebar: hsl(var(--sidebar-background));
+  --color-sidebar-foreground: hsl(var(--sidebar-foreground));
+  --color-sidebar-primary: hsl(var(--sidebar-primary));
+  --color-sidebar-primary-foreground: hsl(var(--sidebar-primary-foreground));
+  --color-sidebar-accent: hsl(var(--sidebar-accent));
+  --color-sidebar-accent-foreground: hsl(var(--sidebar-accent-foreground));
+  --color-sidebar-border: hsl(var(--sidebar-border));
+  --color-sidebar-ring: hsl(var(--sidebar-ring));
+
+  --color-chart-1: hsl(var(--chart-1));
+  --color-chart-2: hsl(var(--chart-2));
+  --color-chart-3: hsl(var(--chart-3));
+  --color-chart-4: hsl(var(--chart-4));
+  --color-chart-5: hsl(var(--chart-5));
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
 }
 
 @layer base {
-  * { @apply border-border; }
-  body { @apply bg-background text-foreground; font-feature-settings: "rlig" 1, "calt" 1; }
+  /*
+    v3 defaulted `border-*` to gray-200; v4 defaults to currentColor. Pinning
+    the border colour keeps every existing `border` utility rendering the theme
+    border instead of inheriting the text colour.
+  */
+  *,
+  ::after,
+  ::before {
+    border-color: hsl(var(--border));
+  }
+
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
 }
