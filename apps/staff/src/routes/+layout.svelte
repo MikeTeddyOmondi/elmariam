@@ -2,8 +2,10 @@
   import '../app.css';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
-  import { Separator, ThemeToggle } from '@elmariam/ui';
-  import { Toaster } from 'svelte-sonner';
+  import { Separator, ThemeToggle, Toaster } from '@elmariam/ui';
+  // Imported from the `/rbac` subpath, not the package root: the root barrel
+  // also exports `subjects`, which would pull openauth into the client bundle.
+  import { canAccessStaffSection } from '@elmariam/auth/rbac';
   import {
     LayoutDashboard, CalendarDays, UtensilsCrossed,
     ClipboardList, GlassWater, ShoppingCart, LogOut,
@@ -12,12 +14,29 @@
   interface Props { children: Snippet }
   let { children }: Props = $props();
 
-  const navLinks = [
-    { href: '/',                label: 'Dashboard',    icon: LayoutDashboard },
-    { href: '/receptionist',   label: 'Receptionist', icon: CalendarDays },
-    { href: '/barista',        label: 'Barista',       icon: GlassWater },
-    { href: '/waiter',         label: 'Waiter',        icon: UtensilsCrossed },
-  ];
+  const sectionLinks = [
+    { section: 'receptionist', href: '/receptionist', label: 'Receptionist', icon: CalendarDays },
+    { section: 'barista',      href: '/barista',      label: 'Barista',      icon: GlassWater },
+    { section: 'waiter',       href: '/waiter',       label: 'Waiter',       icon: UtensilsCrossed },
+  ] as const;
+
+  const role = $derived($page.data.user?.userType);
+
+  // Only the sections this role can actually open. The server guards in each
+  // section's +layout.server.ts remain authoritative — this just avoids showing
+  // links that would bounce the user straight back.
+  const visibleSections = $derived(
+    sectionLinks.filter((l) => canAccessStaffSection(role, l.section))
+  );
+
+  // A single-section role (receptionist, barista, waiter) lands directly on
+  // their own section, so a separate Dashboard entry would just be a redirect
+  // to the page they are already on.
+  const navLinks = $derived(
+    visibleSections.length > 1
+      ? [{ href: '/', label: 'Dashboard', icon: LayoutDashboard }, ...visibleSections]
+      : visibleSections
+  );
 
   const isLoginPage = $derived($page.url.pathname.startsWith('/login'));
 
@@ -28,7 +47,7 @@
   }
 </script>
 
-<Toaster richColors />
+<Toaster />
 
 {#if isLoginPage}
   {@render children()}

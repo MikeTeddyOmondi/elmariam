@@ -18,6 +18,17 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `tailwindcss-animate` replaced by `tw-animate-css`; `tailwind-merge` bumped to v4-compatible v3
 - Added `bits-ui` and `tailwind-variants` to `packages/ui` for the shadcn-svelte component work
 
+### Fixed — forms
+
+- **Success toast fired on invalid submissions.** `submit()` inside `form.enhance` resolves to `false` when the server returns validation issues; it does not throw. Every call site now checks the boolean before toasting
+- Website portal booking pages hardcoded `background: #fff` and `color: #1a1a2e` in `<style>` blocks, rendering white forms and cards in dark mode. Rebuilt on theme tokens
+
+### Changed — staff navigation
+
+- The staff sidebar now lists only the sections a role can open. A receptionist sees just "Receptionist"; `admin` and `management` still see all three plus "Dashboard". The `+layout.server.ts` guards remain authoritative — this only stops showing links that would bounce the user
+- Single-section roles no longer get a "Dashboard" entry, since `/` just redirects them to the section they are already on
+- `@elmariam/auth/rbac` subpath export added so components can import role helpers without pulling openauth into the client bundle
+
 ### Changed — forms
 
 - `createUser` / `updateUser` / `deleteUser` (admin) and `createBooking` (website) converted from `command()` to `form()`, so those pages submit without JavaScript and render field-level validation inline

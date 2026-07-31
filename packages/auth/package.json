@@ -9,6 +9,10 @@
       "types": "./dist/index.d.ts",
       "default": "./dist/index.js"
     },
+    "./rbac": {
+      "types": "./dist/rbac.d.ts",
+      "default": "./dist/rbac.js"
+    },
     "./middleware": {
       "types": "./dist/middleware.d.ts",
       "default": "./dist/middleware.js"

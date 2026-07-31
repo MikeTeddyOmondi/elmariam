@@ -57,8 +57,11 @@
     <form
       {...createUser.enhance(async ({ submit }) => {
         try {
-          await submit();
-          toast.success('User created.');
+          // `submit()` resolves to false when the server returns validation
+          // issues — it does not throw. Toasting unconditionally would report
+          // success on an invalid form.
+          const ok = await submit();
+          if (ok) toast.success('User created.');
         } catch (e) {
           toastError(e);
         }
@@ -200,9 +203,11 @@
     id="delete-user-form"
     {...deleteForm.enhance(async ({ submit }) => {
       try {
-        await submit();
-        toast.success(`${target.firstname} ${target.lastname} deleted.`.trim());
-        pendingDelete = null;
+        const ok = await submit();
+        if (ok) {
+          toast.success(`${target.firstname} ${target.lastname} deleted.`.trim());
+          pendingDelete = null;
+        }
       } catch (e) {
         toastError(e);
       }

@@ -2,9 +2,8 @@
   import '../app.css';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
-  import { ThemeToggle } from '@elmariam/ui';
-  import { Toaster } from 'svelte-sonner';
-
+  import { ThemeToggle, Toaster } from '@elmariam/ui';
+  
   interface Props { children: Snippet }
   let { children }: Props = $props();
 
@@ -26,7 +25,7 @@
   }
 </script>
 
-<Toaster richColors />
+<Toaster />
 
 {#if isLoginPage || isPortal}
   {@render children()}

@@ -2,9 +2,8 @@
   import '../app.css';
   import { page } from '$app/stores';
   import type { Snippet } from 'svelte';
-  import { Separator, ThemeToggle } from '@elmariam/ui';
-  import { Toaster } from 'svelte-sonner';
-  import {
+  import { Separator, ThemeToggle, Toaster } from '@elmariam/ui';
+    import {
     LayoutDashboard, Users, UserCheck, CalendarDays, BedDouble,
     Layers, GlassWater, ShoppingCart, BarChart3, UtensilsCrossed,
     ClipboardList, LogOut,
@@ -36,7 +35,7 @@
   }
 </script>
 
-<Toaster richColors />
+<Toaster />
 
 {#if isLoginPage}
   {@render children()}

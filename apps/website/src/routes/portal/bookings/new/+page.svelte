@@ -15,10 +15,10 @@
   });
 </script>
 
-<a href="/portal/bookings" class="back">← Back</a>
-<h1>New Booking</h1>
+<a href="/portal/bookings" class="text-sm text-muted-foreground hover:text-foreground">← Back</a>
+<h1 class="mb-6 mt-4 text-2xl font-bold text-foreground">New Booking</h1>
 
-<div class="layout">
+<div class="flex flex-wrap items-start gap-8">
   <!--
     `{...createBooking.enhance(...)}` keeps the progressive-enhancement
     fallback: with JavaScript disabled the browser posts the form normally.
@@ -27,13 +27,16 @@
   <form
     {...createBooking.enhance(async ({ submit }) => {
       try {
-        await submit();
-        toast.success('Booking created.');
+        // `submit()` resolves to false when the server returns validation
+        // issues — it does not throw. Toasting unconditionally would report
+        // success on an invalid form.
+        const ok = await submit();
+        if (ok) toast.success('Booking created.');
       } catch (e) {
         toastError(e);
       }
     })}
-    class="form"
+    class="flex min-w-[280px] flex-1 flex-col gap-4 rounded-xl border border-border bg-card p-6"
   >
     <Form.Message issues={createBooking.fields.allIssues?.()} />
 
@@ -85,26 +88,15 @@
     </Button>
   </form>
 
-  <aside>
-    <h3>Room Rates</h3>
+  <aside class="min-w-56 rounded-xl border border-border bg-card p-6">
+    <h3 class="mb-4 font-semibold text-card-foreground">Room Rates</h3>
     {#each roomTypes as rt}
-      <div class="rate-card">
-        <strong>{rt.title}</strong>
-        <span>KES {rt.rate?.toLocaleString()} / night</span>
+      <div class="flex justify-between border-b border-border py-2 text-sm last:border-0">
+        <strong class="text-foreground">{rt.title}</strong>
+        <span class="text-muted-foreground">KES {rt.rate?.toLocaleString()} / night</span>
       </div>
     {:else}
-      <p class="muted">Loading…</p>
+      <p class="text-sm text-muted-foreground">Loading…</p>
     {/each}
   </aside>
 </div>
-
-<style>
-  .back { color: #1a1a2e; text-decoration: none; font-size: 0.9rem; }
-  h1 { margin: 1rem 0 1.5rem; color: #1a1a2e; }
-  .layout { display: flex; gap: 2rem; align-items: flex-start; flex-wrap: wrap; }
-  .form { background: #fff; padding: 2rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); flex: 1; min-width: 280px; display: flex; flex-direction: column; gap: 1rem; }
-  aside { background: #fff; padding: 1.5rem; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.1); min-width: 220px; }
-  h3 { margin: 0 0 1rem; color: #1a1a2e; }
-  .rate-card { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-  .muted { color: #999; font-size: 0.9rem; }
-</style>

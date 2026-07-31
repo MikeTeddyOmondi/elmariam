@@ -83,7 +83,16 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 - [ ] staff `waiter/orders/new` — `createOrder`
 - [ ] website `contact` — placeholder, wire to the SMTP queue
 - [ ] login/register pages (×4) — replace ad-hoc `let error` state with `toastError`
-- [ ] Swap all 16 `import { toast } from 'svelte-sonner'` to `@elmariam/ui`; single `<Toaster />` per layout
+- [x] All three layouts render the shared `<Toaster />` from `@elmariam/ui`
+- [ ] Swap the remaining page-level `import { toast } from 'svelte-sonner'` to `@elmariam/ui`
+- [ ] Audit every converted form for the `const ok = await submit()` guard — toasting without it reports success on invalid submissions
+
+### Website public pages still on hardcoded colours (broken in dark mode)
+
+- [x] `portal/bookings/new`, `portal/bookings/[id]`
+- [ ] `rooms/+page.svelte` (9 hardcoded values)
+- [ ] `restaurant/+page.svelte` (7)
+- [ ] `about/+page.svelte` (4)
 
 ### Deferred
 
