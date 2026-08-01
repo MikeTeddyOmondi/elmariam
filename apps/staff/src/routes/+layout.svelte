@@ -54,7 +54,7 @@
 {:else}
   <div class="flex min-h-screen">
     <!-- Sidebar -->
-    <aside class="w-60 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
+    <aside class="w-60 shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
       <!-- Brand -->
       <div class="px-4 py-5">
         <span class="text-sidebar-foreground font-bold text-base tracking-tight">
@@ -75,7 +75,7 @@
                 ? 'bg-sidebar-accent text-sidebar-primary font-medium'
                 : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'}"
           >
-            <link.icon class="size-4 flex-shrink-0" />
+            <link.icon class="size-4 shrink-0" />
             {link.label}
           </a>
         {/each}

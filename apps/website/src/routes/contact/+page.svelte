@@ -19,15 +19,15 @@
   <Card class="mb-8">
     <CardContent class="space-y-2 py-4 text-sm">
       <div class="flex gap-3">
-        <span class="w-16 flex-shrink-0 text-muted-foreground">Address</span>
+        <span class="w-16 shrink-0 text-muted-foreground">Address</span>
         <span class="text-foreground">El'Mariam Hotel, Nairobi, Kenya</span>
       </div>
       <div class="flex gap-3">
-        <span class="w-16 flex-shrink-0 text-muted-foreground">Phone</span>
+        <span class="w-16 shrink-0 text-muted-foreground">Phone</span>
         <span class="text-foreground">+254 700 000 000</span>
       </div>
       <div class="flex gap-3">
-        <span class="w-16 flex-shrink-0 text-muted-foreground">Email</span>
+        <span class="w-16 shrink-0 text-muted-foreground">Email</span>
         <span class="text-foreground">elmariam@mail.locci.cloud</span>
       </div>
     </CardContent>

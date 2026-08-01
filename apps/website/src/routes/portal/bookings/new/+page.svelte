@@ -37,7 +37,7 @@
         toastError(e);
       }
     })}
-    class="flex min-w-[280px] flex-1 flex-col gap-4 rounded-xl border border-border bg-card p-6"
+    class="flex min-w-70 flex-1 flex-col gap-4 rounded-xl border border-border bg-card p-6"
   >
     <Form.Message issues={createBooking.fields.allIssues?.()} />
 
