@@ -32,7 +32,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 ### Added — contact form
 
 - `/contact` now works. It was a `// placeholder` that set `sent = true` and sent nothing, so every enquiry was silently discarded
-- `sendContactMessage` publishes to the `mails` queue; the SMTP consumer forwards the enquiry to `CONTACT_RECIPIENT` (falling back to `EMAIL_SENDER`) with `replyTo` set to the visitor, so replying from the inbox reaches them
+- `sendContactMessage` publishes to the `mails` queue; the SMTP consumer forwards the enquiry to `EMAIL_RECIPIENT` with `replyTo` set to the visitor, so replying from the inbox reaches them
 - On success the page thanks the sender and says the hotel will reach out soon. A queue failure surfaces as a form error rather than a false thank-you
 - New `contact-enquiry` mail type and Handlebars template in `services/integrations`
 

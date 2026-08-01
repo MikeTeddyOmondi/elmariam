@@ -12,5 +12,6 @@ export const env = {
   UJUMBESMS_ACCOUNT_EMAIL: process.env.UJUMBESMS_ACCOUNT_EMAIL || "",
   // Resend SMTP
   EMAIL_SENDER: process.env.EMAIL_SENDER || "",
+  EMAIL_RECIPIENT: process.env.EMAIL_RECIPIENT || "",
   RESEND_API_KEY: process.env.RESEND_API_KEY || "",
 };

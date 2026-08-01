@@ -39,7 +39,7 @@ type ContactEnquiryMail = {
 export type MailMessage = RegistrationMail | VerificationCodeMail | ContactEnquiryMail;
 
 /** Where website enquiries land. Falls back to the sending address. */
-const CONTACT_RECIPIENT = process.env.CONTACT_RECIPIENT || env.EMAIL_SENDER;
+const CONTACT_RECIPIENT = env.EMAIL_RECIPIENT;
 
 export async function handleSmtp(data: MailMessage) {
   if (data.type === "contact-enquiry") {

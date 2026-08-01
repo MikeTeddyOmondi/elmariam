@@ -146,6 +146,7 @@ services:
       UJUMBESMS_API_URL: ${UJUMBESMS_API_URL:-https://ujumbesms.co.ke}
       UJUMBESMS_ACCOUNT_EMAIL: ${UJUMBESMS_ACCOUNT_EMAIL}
       EMAIL_SENDER: ${EMAIL_SENDER}
+      EMAIL_RECIPIENT: ${EMAIL_RECIPIENT}
       RESEND_API_KEY: ${RESEND_API_KEY}
     depends_on:
       - rabbitmq
