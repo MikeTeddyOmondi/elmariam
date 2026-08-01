@@ -1,7 +1,11 @@
 import { form } from '$app/server';
 import { invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { RabbitMQConfig, rabbitMQEnvFromProcess } from '@elmariam/queue';
+import { RabbitMQConfig, rabbitMQEnvFrom } from '@elmariam/queue';
+// `$env/dynamic/private`, not `process.env`: Vite does not copy `.env` files
+// into `process.env`, so reading it there yields every default and the
+// connection fails on the wrong vhost.
+import { env } from '$env/dynamic/private';
 
 /**
  * Publishes a website enquiry to the `mails` queue, where the SMTP consumer in
@@ -16,7 +20,7 @@ export const sendContactMessage = form(
     message: v.pipe(v.string(), v.minLength(10, 'Please write at least a short message')),
   }),
   async (data) => {
-    const queue = new RabbitMQConfig(rabbitMQEnvFromProcess());
+    const queue = new RabbitMQConfig(rabbitMQEnvFrom(env));
     try {
       await queue.connect();
       await queue.createQueue('mails');

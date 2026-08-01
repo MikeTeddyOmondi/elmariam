@@ -3,10 +3,7 @@
   import {
     Button, Card, CardContent, Form, Input, Label, Textarea, toast, toastError
   } from '@elmariam/ui';
-  import CheckCircle2 from 'lucide-svelte/icons/circle-check-big';
   import Send from 'lucide-svelte/icons/send';
-
-  let sent = $state(false);
 </script>
 
 <svelte:head>
@@ -31,47 +28,37 @@
       </div>
       <div class="flex gap-3">
         <span class="w-16 flex-shrink-0 text-muted-foreground">Email</span>
-        <span class="text-foreground">info@elmariam.co.ke</span>
+        <span class="text-foreground">elmariam@mail.locci.cloud</span>
       </div>
     </CardContent>
   </Card>
 
   <h2 class="mb-4 text-xl font-semibold text-foreground">Send a Message</h2>
 
-  {#if sent}
-    <Card>
-      <CardContent class="space-y-3 py-10 text-center">
-        <CheckCircle2 class="mx-auto size-10 text-emerald-500" />
-        <p class="text-lg font-semibold text-foreground">Thank you for contacting us</p>
-        <p class="text-sm text-muted-foreground">
-          We've received your message and will reach out to you soon.
-        </p>
-        <Button variant="outline" onclick={() => (sent = false)}>Send another message</Button>
-      </CardContent>
-    </Card>
-  {:else}
-    <Card>
-      <CardContent class="py-6">
-        <!--
-          Previously a `// placeholder` that just set `sent = true` without
-          sending anything. It now publishes to the `mails` queue, which the
-          SMTP consumer forwards to the business inbox.
-        -->
-        <form
-          {...sendContactMessage.enhance(async ({ submit }) => {
-            try {
-              // `submit()` resolves false on validation issues; it does not throw.
-              const ok = await submit();
-              if (ok) {
-                sent = true;
-                toast.success('Message sent.');
-              }
-            } catch (e) {
-              toastError(e);
+  <Card>
+    <CardContent class="py-6">
+      <!--
+        Previously a `// placeholder` that just set `sent = true` without
+        sending anything. It now publishes to the `mails` queue, which the
+        SMTP consumer forwards to the business inbox.
+      -->
+      <form
+        {...sendContactMessage.enhance(async ({ submit, form }) => {
+          try {
+            // `submit()` resolves false on validation issues; it does not throw.
+            const ok = await submit();
+            if (ok) {
+              // Confirmation is a toast like everywhere else in the product,
+              // rather than a bespoke panel replacing the form.
+              toast.success('Thank you for contacting us — we will reach out to you soon.');
+              form.reset();
             }
-          })}
-          class="space-y-4"
-        >
+          } catch (e) {
+            toastError(e);
+          }
+        })}
+        class="space-y-4"
+      >
           <Form.Message issues={sendContactMessage.fields.issues?.()} />
 
           <Form.Field>
@@ -105,5 +92,4 @@
         </form>
       </CardContent>
     </Card>
-  {/if}
 </div>

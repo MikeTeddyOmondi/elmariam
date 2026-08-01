@@ -161,7 +161,7 @@ services:
       dockerfile: apps/admin/Dockerfile
     restart: always
     environment:
-      <<: *common-env
+      <<: [*common-env, *rabbitmq-env]
       OPENAUTH_ISSUER: http://openauth:3100
     ports:
       - "3000:3000"
@@ -183,7 +183,7 @@ services:
       dockerfile: apps/staff/Dockerfile
     restart: always
     environment:
-      <<: *common-env
+      <<: [*common-env, *rabbitmq-env]
       OPENAUTH_ISSUER: http://openauth:3100
     ports:
       - "3001:3001"
@@ -205,7 +205,7 @@ services:
       dockerfile: apps/website/Dockerfile
     restart: always
     environment:
-      <<: *common-env
+      <<: [*common-env, *rabbitmq-env]
       OPENAUTH_ISSUER: http://openauth:3100
     ports:
       - "3002:3002"

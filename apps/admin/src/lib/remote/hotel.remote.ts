@@ -14,7 +14,8 @@ import {
   createRoom as dbCreateRoom,
   createRoomType as dbCreateRoomType,
 } from '@elmariam/db';
-import { RabbitMQConfig, rabbitMQEnvFromProcess } from '@elmariam/queue';
+import { RabbitMQConfig, rabbitMQEnvFrom } from '@elmariam/queue';
+import { env } from '$env/dynamic/private';
 import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
@@ -197,7 +198,7 @@ export const initiateMpesaPayment = command(
       phone_number: customer.phone_number,
       api_ref:      `hotel-elmariam-booking-${bookingId}`,
     };
-    const queue = new RabbitMQConfig(rabbitMQEnvFromProcess());
+    const queue = new RabbitMQConfig(rabbitMQEnvFrom(env));
     await queue.connect();
     await queue.createQueue('mpesa');
     await queue.publishToQueue('mpesa', message);
@@ -215,7 +216,7 @@ export const sendSmsNotification = command(
     const invoice  = (booking as any).invoice  ?? {};
     const checkOut = new Date(booking.checkOutDate).toDateString();
     const phoneStr = String(customer.phone_number ?? '');
-    const queue    = new RabbitMQConfig(rabbitMQEnvFromProcess());
+    const queue    = new RabbitMQConfig(rabbitMQEnvFrom(env));
     await queue.connect();
     await queue.createQueue('sms');
     await queue.publishToQueue('sms', {

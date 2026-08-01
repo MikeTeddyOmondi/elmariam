@@ -134,12 +134,26 @@ export class RabbitMQConfig {
   }
 }
 
-export function rabbitMQEnvFromProcess(): RabbitMQEnv {
+/**
+ * Builds the connection config from an arbitrary env source.
+ *
+ * SvelteKit apps must pass `$env/dynamic/private` rather than relying on
+ * `process.env`: Vite does not copy `.env` files into `process.env`, so
+ * `rabbitMQEnvFromProcess()` silently falls back to every default — including
+ * vhost `"/"`, which does not exist in this deployment and fails the handshake.
+ */
+export function rabbitMQEnvFrom(source: Record<string, string | undefined>): RabbitMQEnv {
   return {
-    host: process.env.RABBITMQ_HOST || "localhost",
-    port: parseInt(process.env.RABBITMQ_PORT || "5672"),
-    username: process.env.RABBITMQ_USERNAME || "user",
-    password: process.env.RABBITMQ_PASSWORD || "password",
-    vhost: process.env.RABBITMQ_VHOST || "/",
+    host: source.RABBITMQ_HOST || "localhost",
+    port: parseInt(source.RABBITMQ_PORT || "5672"),
+    username: source.RABBITMQ_USERNAME || "user",
+    password: source.RABBITMQ_PASSWORD || "password",
+    // The stack provisions the `elmariam` vhost, not the AMQP default `/`.
+    vhost: source.RABBITMQ_VHOST || "elmariam",
   };
+}
+
+/** For plain Node services (`services/integrations`, `infra/openauth`). */
+export function rabbitMQEnvFromProcess(): RabbitMQEnv {
+  return rabbitMQEnvFrom(process.env);
 }

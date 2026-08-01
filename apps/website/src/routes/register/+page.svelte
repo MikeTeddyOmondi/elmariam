@@ -1,11 +1,13 @@
 <script lang="ts">
   import { authClient } from '$lib/auth-client';
   import { browser } from '$app/environment';
-  import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, Alert, AlertDescription } from '@elmariam/ui';
+  import { Button, Card, CardContent, CardHeader, CardTitle, CardDescription, toast } from '@elmariam/ui';
   import { Loader2 } from 'lucide-svelte';
 
   let loading = $state(false);
+  // Auth failures surface as toasts like every other error in the product.
   let error = $state('');
+  $effect(() => { if (error) toast.error(error); });
 
   async function handleRegister() {
     if (!browser) return;
@@ -36,11 +38,6 @@
         You'll be taken to our secure sign-in page — use "Sign up" there to create
         a new account with your email and password.
       </p>
-      {#if error}
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      {/if}
       <Button onclick={handleRegister} disabled={loading} class="w-full">
         {#if loading}
           <Loader2 class="mr-2 size-4 animate-spin" />
