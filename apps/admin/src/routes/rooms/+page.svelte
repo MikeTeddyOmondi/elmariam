@@ -6,6 +6,7 @@
     messageFor, toast, toastError, toastIssues, AlertDialog } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import Trash2 from 'lucide-svelte/icons/trash-2';
+  import { can } from '$lib/permissions';
 
   let rooms: RoomView[] = $state([]);
   let roomTypes: RoomTypeView[] = $state([]);
@@ -26,6 +27,12 @@
 
   // Confirmed through AlertDialog rather than window.confirm().
   let pendingDelete = $state<{ id: string; label: string } | null>(null);
+
+  // Cosmetic gating only: every remote function guards itself with
+  // `requirePermission`, so a read-only role that posts directly still gets a
+  // 403. This keeps `management` from seeing controls that could only fail.
+  const canWrite = $derived(can('rooms:write'));
+  const canDelete = $derived(can('rooms:delete'));
 </script>
 
 <div class="space-y-6">
@@ -36,53 +43,55 @@
 
   <!-- Constrained width so the form stays readable on wide screens and
        collapses to a single column on mobile. -->
-  <Card class="max-w-2xl">
-    <CardHeader>
-      <CardTitle class="text-base">Add Room</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <form
-        {...createRoom.enhance(async ({ submit }) => {
-          try {
-            const ok = await submit();
-            if (ok) toast.success('Room created.');
-          } catch (e) {
-            toastError(e);
-          }
-        })}
-        class="grid gap-4 sm:grid-cols-2"
-      >
-        <div class="sm:col-span-2 empty:hidden">
-          <Form.Message issues={createRoom.fields.allIssues()} />
-        </div>
+  {#if canWrite}
+    <Card class="max-w-2xl">
+      <CardHeader>
+        <CardTitle class="text-base">Add Room</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          {...createRoom.enhance(async ({ submit }) => {
+            try {
+              const ok = await submit();
+              if (ok) toast.success('Room created.');
+            } catch (e) {
+              toastError(e);
+            }
+          })}
+          class="grid gap-4 sm:grid-cols-2"
+        >
+          <div class="sm:col-span-2 empty:hidden">
+            <Form.Message issues={createRoom.fields.allIssues()} />
+          </div>
 
-        <Form.Field>
-          <Label for="rnumber">Room Number</Label>
-          <Input id="rnumber" placeholder="e.g. 101" {...createRoom.fields.number.as('text')} />
-          <Form.FieldErrors issues={createRoom.fields.number.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="rnumber">Room Number</Label>
+            <Input id="rnumber" placeholder="e.g. 101" {...createRoom.fields.number.as('text')} />
+            <Form.FieldErrors issues={createRoom.fields.number.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="rtype">Room Type</Label>
-          <SelectField
-            id="rtype"
-            disabled={loading}
-            items={roomTypeOptions}
-            placeholder={loading ? 'Loading' : 'Select type'}
-            {...createRoom.fields.roomTypeId.as('select')}
-          />
-          <Form.FieldErrors issues={createRoom.fields.roomTypeId.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="rtype">Room Type</Label>
+            <SelectField
+              id="rtype"
+              disabled={loading}
+              items={roomTypeOptions}
+              placeholder={loading ? 'Loading' : 'Select type'}
+              {...createRoom.fields.roomTypeId.as('select')}
+            />
+            <Form.FieldErrors issues={createRoom.fields.roomTypeId.issues()} />
+          </Form.Field>
 
-        <div class="sm:col-span-2 flex justify-end">
-          <Button type="submit" disabled={createRoom.pending > 0}>
-            <Plus />
-            {createRoom.pending > 0 ? 'Saving…' : 'Add Room'}
-          </Button>
-        </div>
-      </form>
-    </CardContent>
-  </Card>
+          <div class="sm:col-span-2 flex justify-end">
+            <Button type="submit" disabled={createRoom.pending > 0}>
+              <Plus />
+              {createRoom.pending > 0 ? 'Saving…' : 'Add Room'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  {/if}
 
   <Card class="overflow-hidden">
     {#if loading}
@@ -112,18 +121,20 @@
                     {room.isBooked ? 'Booked' : 'Available'}
                   </Badge>
                 </TableCell>
-                              <TableCell class="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="text-destructive hover:text-destructive"
-                    aria-label="Delete {room.number}"
-                    onclick={() => (pendingDelete = { id: room.id, label: room.number })}
-                  >
-                    <Trash2 />
-                  </Button>
+                <TableCell class="text-right">
+                  {#if canDelete}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="text-destructive hover:text-destructive"
+                      aria-label="Delete {room.number}"
+                      onclick={() => (pendingDelete = { id: room.id, label: room.number })}
+                    >
+                      <Trash2 />
+                    </Button>
+                  {/if}
                 </TableCell>
-</TableRow>
+              </TableRow>
             {:else}
               <TableRow>
                 <TableCell colspan={3} class="py-6 text-center text-muted-foreground">

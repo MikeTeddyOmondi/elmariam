@@ -9,6 +9,7 @@
   import Pencil from 'lucide-svelte/icons/pencil';
   import Plus from 'lucide-svelte/icons/plus';
   import Trash2 from 'lucide-svelte/icons/trash-2';
+  import { can } from '$lib/permissions';
 
   let items: MenuItemView[] = $state([]);
   let loading = $state(true);
@@ -32,6 +33,12 @@
   // Editing happens inline, in a row that expands under the one being edited.
   // Only one row is open at a time.
   let editingId = $state<string | null>(null);
+
+  // Cosmetic gating only: every remote function guards itself with
+  // `requirePermission`, so a read-only role that posts directly still gets a
+  // 403. This keeps `management` from seeing controls that could only fail.
+  const canWrite = $derived(can('menu:write'));
+  const canDelete = $derived(can('menu:delete'));
 </script>
 
 <div class="space-y-6">
@@ -40,71 +47,73 @@
     <p class="mt-1 text-sm text-muted-foreground">Restaurant menu and pricing</p>
   </div>
 
-  <Card class="max-w-2xl">
-    <CardHeader>
-      <CardTitle class="text-base">Add Menu Item</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <form
-        {...createMenuItem.enhance(async ({ submit }) => {
-          try {
-            const ok = await submit();
-            if (ok) toast.success('Menu item created.');
-          } catch (e) {
-            toastError(e);
-          }
-        })}
-        class="grid gap-4 sm:grid-cols-2"
-      >
-        <div class="sm:col-span-2 empty:hidden">
-          <Form.Message issues={createMenuItem.fields.allIssues()} />
-        </div>
+  {#if canWrite}
+    <Card class="max-w-2xl">
+      <CardHeader>
+        <CardTitle class="text-base">Add Menu Item</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          {...createMenuItem.enhance(async ({ submit }) => {
+            try {
+              const ok = await submit();
+              if (ok) toast.success('Menu item created.');
+            } catch (e) {
+              toastError(e);
+            }
+          })}
+          class="grid gap-4 sm:grid-cols-2"
+        >
+          <div class="sm:col-span-2 empty:hidden">
+            <Form.Message issues={createMenuItem.fields.allIssues()} />
+          </div>
 
-        <Form.Field>
-          <Label for="mname">Name</Label>
-          <Input id="mname" placeholder="e.g. Grilled Chicken" {...createMenuItem.fields.name.as('text')} />
-          <Form.FieldErrors issues={createMenuItem.fields.name.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="mname">Name</Label>
+            <Input id="mname" placeholder="e.g. Grilled Chicken" {...createMenuItem.fields.name.as('text')} />
+            <Form.FieldErrors issues={createMenuItem.fields.name.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="cat">Category</Label>
-          <SelectField
-            id="cat"
-            class="capitalize"
-            items={CATEGORY_OPTIONS}
-            {...createMenuItem.fields.category.as('select', 'main')}
-          />
-          <Form.FieldErrors issues={createMenuItem.fields.category.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="cat">Category</Label>
+            <SelectField
+              id="cat"
+              class="capitalize"
+              items={CATEGORY_OPTIONS}
+              {...createMenuItem.fields.category.as('select', 'main')}
+            />
+            <Form.FieldErrors issues={createMenuItem.fields.category.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="mprice">Price (KES)</Label>
-          <Input id="mprice" min="0" step="0.01" {...createMenuItem.fields.price.as('number')} />
-          <Form.FieldErrors issues={createMenuItem.fields.price.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="mprice">Price (KES)</Label>
+            <Input id="mprice" min="0" step="0.01" {...createMenuItem.fields.price.as('number')} />
+            <Form.FieldErrors issues={createMenuItem.fields.price.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="desc">Description <span class="text-muted-foreground">(optional)</span></Label>
-          <Input id="desc" placeholder="Short description…" {...createMenuItem.fields.description.as('text')} />
-          <Form.FieldErrors issues={createMenuItem.fields.description.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="desc">Description <span class="text-muted-foreground">(optional)</span></Label>
+            <Input id="desc" placeholder="Short description…" {...createMenuItem.fields.description.as('text')} />
+            <Form.FieldErrors issues={createMenuItem.fields.description.issues()} />
+          </Form.Field>
 
-        <div class="flex items-center gap-2 sm:col-span-2">
-          <!-- A checkbox rather than a Yes/No select: `as('checkbox')` handles
-               the on/absent FormData quirk so the schema stays a plain boolean. -->
-          <Checkbox id="avail" {...createMenuItem.fields.isAvailable.as('checkbox')} />
-          <Label for="avail">Available on the menu</Label>
-        </div>
+          <div class="flex items-center gap-2 sm:col-span-2">
+            <!-- A checkbox rather than a Yes/No select: `as('checkbox')` handles
+                 the on/absent FormData quirk so the schema stays a plain boolean. -->
+            <Checkbox id="avail" {...createMenuItem.fields.isAvailable.as('checkbox')} />
+            <Label for="avail">Available on the menu</Label>
+          </div>
 
-        <div class="sm:col-span-2 flex justify-end">
-          <Button type="submit" disabled={createMenuItem.pending > 0}>
-            <Plus />
-            {createMenuItem.pending > 0 ? 'Saving…' : 'Add Item'}
-          </Button>
-        </div>
-      </form>
-    </CardContent>
-  </Card>
+          <div class="sm:col-span-2 flex justify-end">
+            <Button type="submit" disabled={createMenuItem.pending > 0}>
+              <Plus />
+              {createMenuItem.pending > 0 ? 'Saving…' : 'Add Item'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  {/if}
 
   <Card class="overflow-hidden">
     {#if loading}
@@ -140,23 +149,27 @@
                 </TableCell>
                 <TableCell class="text-right">
                   <div class="flex justify-end gap-1">
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      aria-label="Edit {item.name}"
-                      onclick={() => (editingId = editingId === item.id ? null : item.id)}
-                    >
-                      <Pencil />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      class="text-destructive hover:text-destructive"
-                      aria-label="Delete {item.name}"
-                      onclick={() => (pendingDelete = { id: item.id, label: item.name })}
-                    >
-                      <Trash2 />
-                    </Button>
+                    {#if canWrite}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        aria-label="Edit {item.name}"
+                        onclick={() => (editingId = editingId === item.id ? null : item.id)}
+                      >
+                        <Pencil />
+                      </Button>
+                    {/if}
+                    {#if canDelete}
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        class="text-destructive hover:text-destructive"
+                        aria-label="Delete {item.name}"
+                        onclick={() => (pendingDelete = { id: item.id, label: item.name })}
+                      >
+                        <Trash2 />
+                      </Button>
+                    {/if}
                   </div>
                 </TableCell>
               </TableRow>

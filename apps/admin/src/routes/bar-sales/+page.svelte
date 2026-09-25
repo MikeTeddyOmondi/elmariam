@@ -6,6 +6,7 @@
     messageFor, toast, toastError } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import X from 'lucide-svelte/icons/x';
+  import { can } from '$lib/permissions';
 
   let sales: BarSaleView[] = $state([]);
   let drinks = $state<Awaited<ReturnType<typeof getDrinks>>>([] as never);
@@ -43,6 +44,11 @@
       label: `${d.drinkName} (${d.drinkCode}), stock: ${d.stockQty}`
     }))
   );
+
+  // Cosmetic gating only: every remote function guards itself with
+  // `requirePermission`, so a read-only role that posts directly still gets a
+  // 403. This keeps `management` from seeing controls that could only fail.
+  const canWrite = $derived(can('bar_sales:write'));
 </script>
 
 <div class="space-y-6">
@@ -55,77 +61,79 @@
     The cart is a dynamic list built in the browser rather than flat FormData
     fields, so this form is JS-driven and submitted through `enhance`.
   -->
-  <Card class="max-w-xl">
-    <CardHeader>
-      <CardTitle class="text-base font-semibold text-foreground">Record Sale</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <form
-        {...checkoutBarSale.enhance(async ({ submit }) => {
-          try {
-            // `submit()` resolves false on validation issues; it does not throw.
-            const ok = await submit();
-            if (ok) {
-              toast.success('Sale recorded.');
-              rowCount = 1;
-              sales = await getBarSales();
+  {#if canWrite}
+    <Card class="max-w-xl">
+      <CardHeader>
+        <CardTitle class="text-base font-semibold text-foreground">Record Sale</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          {...checkoutBarSale.enhance(async ({ submit }) => {
+            try {
+              // `submit()` resolves false on validation issues; it does not throw.
+              const ok = await submit();
+              if (ok) {
+                toast.success('Sale recorded.');
+                rowCount = 1;
+                sales = await getBarSales();
+              }
+            } catch (e) {
+              toastError(e);
             }
-          } catch (e) {
-            toastError(e);
-          }
-        })}
-        class="space-y-4"
-      >
-        <Form.Message issues={checkoutBarSale.fields.allIssues()} />
+          })}
+          class="space-y-4"
+        >
+          <Form.Message issues={checkoutBarSale.fields.allIssues()} />
 
-        <div class="space-y-3">
-          {#each rows as i (i)}
-            {@const row = checkoutBarSale.fields.checkoutDrinkItems[i]}
-            <div class="flex items-end gap-2">
-              <div class="flex-1 space-y-2">
-                <Label class="sr-only" for="drink-{i}">Drink</Label>
-                <SelectField
-                  id="drink-{i}"
-                  disabled={drinksLoading}
-                  items={drinkOptions}
-                  placeholder={drinksLoading ? 'Loading' : 'Select drink'}
-                  {...row.drinkId.as('select')}
-                />
-                <Form.FieldErrors issues={row.drinkId.issues()} />
+          <div class="space-y-3">
+            {#each rows as i (i)}
+              {@const row = checkoutBarSale.fields.checkoutDrinkItems[i]}
+              <div class="flex items-end gap-2">
+                <div class="flex-1 space-y-2">
+                  <Label class="sr-only" for="drink-{i}">Drink</Label>
+                  <SelectField
+                    id="drink-{i}"
+                    disabled={drinksLoading}
+                    items={drinkOptions}
+                    placeholder={drinksLoading ? 'Loading' : 'Select drink'}
+                    {...row.drinkId.as('select')}
+                  />
+                  <Form.FieldErrors issues={row.drinkId.issues()} />
+                </div>
+
+                <div class="w-24 space-y-2">
+                  <Label class="sr-only" for="qty-{i}">Quantity</Label>
+                  <Input id="qty-{i}" min="1" placeholder="Qty" {...row.quantity.as('number', 1)} />
+                  <Form.FieldErrors issues={row.quantity.issues()} />
+                </div>
+
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  class="text-destructive hover:text-destructive"
+                  aria-label="Remove item {i + 1}"
+                  disabled={rowCount === 1}
+                  onclick={() => (rowCount -= 1)}
+                >
+                  <X />
+                </Button>
               </div>
+            {/each}
+          </div>
 
-              <div class="w-24 space-y-2">
-                <Label class="sr-only" for="qty-{i}">Quantity</Label>
-                <Input id="qty-{i}" min="1" placeholder="Qty" {...row.quantity.as('number', 1)} />
-                <Form.FieldErrors issues={row.quantity.issues()} />
-              </div>
-
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                class="text-destructive hover:text-destructive"
-                aria-label="Remove item {i + 1}"
-                disabled={rowCount === 1}
-                onclick={() => (rowCount -= 1)}
-              >
-                <X />
-              </Button>
-            </div>
-          {/each}
-        </div>
-
-        <div class="flex justify-between gap-2">
-          <Button type="button" variant="outline" onclick={() => (rowCount += 1)}>
-            <Plus /> Add Item
-          </Button>
-          <Button type="submit" disabled={checkoutBarSale.pending > 0 || drinksLoading}>
-            {checkoutBarSale.pending > 0 ? 'Processing…' : 'Checkout'}
-          </Button>
-        </div>
-      </form>
-    </CardContent>
-  </Card>
+          <div class="flex justify-between gap-2">
+            <Button type="button" variant="outline" onclick={() => (rowCount += 1)}>
+              <Plus /> Add Item
+            </Button>
+            <Button type="submit" disabled={checkoutBarSale.pending > 0 || drinksLoading}>
+              {checkoutBarSale.pending > 0 ? 'Processing…' : 'Checkout'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  {/if}
 
   <Card class="overflow-hidden">
     {#if loading}

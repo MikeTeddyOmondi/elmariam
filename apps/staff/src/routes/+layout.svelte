@@ -90,7 +90,7 @@
           <ThemeToggle />
         </div>
         <a
-          href="/login"
+          href="/logout"
           class="flex items-center gap-3 px-3 py-2 rounded-md text-sm text-muted-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
         >
           <LogOut class="size-4" />

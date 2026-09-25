@@ -6,6 +6,7 @@
     messageFor, toast, toastError
   } from '@elmariam/ui';
   import CalendarPlus from 'lucide-svelte/icons/calendar-plus';
+  import { can } from '$lib/permissions';
 
   let bookings: BookingView[] = $state([]);
   let customers: CustomerView[] = $state([]);
@@ -34,6 +35,11 @@
   const customerOptions = $derived(
     customers.map((c) => ({ value: c.id_number, label: `${c.firstname} ${c.lastname} (${c.id_number})` }))
   );
+
+  // Cosmetic gating only: every remote function guards itself with
+  // `requirePermission`, so a read-only role that posts directly still gets a
+  // 403. This keeps `management` from seeing controls that could only fail.
+  const canWrite = $derived(can('bookings:write'));
 </script>
 
 <div class="space-y-6">
@@ -42,92 +48,94 @@
     <p class="mt-1 text-sm text-muted-foreground">Room reservations and stays</p>
   </div>
 
-  <Card class="max-w-2xl">
-    <CardHeader>
-      <CardTitle class="text-base">Create Booking</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <form
-        {...createBooking.enhance(async ({ submit }) => {
-          try {
-            const ok = await submit();
-            if (ok) toast.success('Booking created.');
-          } catch (e) {
-            toastError(e);
-          }
-        })}
-        class="grid gap-4 sm:grid-cols-2"
-      >
-        <div class="sm:col-span-2 empty:hidden">
-          <Form.Message issues={createBooking.fields.allIssues()} />
-        </div>
+  {#if canWrite}
+    <Card class="max-w-2xl">
+      <CardHeader>
+        <CardTitle class="text-base">Create Booking</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          {...createBooking.enhance(async ({ submit }) => {
+            try {
+              const ok = await submit();
+              if (ok) toast.success('Booking created.');
+            } catch (e) {
+              toastError(e);
+            }
+          })}
+          class="grid gap-4 sm:grid-cols-2"
+        >
+          <div class="sm:col-span-2 empty:hidden">
+            <Form.Message issues={createBooking.fields.allIssues()} />
+          </div>
 
-        <Form.Field class="sm:col-span-2">
-          <Label for="bcustomer">Customer</Label>
-          <!-- `createBooking` looks the customer up by ID number, not ObjectId. -->
-          <SelectField
-            id="bcustomer"
-            disabled={loading}
-            items={customerOptions}
-            placeholder={loading ? 'Loading' : 'Select customer'}
-            {...createBooking.fields.customerId.as('select')}
-          />
-          <Form.FieldErrors issues={createBooking.fields.customerId.issues()} />
-        </Form.Field>
+          <Form.Field class="sm:col-span-2">
+            <Label for="bcustomer">Customer</Label>
+            <!-- `createBooking` looks the customer up by ID number, not ObjectId. -->
+            <SelectField
+              id="bcustomer"
+              disabled={loading}
+              items={customerOptions}
+              placeholder={loading ? 'Loading' : 'Select customer'}
+              {...createBooking.fields.customerId.as('select')}
+            />
+            <Form.FieldErrors issues={createBooking.fields.customerId.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="badults">Adults</Label>
-          <Input id="badults" min="1" {...createBooking.fields.numberAdults.as('number')} />
-          <Form.FieldErrors issues={createBooking.fields.numberAdults.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="badults">Adults</Label>
+            <Input id="badults" min="1" {...createBooking.fields.numberAdults.as('number')} />
+            <Form.FieldErrors issues={createBooking.fields.numberAdults.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="bkids">Kids</Label>
-          <Input id="bkids" min="0" {...createBooking.fields.numberKids.as('number')} />
-          <Form.FieldErrors issues={createBooking.fields.numberKids.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="bkids">Kids</Label>
+            <Input id="bkids" min="0" {...createBooking.fields.numberKids.as('number')} />
+            <Form.FieldErrors issues={createBooking.fields.numberKids.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="broomtype">Room Type</Label>
-          <SelectField
-            id="broomtype"
-            items={ROOM_TYPE_OPTIONS}
-            {...createBooking.fields.roomType.as('select', 'single')}
-          />
-          <Form.FieldErrors issues={createBooking.fields.roomType.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="broomtype">Room Type</Label>
+            <SelectField
+              id="broomtype"
+              items={ROOM_TYPE_OPTIONS}
+              {...createBooking.fields.roomType.as('select', 'single')}
+            />
+            <Form.FieldErrors issues={createBooking.fields.roomType.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="bpay">Payment Method</Label>
-          <SelectField
-            id="bpay"
-            items={PAYMENT_OPTIONS}
-            {...createBooking.fields.paymentMethod.as('select', 'cash')}
-          />
-          <Form.FieldErrors issues={createBooking.fields.paymentMethod.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="bpay">Payment Method</Label>
+            <SelectField
+              id="bpay"
+              items={PAYMENT_OPTIONS}
+              {...createBooking.fields.paymentMethod.as('select', 'cash')}
+            />
+            <Form.FieldErrors issues={createBooking.fields.paymentMethod.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="bcheckin">Check In</Label>
-          <Input id="bcheckin" {...createBooking.fields.checkInDate.as('date')} />
-          <Form.FieldErrors issues={createBooking.fields.checkInDate.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="bcheckin">Check In</Label>
+            <Input id="bcheckin" {...createBooking.fields.checkInDate.as('date')} />
+            <Form.FieldErrors issues={createBooking.fields.checkInDate.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="bcheckout">Check Out</Label>
-          <Input id="bcheckout" {...createBooking.fields.checkOutDate.as('date')} />
-          <Form.FieldErrors issues={createBooking.fields.checkOutDate.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="bcheckout">Check Out</Label>
+            <Input id="bcheckout" {...createBooking.fields.checkOutDate.as('date')} />
+            <Form.FieldErrors issues={createBooking.fields.checkOutDate.issues()} />
+          </Form.Field>
 
-        <div class="sm:col-span-2 flex justify-end">
-          <Button type="submit" disabled={createBooking.pending > 0}>
-            <CalendarPlus />
-            {createBooking.pending > 0 ? 'Saving…' : 'Create Booking'}
-          </Button>
-        </div>
-      </form>
-    </CardContent>
-  </Card>
+          <div class="sm:col-span-2 flex justify-end">
+            <Button type="submit" disabled={createBooking.pending > 0}>
+              <CalendarPlus />
+              {createBooking.pending > 0 ? 'Saving…' : 'Create Booking'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  {/if}
 
   <Card class="overflow-hidden">
     {#if loading}

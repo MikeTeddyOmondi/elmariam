@@ -19,6 +19,7 @@
   import Pencil from "lucide-svelte/icons/pencil";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import UserPlus from "lucide-svelte/icons/user-plus";
+  import { can } from "$lib/permissions";
 
   let users: UserView[] = $state([]);
   let loading = $state(true);
@@ -48,6 +49,12 @@
   };
 
   const ROLE_OPTIONS = ASSIGNABLE_STAFF_ROLES.map((r) => ({ value: r, label: r }));
+
+  // Cosmetic gating only: every remote function guards itself with
+  // `requirePermission`, so a read-only role that posts directly still gets a
+  // 403. This keeps `management` from seeing controls that could only fail.
+  const canWrite = $derived(can('users:write'));
+  const canDelete = $derived(can('users:delete'));
 </script>
 
 <div class="space-y-6">
@@ -56,6 +63,7 @@
     <p class="text-sm text-muted-foreground mt-1">Staff accounts and roles</p>
   </div>
 
+  {#if canWrite}
   <!-- Create form -->
   <div class="bg-card border border-border rounded-xl p-5">
     <h2 class="text-base font-semibold text-foreground mb-4">Add User</h2>
@@ -144,6 +152,7 @@
       </div>
     </form>
   </div>
+  {/if}
 
   <!-- List -->
   <div class="bg-card border border-border rounded-xl overflow-hidden">
@@ -184,25 +193,29 @@
               <td class="px-4 py-3">
                 <!-- Icon-only, so each needs an accessible name of its own. -->
                 <div class="flex justify-end gap-1">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    aria-label="Edit {user.email}"
-                    title="Edit user"
-                    onclick={() => (editingId = editingId === user.id ? null : user.id)}
-                  >
-                    <Pencil />
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="text-destructive hover:text-destructive"
-                    aria-label="Delete {user.email}"
-                    title="Delete user"
-                    onclick={() => (pendingDelete = user)}
-                  >
-                    <Trash2 />
-                  </Button>
+                  {#if canWrite}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      aria-label="Edit {user.email}"
+                      title="Edit user"
+                      onclick={() => (editingId = editingId === user.id ? null : user.id)}
+                    >
+                      <Pencil />
+                    </Button>
+                  {/if}
+                  {#if canDelete}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="text-destructive hover:text-destructive"
+                      aria-label="Delete {user.email}"
+                      title="Delete user"
+                      onclick={() => (pendingDelete = user)}
+                    >
+                      <Trash2 />
+                    </Button>
+                  {/if}
                 </div>
               </td>
             </tr>

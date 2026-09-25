@@ -62,6 +62,13 @@
             >
               My Portal
             </a>
+            <!-- A signed-in customer previously had no way to sign out at all. -->
+            <a
+              href="/logout"
+              class="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign out
+            </a>
           {:else}
             <a
               href="/login"

@@ -6,6 +6,7 @@
     messageFor, toast, toastError, toastIssues, AlertDialog } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import Trash2 from 'lucide-svelte/icons/trash-2';
+  import { can } from '$lib/permissions';
 
   let drinks: DrinkView[] = $state([]);
   let loading = $state(true);
@@ -27,6 +28,12 @@
 
   // Confirmed through AlertDialog rather than window.confirm().
   let pendingDelete = $state<{ id: string; label: string } | null>(null);
+
+  // Cosmetic gating only: every remote function guards itself with
+  // `requirePermission`, so a read-only role that posts directly still gets a
+  // 403. This keeps `management` from seeing controls that could only fail.
+  const canWrite = $derived(can('drinks:write'));
+  const canDelete = $derived(can('drinks:delete'));
 </script>
 
 <div class="space-y-6">
@@ -35,87 +42,89 @@
     <p class="mt-1 text-sm text-muted-foreground">Bar inventory catalogue</p>
   </div>
 
-  <Card class="max-w-2xl">
-    <CardHeader>
-      <CardTitle class="text-base">Add Drink</CardTitle>
-    </CardHeader>
-    <CardContent>
-      <form
-        {...createDrink.enhance(async ({ submit }) => {
-          try {
-            const ok = await submit();
-            if (ok) toast.success('Drink created.');
-          } catch (e) {
-            toastError(e);
-          }
-        })}
-        class="grid gap-4 sm:grid-cols-2"
-      >
-        <div class="sm:col-span-2 empty:hidden">
-          <Form.Message issues={createDrink.fields.allIssues()} />
-        </div>
+  {#if canWrite}
+    <Card class="max-w-2xl">
+      <CardHeader>
+        <CardTitle class="text-base">Add Drink</CardTitle>
+      </CardHeader>
+      <CardContent>
+        <form
+          {...createDrink.enhance(async ({ submit }) => {
+            try {
+              const ok = await submit();
+              if (ok) toast.success('Drink created.');
+            } catch (e) {
+              toastError(e);
+            }
+          })}
+          class="grid gap-4 sm:grid-cols-2"
+        >
+          <div class="sm:col-span-2 empty:hidden">
+            <Form.Message issues={createDrink.fields.allIssues()} />
+          </div>
 
-        <Form.Field>
-          <Label for="drinkName">Name</Label>
-          <Input id="drinkName" placeholder="e.g. Tusker Lager" {...createDrink.fields.drinkName.as('text')} />
-          <Form.FieldErrors issues={createDrink.fields.drinkName.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="drinkName">Name</Label>
+            <Input id="drinkName" placeholder="e.g. Tusker Lager" {...createDrink.fields.drinkName.as('text')} />
+            <Form.FieldErrors issues={createDrink.fields.drinkName.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="drinkCode">Code</Label>
-          <Input id="drinkCode" placeholder="e.g. TUS001" {...createDrink.fields.drinkCode.as('text')} />
-          <Form.FieldErrors issues={createDrink.fields.drinkCode.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="drinkCode">Code</Label>
+            <Input id="drinkCode" placeholder="e.g. TUS001" {...createDrink.fields.drinkCode.as('text')} />
+            <Form.FieldErrors issues={createDrink.fields.drinkCode.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="typeOfDrink">Type</Label>
-          <SelectField
-            id="typeOfDrink"
-            class="capitalize"
-            items={DRINK_TYPE_OPTIONS}
-            {...createDrink.fields.typeOfDrink.as('select', 'beer')}
-          />
-          <Form.FieldErrors issues={createDrink.fields.typeOfDrink.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="typeOfDrink">Type</Label>
+            <SelectField
+              id="typeOfDrink"
+              class="capitalize"
+              items={DRINK_TYPE_OPTIONS}
+              {...createDrink.fields.typeOfDrink.as('select', 'beer')}
+            />
+            <Form.FieldErrors issues={createDrink.fields.typeOfDrink.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="uom">Unit of Measure</Label>
-          <SelectField
-            id="uom"
-            class="capitalize"
-            items={UNIT_OPTIONS}
-            {...createDrink.fields.uom.as('select', 'bottles')}
-          />
-          <Form.FieldErrors issues={createDrink.fields.uom.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="uom">Unit of Measure</Label>
+            <SelectField
+              id="uom"
+              class="capitalize"
+              items={UNIT_OPTIONS}
+              {...createDrink.fields.uom.as('select', 'bottles')}
+            />
+            <Form.FieldErrors issues={createDrink.fields.uom.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="packageQty">Package Qty</Label>
-          <Input id="packageQty" min="1" {...createDrink.fields.packageQty.as('number')} />
-          <Form.FieldErrors issues={createDrink.fields.packageQty.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="packageQty">Package Qty</Label>
+            <Input id="packageQty" min="1" {...createDrink.fields.packageQty.as('number')} />
+            <Form.FieldErrors issues={createDrink.fields.packageQty.issues()} />
+          </Form.Field>
 
-        <Form.Field>
-          <Label for="buyingPrice">Buying Price (KES)</Label>
-          <Input id="buyingPrice" min="0" step="0.01" {...createDrink.fields.buyingStockPrice.as('number')} />
-          <Form.FieldErrors issues={createDrink.fields.buyingStockPrice.issues()} />
-        </Form.Field>
+          <Form.Field>
+            <Label for="buyingPrice">Buying Price (KES)</Label>
+            <Input id="buyingPrice" min="0" step="0.01" {...createDrink.fields.buyingStockPrice.as('number')} />
+            <Form.FieldErrors issues={createDrink.fields.buyingStockPrice.issues()} />
+          </Form.Field>
 
-        <Form.Field class="sm:col-span-2">
-          <Label for="sellingPrice">Selling Price (KES)</Label>
-          <Input id="sellingPrice" min="0" step="0.01" {...createDrink.fields.sellingStockPrice.as('number')} />
-          <Form.FieldErrors issues={createDrink.fields.sellingStockPrice.issues()} />
-        </Form.Field>
+          <Form.Field class="sm:col-span-2">
+            <Label for="sellingPrice">Selling Price (KES)</Label>
+            <Input id="sellingPrice" min="0" step="0.01" {...createDrink.fields.sellingStockPrice.as('number')} />
+            <Form.FieldErrors issues={createDrink.fields.sellingStockPrice.issues()} />
+          </Form.Field>
 
-        <div class="sm:col-span-2 flex justify-end">
-          <Button type="submit" disabled={createDrink.pending > 0}>
-            <Plus />
-            {createDrink.pending > 0 ? 'Saving…' : 'Add Drink'}
-          </Button>
-        </div>
-      </form>
-    </CardContent>
-  </Card>
+          <div class="sm:col-span-2 flex justify-end">
+            <Button type="submit" disabled={createDrink.pending > 0}>
+              <Plus />
+              {createDrink.pending > 0 ? 'Saving…' : 'Add Drink'}
+            </Button>
+          </div>
+        </form>
+      </CardContent>
+    </Card>
+  {/if}
 
   <Card class="overflow-hidden">
     {#if loading}
@@ -157,18 +166,20 @@
                     {drink.inStock ? 'Yes' : 'No'}
                   </Badge>
                 </TableCell>
-                              <TableCell class="text-right">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    class="text-destructive hover:text-destructive"
-                    aria-label="Delete {drink.drinkName}"
-                    onclick={() => (pendingDelete = { id: drink.id, label: drink.drinkName })}
-                  >
-                    <Trash2 />
-                  </Button>
+                <TableCell class="text-right">
+                  {#if canDelete}
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      class="text-destructive hover:text-destructive"
+                      aria-label="Delete {drink.drinkName}"
+                      onclick={() => (pendingDelete = { id: drink.id, label: drink.drinkName })}
+                    >
+                      <Trash2 />
+                    </Button>
+                  {/if}
                 </TableCell>
-</TableRow>
+              </TableRow>
             {:else}
               <TableRow>
                 <TableCell colspan={8} class="py-6 text-center text-muted-foreground">
