@@ -155,6 +155,41 @@ No `GATEWAY_URL` / `:8009` reference remains anywhere in `apps/` or `packages/`.
 - [ ] `dropdown-menu`: add when a page actually needs it
 - [x] Real bits-ui `Select` across all 19 call sites, replacing the styled native element. Forms containing one no longer submit without JavaScript: accepted deliberately
 
+## Planned: next pass
+
+### Unify create and edit into modal forms
+
+- [ ] Every create and edit form becomes a modal opened by an explicit action button, so each client is a listing plus dialogs instead of a listing plus a page per form. Collapses the five staff `*/new` routes and the create cards now sitting above every admin table
+- [ ] Not dismissable: no Escape, no outside click, no close button while a submission is pending. bits-ui `Dialog` takes `escapeKeydownBehavior="ignore"` and `interactOutsideBehavior="ignore"`; `packages/ui` already ships a `dialog` component to build on
+- [ ] Closes only after a successful post. The `const ok = await submit()` guard already in place is the hook: close on `true`, keep the dialog open and show the issues on `false`
+- [ ] One standard width for every modal, set in the shared component rather than per page
+- [ ] Submit stays disabled until every required field is filled. Remote forms expose `fields.value()` and `validate()`, and a preflight schema populates `issues()` client-side without a round trip, so the gate can be derived rather than hand-rolled
+- [ ] Deleting the `*/new` routes removes the `+page.server.ts` permission guards added for them. The remote functions guard themselves, so the protection holds, but the trigger buttons must then be gated with `can()` the way the admin row actions are
+
+### Recompute `inStock` when stock moves
+
+- [ ] `inStock` is wrong today and the clients show it. `createPurchase` sets `inStock: true` unconditionally and nothing ever sets it back: `createSale` decrements `stockQty` but leaves the flag alone. Observed live: `{ stockQty: 0, inStock: true }`, so the table reads "Yes" for a drink with nothing left
+- [ ] Derive it from the quantity after every stock movement, in both `createPurchase` and `createSale`, rather than trusting a separately maintained boolean
+- [ ] If this goes in as mongoose middleware, note that document hooks do not fire for `updateOne`/`bulkWrite`, which is what `packages/db/src/operations/bar.ts` uses. Either declare the hook for those operations or set the flag in the same update expression
+- [ ] Consider dropping the field and computing `stockQty > 0` at read time, which cannot drift
+
+### Migrate media uploads from MinIO to RustFS
+
+- [ ] Replace the `minio` compose service with RustFS and repoint the bucket, credentials and env vars
+- [ ] RustFS is S3 compatible, so the client library may carry over unchanged. Confirm before assuming it
+- [ ] Nothing uploads today: the drink image upload went away with the gateway and `Drink.imageUrl` is now optional. So this is a clean slate rather than a migration of live objects, and it supersedes the older "MinIO direct upload from SvelteKit" item below
+
+### Sonner toasts only, no alerts nested in components
+
+- [ ] Replace the nested `<Alert>` blocks with toasts: 17 `.svelte` files across admin and staff still render one, mostly for a failed load
+- [ ] The 26 inline `{loadError}` paragraphs are the same pattern in a different shape and should go the same way
+- [ ] Open question to settle first: field-level validation errors are inline under their input by shadcn-svelte convention, and `Form.Message` renders form-level issues in the form. Those are deliberate and they conflict with "no alerts nested in components", so decide explicitly whether they are in scope before starting. See the tension with the shadcn alignment item below
+
+### Align every form with shadcn-svelte conventions
+
+- [ ] Audit all forms against the upstream shadcn-svelte form patterns: consistent `Form.Field` / `Label` / `Input` / `Form.FieldErrors` structure, description text, required indicators, `aria-invalid` wiring, and grid behaviour down to phone width
+- [ ] Standardise widths and submit button states so the modals above inherit one shape rather than nine
+
 ## Planned: admin/staff feature gaps
 
 - [ ] `packages/db`: missing `update*`/`delete*` for customers, bookings, rooms, room types, drinks, purchases
@@ -166,10 +201,10 @@ No `GATEWAY_URL` / `:8009` reference remains anywhere in `apps/` or `packages/`.
 
 ## Planned
 
-- [ ] MinIO direct upload from SvelteKit for bar drink images (bypass Multer middleware)
+- [ ] ~~MinIO direct upload from SvelteKit for bar drink images~~ superseded by the RustFS migration above
 - [ ] `packages/db/src/operations/analytics.ts`: aggregate queries for dashboard stats
-- [ ] Website booking flow end-to-end smoke test (`test-api.sh`)
-- [ ] Docker Compose health checks for mongo and rabbitmq containers
+- [ ] Website booking flow end-to-end smoke test. `test-api.sh` is gone; extend `scripts/smoke-test.sh`
+- [x] Docker Compose health checks for mongo and rabbitmq containers
 - [ ] Add `RABBITMQ_URL` support to `@elmariam/queue` alongside individual env vars
 
 ## Ideas / Future
