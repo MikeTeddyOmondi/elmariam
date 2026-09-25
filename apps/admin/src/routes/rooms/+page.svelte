@@ -53,7 +53,7 @@
         class="grid gap-4 sm:grid-cols-2"
       >
         <div class="sm:col-span-2 empty:hidden">
-          <Form.Message issues={createRoom.fields.issues?.()} />
+          <Form.Message issues={createRoom.fields.allIssues()} />
         </div>
 
         <Form.Field>

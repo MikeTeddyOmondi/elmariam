@@ -14,7 +14,7 @@ export interface IDrink extends Document {
   sellingStockPrice: number;
   stockQty: number;
   inStock: boolean;
-  imageUrl: string;
+  imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,7 +40,10 @@ const DrinkSchema = new Schema<IDrink>(
     sellingStockPrice: { type: Number, required: true },
     stockQty: { type: Number, default: 0 },
     inStock: { type: Boolean, default: false },
-    imageUrl: { type: String, required: true },
+    // Optional: the multipart upload that supplied this was removed with the
+    // gateway, and no surface accepts an image today. Requiring it made
+    // createDrink fail for every submission the admin form can produce.
+    imageUrl: { type: String },
   },
   { timestamps: true }
 );

@@ -79,11 +79,12 @@
       class="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 items-start"
     >
       <!--
-        `issues()` is form-level only. `allIssues()` would also include every
-        field's issues, duplicating what renders inline under each input.
+        `allIssues()` is the only issue accessor on `fields`. `Form.Message`
+        keeps the path-less entries, so a domain failure from `invalid()` shows
+        here while field errors stay inline under their input.
       -->
       <div class="sm:col-span-2 lg:col-span-3 empty:hidden">
-        <Form.Message issues={createUser.fields.issues?.()} />
+        <Form.Message issues={createUser.fields.allIssues()} />
       </div>
 
       <Form.Field>
@@ -233,7 +234,7 @@
                     <input type="hidden" name="id" value={user.id} />
 
                     <div class="sm:col-span-2 lg:col-span-4 empty:hidden">
-                      <Form.Message issues={editForm.fields.issues?.()} />
+                      <Form.Message issues={editForm.fields.allIssues()} />
                     </div>
 
                     <Form.Field>

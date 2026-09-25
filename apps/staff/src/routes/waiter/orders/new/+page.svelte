@@ -58,7 +58,7 @@
         })}
         class="space-y-4"
       >
-        <Form.Message issues={createOrder.fields.issues?.()} />
+        <Form.Message issues={createOrder.fields.allIssues()} />
 
         <div class="grid gap-4 sm:grid-cols-2">
           <Form.Field>

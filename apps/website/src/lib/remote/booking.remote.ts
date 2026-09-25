@@ -14,10 +14,12 @@ import { requirePermission } from '$lib/server/guard';
 import { findOwnCustomer, requireOwnCustomer } from '$lib/server/customer';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
-  return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
-    err: (e) => { throw httpError(400, e.message); },
-  });
+  // `isErr()` rather than `result.match({ err })`: `httpError` throws, and
+  // better-result treats a throw from inside a match handler as a panic. It
+  // wraps it in "match err handler threw", which reaches the client as an
+  // opaque 500 instead of the intended status and message.
+  if (result.isErr()) throw httpError(400, result.error.message);
+  return JSON.parse(JSON.stringify(result.value)) as T;
 }
 
 // Every query here is scoped to the signed-in customer. Holding `bookings:read`

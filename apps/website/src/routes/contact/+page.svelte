@@ -59,7 +59,7 @@
         })}
         class="space-y-4"
       >
-          <Form.Message issues={sendContactMessage.fields.issues?.()} />
+          <Form.Message issues={sendContactMessage.fields.allIssues()} />
 
           <Form.Field>
             <Label for="name">Name</Label>

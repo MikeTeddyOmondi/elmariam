@@ -6,18 +6,25 @@ import { listDrinks, listPurchases, listSales, createPurchase, createSale } from
 import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
-  return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
-    err: (e) => { throw httpError(400, e.message); },
-  });
+  // `isErr()` rather than `result.match({ err })`: `httpError` throws, and
+  // better-result treats a throw from inside a match handler as a panic. It
+  // wraps it in "match err handler threw", which reaches the client as an
+  // opaque 500 instead of the intended status and message.
+  if (result.isErr()) throw httpError(400, result.error.message);
+  return JSON.parse(JSON.stringify(result.value)) as T;
 }
 
-/** Unwraps inside a `form()` handler: domain failures render on the form. */
+/**
+ * Unwraps inside a `form()` handler: domain failures render on the form.
+ *
+ * `isErr()` rather than `result.match({ err })`: `invalid()` throws to signal
+ * a validation failure, and better-result treats a throw from inside a match
+ * handler as a panic. It wraps it in "match err handler threw", so the
+ * intended form error reached the client as an opaque 500 instead.
+ */
 function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
-  return result.match({
-    ok: (d) => JSON.parse(JSON.stringify(d)) as T,
-    err: (e) => invalid(e.message),
-  });
+  if (result.isErr()) invalid(result.error.message);
+  return JSON.parse(JSON.stringify(result.value)) as T;
 }
 
 type BarPurchaseView = {

@@ -51,7 +51,7 @@
         })}
         class="space-y-4"
       >
-        <Form.Message issues={checkoutBarSale.fields.issues?.()} />
+        <Form.Message issues={checkoutBarSale.fields.allIssues()} />
 
         <div class="space-y-3">
           {#each rows as i (i)}
