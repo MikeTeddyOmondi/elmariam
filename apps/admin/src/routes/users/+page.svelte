@@ -6,7 +6,7 @@
     Form,
     Input,
     Label,
-    Select,
+    SelectField,
     Skeleton,
     messageFor,
     toast,
@@ -38,6 +38,8 @@
     waiter: 'bg-green-500/15 text-green-500',
     management: 'bg-pink-500/15 text-pink-400',
   };
+
+  const ROLE_OPTIONS = ASSIGNABLE_STAFF_ROLES.map((r) => ({ value: r, label: r }));
 </script>
 
 <div class="space-y-6">
@@ -116,11 +118,12 @@
         <Label for="utype">Role</Label>
         <!-- Defaulted explicitly: without it the first option wins, which
              would make `admin` the default role for every new user. -->
-        <Select id="utype" {...createUser.fields.userType.as('select', 'receptionist')}>
-          {#each ASSIGNABLE_STAFF_ROLES as t}
-            <option value={t}>{t}</option>
-          {/each}
-        </Select>
+        <SelectField
+          id="utype"
+          class="capitalize"
+          items={ROLE_OPTIONS}
+          {...createUser.fields.userType.as('select', 'receptionist')}
+        />
         <Form.FieldErrors issues={createUser.fields.userType.issues()} />
       </Form.Field>
 

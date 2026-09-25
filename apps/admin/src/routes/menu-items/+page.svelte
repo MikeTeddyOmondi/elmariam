@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getMenuItems, createMenuItem, type MenuItemView } from '$lib/remote/restaurant.remote';
   import {
-    Badge, Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Form, Input, Label, Select,
+    Badge, Button, Card, CardContent, CardHeader, CardTitle, Checkbox, Form, Input, Label, SelectField,
     Skeleton, Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
     messageFor, toast, toastError
   } from '@elmariam/ui';
@@ -20,6 +20,8 @@
   });
 
   const CATEGORIES = ['appetizer', 'main', 'dessert', 'beverage', 'side'] as const;
+
+  const CATEGORY_OPTIONS = CATEGORIES.map((c) => ({ value: c, label: c }));
 </script>
 
 <div class="space-y-6">
@@ -56,9 +58,12 @@
 
         <Form.Field>
           <Label for="cat">Category</Label>
-          <Select id="cat" class="capitalize" {...createMenuItem.fields.category.as('select', 'main')}>
-            {#each CATEGORIES as c}<option value={c}>{c}</option>{/each}
-          </Select>
+          <SelectField
+            id="cat"
+            class="capitalize"
+            items={CATEGORY_OPTIONS}
+            {...createMenuItem.fields.category.as('select', 'main')}
+          />
           <Form.FieldErrors issues={createMenuItem.fields.category.issues()} />
         </Form.Field>
 

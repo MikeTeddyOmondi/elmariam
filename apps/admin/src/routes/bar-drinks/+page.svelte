@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getDrinks, createDrink, type DrinkView } from '$lib/remote/bar.remote';
   import {
-    Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
     messageFor, toast, toastError
   } from '@elmariam/ui';
@@ -21,6 +21,9 @@
 
   const DRINK_TYPES = ['spirit', 'beer', 'rtd', 'wine', 'water'] as const;
   const UNITS = ['bottles', 'crates', 'pack'] as const;
+
+  const DRINK_TYPE_OPTIONS = DRINK_TYPES.map((t) => ({ value: t, label: t }));
+  const UNIT_OPTIONS = UNITS.map((u) => ({ value: u, label: u }));
 </script>
 
 <div class="space-y-6">
@@ -63,17 +66,23 @@
 
         <Form.Field>
           <Label for="typeOfDrink">Type</Label>
-          <Select id="typeOfDrink" class="capitalize" {...createDrink.fields.typeOfDrink.as('select', 'beer')}>
-            {#each DRINK_TYPES as t}<option value={t}>{t}</option>{/each}
-          </Select>
+          <SelectField
+            id="typeOfDrink"
+            class="capitalize"
+            items={DRINK_TYPE_OPTIONS}
+            {...createDrink.fields.typeOfDrink.as('select', 'beer')}
+          />
           <Form.FieldErrors issues={createDrink.fields.typeOfDrink.issues()} />
         </Form.Field>
 
         <Form.Field>
           <Label for="uom">Unit of Measure</Label>
-          <Select id="uom" class="capitalize" {...createDrink.fields.uom.as('select', 'bottles')}>
-            {#each UNITS as u}<option value={u}>{u}</option>{/each}
-          </Select>
+          <SelectField
+            id="uom"
+            class="capitalize"
+            items={UNIT_OPTIONS}
+            {...createDrink.fields.uom.as('select', 'bottles')}
+          />
           <Form.FieldErrors issues={createDrink.fields.uom.issues()} />
         </Form.Field>
 

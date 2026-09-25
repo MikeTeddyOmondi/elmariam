@@ -9,10 +9,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "better-result": "^2.9.2",
-    "mongoose": "^8.0.0"
+    "better-result": "2.9.2",
+    "mongoose": "8.23.1"
   },
   "devDependencies": {
-    "typescript": "^5.0.0"
+    "typescript": "5.9.3"
   }
 }

@@ -7,7 +7,7 @@ COPY packages/db/package.json packages/db/
 COPY packages/queue/package.json packages/queue/
 COPY packages/ui/package.json packages/ui/
 COPY apps/website/package.json apps/website/
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@9.0.0 && pnpm install --frozen-lockfile
 COPY packages/ packages/
 COPY apps/website/ apps/website/
 RUN pnpm --filter @elmariam/auth build

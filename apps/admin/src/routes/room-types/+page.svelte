@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getRoomTypes, createRoomType, type RoomTypeView } from '$lib/remote/hotel.remote';
   import {
-    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
     messageFor, toast, toastError
   } from '@elmariam/ui';
@@ -18,6 +18,11 @@
       .then((d) => { roomTypes = d; loading = false; })
       .catch((e) => { loadError = messageFor(e); loading = false; });
   });
+
+  const ROOM_TYPE_OPTIONS = [
+    { value: 'single', label: 'Single' },
+    { value: 'double', label: 'Double' }
+  ];
 </script>
 
 <div class="space-y-6">
@@ -54,10 +59,11 @@
 
         <Form.Field>
           <Label for="rttype">Type</Label>
-          <Select id="rttype" {...createRoomType.fields.roomType.as('select', 'single')}>
-            <option value="single">Single</option>
-            <option value="double">Double</option>
-          </Select>
+          <SelectField
+            id="rttype"
+            items={ROOM_TYPE_OPTIONS}
+            {...createRoomType.fields.roomType.as('select', 'single')}
+          />
           <Form.FieldErrors issues={createRoomType.fields.roomType.issues()} />
         </Form.Field>
 

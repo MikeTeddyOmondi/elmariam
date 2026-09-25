@@ -1,0 +1,88 @@
+#!/bin/sh
+#
+# Rejects em dashes and en dashes in staged content, and unpinned dependency
+# versions in package.json.
+#
+# Only lines this commit ADDS are checked, so an untouched line in a file you
+# happen to edit will not block you. Recast the sentence with a period, comma,
+# colon, or parentheses. Hyphens in compound words and CLI flags are fine.
+#
+# Enabled by `git config core.hooksPath .githooks`, which `pnpm install` runs
+# for you via the `prepare` script. Bypass a single commit with
+# `git commit --no-verify` when you genuinely need the character.
+
+set -e
+
+# Built from octal rather than written literally, so this file can pass its own
+# check. U+2014 EM DASH and U+2013 EN DASH, UTF-8.
+em=$(printf '\342\200\224')
+en=$(printf '\342\200\223')
+
+# Skip generated and vendored files: nothing there is prose we author.
+hits=$(git diff --cached -U0 --diff-filter=ACM -- \
+	':!pnpm-lock.yaml' ':!*.lock' ':!dist/**' ':!public/**' ':!node_modules/**' \
+	| awk -v pat="$em|$en" '
+		/^\+\+\+ b\// { file = substr($0, 7); next }
+		/^@@ / {
+			# @@ -old,n +new,n @@ ... the new-side start is what we report.
+			split(substr($3, 2), a, ",")
+			line = a[1] + 0
+			next
+		}
+		/^\+/ {
+			if ($0 ~ pat) printf "  %s:%d: %s\n", file, line, substr($0, 2)
+			line++
+		}
+	')
+
+if [ -n "$hits" ]; then
+	printf '\nCommit blocked: em dash or en dash in added lines.\n\n%s\n\n' "$hits"
+	printf 'Recast with a period, comma, colon, or parentheses.\n'
+	printf 'Deliberate? Commit again with --no-verify.\n\n'
+	exit 1
+fi
+
+# ---------------------------------------------------------------------------
+# Rejects unpinned dependency versions in package.json.
+#
+# A range is how a verified build drifts on someone else's machine or in CI.
+# Only added lines are checked, so legacy manifests do not block you until you
+# touch those lines.
+#
+# Allowed: exact "1.2.3", workspace:, catalog:, npm:, file:, link:, git+, and
+# comparator ranges in "engines" (">=20"), which are not resolved installs.
+# Rejected: ^1.2.3  ~1.2.3  "4"  "4.x"  "*"  "latest"
+
+pins=$(git diff --cached -U0 --diff-filter=ACM -- '*package.json' ':!node_modules/**' \
+	| awk '
+		/^\+\+\+ b\// { file = substr($0, 7); next }
+		/^@@ / {
+			split(substr($3, 2), a, ",")
+			line = a[1] + 0
+			next
+		}
+		/^\+/ {
+			s = substr($0, 2)
+			# "name": "spec"  ->  capture spec only
+			if (match(s, /^[[:space:]]*"[^"]+"[[:space:]]*:[[:space:]]*"[^"]*"/)) {
+				n = split(s, parts, "\"")
+				spec = parts[4]
+				bad = 0
+				if (spec ~ /^[\^~]/) bad = 1
+				else if (spec == "*" || spec == "latest" || spec == "x") bad = 1
+				else if (spec ~ /^[0-9]+$/) bad = 1
+				else if (spec ~ /^[0-9]+\.[0-9]+$/) bad = 1
+				else if (spec ~ /^[0-9]+(\.[0-9]+)?\.[xX*]$/) bad = 1
+				if (bad) printf "  %s:%d: %s\n", file, line, s
+			}
+			line++
+		}
+	')
+
+if [ -n "$pins" ]; then
+	printf '\nCommit blocked: unpinned dependency version in package.json.\n\n%s\n\n' "$pins"
+	printf 'Pin the exact version the lockfile already resolved, then run\n'
+	printf '`pnpm install` so the lockfile records the new specifier.\n'
+	printf 'Deliberate? Commit again with --no-verify.\n\n'
+	exit 1
+fi

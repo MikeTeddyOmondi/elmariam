@@ -37,9 +37,26 @@ dev:
 
 # ──── Docker ────
 
-# Build all Docker images (simplified stack — no legacy services)
+# Sequential on purpose: five concurrent SvelteKit builds have exhausted the
+# Docker VM and killed BuildKit mid-run, leaving no usable image and an opaque
+# error. Use build-all-parallel on a machine with headroom.
+# Build all Docker images, one at a time
 build-all:
+  docker compose build openauth
+  docker compose build integrations
+  docker compose build admin
+  docker compose build staff
+  docker compose build website
+
+# Build every image concurrently. Needs roughly 8 GB free in the Docker VM.
+build-all-parallel:
   docker compose build
+
+# Build everything, then show what was produced.
+build-verify: build-all
+  @echo ""
+  @echo "Built images:"
+  @docker images --filter reference='*elmariam*' --format '  {{{{.Repository}}}}:{{{{.Tag}}}}  {{{{.Size}}}}'
 
 # Build a specific image
 build service:

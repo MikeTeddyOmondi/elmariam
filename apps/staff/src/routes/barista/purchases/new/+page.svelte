@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createBarPurchase, getDrinks } from '$lib/remote/bar.remote';
-  import { Button, Card, CardContent, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import { Button, Card, CardContent, Form, Input, Label, SelectField, toast, toastError } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
 
   let drinks = $state<Awaited<ReturnType<typeof getDrinks>>>([] as never);
@@ -13,6 +13,10 @@
       .then((d) => { drinks = d; loading = false; })
       .catch(() => { loading = false; });
   });
+
+  const drinkOptions = $derived(
+    drinks.map((d) => ({ value: d.id, label: `${d.drinkName} (${d.drinkCode})` }))
+  );
 </script>
 
 <div class="max-w-lg space-y-6">
@@ -48,12 +52,13 @@
 
         <Form.Field class="sm:col-span-2">
           <Label for="product">Product</Label>
-          <Select id="product" disabled={loading} {...createBarPurchase.fields.product.as('select')}>
-            <option value="">{loading ? 'Loading…' : 'Select drink'}</option>
-            {#each drinks as d}
-              <option value={d.id}>{d.drinkName} ({d.drinkCode})</option>
-            {/each}
-          </Select>
+          <SelectField
+            id="product"
+            disabled={loading}
+            items={drinkOptions}
+            placeholder={loading ? 'Loading' : 'Select drink'}
+            {...createBarPurchase.fields.product.as('select')}
+          />
           <Form.FieldErrors issues={createBarPurchase.fields.product.issues()} />
         </Form.Field>
 

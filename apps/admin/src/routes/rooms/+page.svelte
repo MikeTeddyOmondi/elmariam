@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getRooms, getRoomTypes, createRoom, type RoomView, type RoomTypeView } from '$lib/remote/hotel.remote';
   import {
-    Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
     messageFor, toast, toastError
   } from '@elmariam/ui';
@@ -19,6 +19,10 @@
       .then(([r, rt]) => { rooms = r; roomTypes = rt; loading = false; })
       .catch((e) => { loadError = messageFor(e); loading = false; });
   });
+
+  const roomTypeOptions = $derived(
+    roomTypes.map((t) => ({ value: t.id, label: `${t.title} (${t.roomType})` }))
+  );
 </script>
 
 <div class="space-y-6">
@@ -57,12 +61,13 @@
 
         <Form.Field>
           <Label for="rtype">Room Type</Label>
-          <Select id="rtype" disabled={loading} {...createRoom.fields.roomTypeId.as('select')}>
-            <option value="">{loading ? 'Loading…' : 'Select type'}</option>
-            {#each roomTypes as t}
-              <option value={t.id}>{t.title} ({t.roomType})</option>
-            {/each}
-          </Select>
+          <SelectField
+            id="rtype"
+            disabled={loading}
+            items={roomTypeOptions}
+            placeholder={loading ? 'Loading' : 'Select type'}
+            {...createRoom.fields.roomTypeId.as('select')}
+          />
           <Form.FieldErrors issues={createRoom.fields.roomTypeId.issues()} />
         </Form.Field>
 

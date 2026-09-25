@@ -1,6 +1,6 @@
 <script lang="ts">
   import { checkoutBarSale, getDrinks } from '$lib/remote/bar.remote';
-  import { Button, Card, CardContent, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import { Button, Card, CardContent, Form, Input, Label, SelectField, toast, toastError } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import X from 'lucide-svelte/icons/x';
 
@@ -21,6 +21,10 @@
   let rowCount = $state(1);
 
   const rows = $derived(Array.from({ length: rowCount }, (_, i) => i));
+
+  const drinkOptions = $derived(
+    drinks.map((d) => ({ value: d.id, label: `${d.drinkName} (${d.drinkCode}), stock: ${d.stockQty}` }))
+  );
 </script>
 
 <div class="max-w-xl space-y-6">
@@ -55,12 +59,13 @@
             <div class="flex items-end gap-2">
               <div class="flex-1 space-y-2">
                 <Label class="sr-only" for="drink-{i}">Drink</Label>
-                <Select id="drink-{i}" disabled={loading} {...row.drinkId.as('select')}>
-                  <option value="">{loading ? 'Loading…' : 'Select drink'}</option>
-                  {#each drinks as d}
-                    <option value={d.id}>{d.drinkName} ({d.drinkCode}) — stock: {d.stockQty}</option>
-                  {/each}
-                </Select>
+                <SelectField
+                  id="drink-{i}"
+                  disabled={loading}
+                  items={drinkOptions}
+                  placeholder={loading ? 'Loading' : 'Select drink'}
+                  {...row.drinkId.as('select')}
+                />
                 <Form.FieldErrors issues={row.drinkId.issues()} />
               </div>
 

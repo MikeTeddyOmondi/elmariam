@@ -1,7 +1,7 @@
 <script lang="ts">
   import { createBooking } from '$lib/remote/booking.remote';
   import { getRoomTypes } from '$lib/remote/catalog.remote';
-  import { Button, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import { Button, Form, Input, Label, SelectField, toast, toastError } from '@elmariam/ui';
 
   type RoomType = Awaited<ReturnType<typeof getRoomTypes>>[number];
 
@@ -14,6 +14,17 @@
       .then((d) => { roomTypes = d; })
       .catch(() => { roomTypes = []; });
   });
+
+  const ROOM_TYPE_OPTIONS = [
+    { value: 'single', label: 'Single' },
+    { value: 'double', label: 'Double' }
+  ];
+
+  const PAYMENT_OPTIONS = [
+    { value: 'cash', label: 'Cash' },
+    { value: 'mpesa', label: 'M-Pesa' },
+    { value: 'bank', label: 'Bank Transfer' }
+  ];
 </script>
 
 <a href="/portal/bookings" class="text-sm text-muted-foreground hover:text-foreground">← Back</a>
@@ -55,10 +66,11 @@
 
     <Form.Field>
       <Label for="roomType">Room Type</Label>
-      <Select id="roomType" {...createBooking.fields.roomType.as('select')}>
-        <option value="single">Single</option>
-        <option value="double">Double</option>
-      </Select>
+      <SelectField
+        id="roomType"
+        items={ROOM_TYPE_OPTIONS}
+        {...createBooking.fields.roomType.as('select', 'single')}
+      />
       <Form.FieldErrors issues={createBooking.fields.roomType.issues()} />
     </Form.Field>
 
@@ -76,11 +88,11 @@
 
     <Form.Field>
       <Label for="paymentMethod">Payment Method</Label>
-      <Select id="paymentMethod" {...createBooking.fields.paymentMethod.as('select')}>
-        <option value="cash">Cash</option>
-        <option value="mpesa">M-Pesa</option>
-        <option value="bank">Bank Transfer</option>
-      </Select>
+      <SelectField
+        id="paymentMethod"
+        items={PAYMENT_OPTIONS}
+        {...createBooking.fields.paymentMethod.as('select', 'cash')}
+      />
       <Form.FieldErrors issues={createBooking.fields.paymentMethod.issues()} />
     </Form.Field>
 

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { createOrder, getMenuItems } from '$lib/remote/restaurant.remote';
-  import { Button, Card, CardContent, Form, Input, Label, Select, toast, toastError } from '@elmariam/ui';
+  import { Button, Card, CardContent, Form, Input, Label, SelectField, toast, toastError } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import X from 'lucide-svelte/icons/x';
 
@@ -22,6 +22,16 @@
   let rowCount = $state(1);
 
   const rows = $derived(Array.from({ length: rowCount }, (_, i) => i));
+
+  const PAYMENT_OPTIONS = [
+    { value: 'cash', label: 'Cash' },
+    { value: 'mpesa', label: 'M-Pesa' },
+    { value: 'bank', label: 'Bank Transfer' }
+  ];
+
+  const menuOptions = $derived(
+    available.map((m) => ({ value: m.id, label: `${m.name} (KES ${m.price?.toLocaleString()})` }))
+  );
 </script>
 
 <div class="max-w-xl space-y-6">
@@ -59,11 +69,11 @@
 
           <Form.Field>
             <Label for="pay">Payment Method</Label>
-            <Select id="pay" {...createOrder.fields.paymentMethod.as('select', 'cash')}>
-              <option value="cash">Cash</option>
-              <option value="mpesa">M-Pesa</option>
-              <option value="bank">Bank Transfer</option>
-            </Select>
+            <SelectField
+              id="pay"
+              items={PAYMENT_OPTIONS}
+              {...createOrder.fields.paymentMethod.as('select', 'cash')}
+            />
             <Form.FieldErrors issues={createOrder.fields.paymentMethod.issues()} />
           </Form.Field>
         </div>
@@ -75,12 +85,13 @@
             <div class="flex items-end gap-2">
               <div class="flex-1 space-y-2">
                 <Label class="sr-only" for="item-{i}">Menu item</Label>
-                <Select id="item-{i}" disabled={loading} {...row.menuItemId.as('select')}>
-                  <option value="">{loading ? 'Loading…' : 'Select item'}</option>
-                  {#each available as m}
-                    <option value={m.id}>{m.name} — KES {m.price?.toLocaleString()}</option>
-                  {/each}
-                </Select>
+                <SelectField
+                  id="item-{i}"
+                  disabled={loading}
+                  items={menuOptions}
+                  placeholder={loading ? 'Loading' : 'Select item'}
+                  {...row.menuItemId.as('select')}
+                />
                 <Form.FieldErrors issues={row.menuItemId.issues()} />
               </div>
 

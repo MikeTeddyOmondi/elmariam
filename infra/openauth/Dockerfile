@@ -6,7 +6,7 @@ COPY packages/db/package.json packages/db/
 COPY packages/auth/package.json packages/auth/
 COPY packages/queue/package.json packages/queue/
 COPY infra/openauth/package.json infra/openauth/
-RUN npm install -g pnpm && pnpm install --frozen-lockfile
+RUN npm install -g pnpm@9.0.0 && pnpm install --frozen-lockfile
 COPY packages/ packages/
 COPY infra/openauth/ infra/openauth/
 RUN pnpm --filter @elmariam/db build

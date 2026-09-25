@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getBarPurchases, getDrinks, createBarPurchase, type BarPurchaseView, type DrinkView } from '$lib/remote/bar.remote';
   import {
-    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
     messageFor, toast, toastError
   } from '@elmariam/ui';
@@ -19,6 +19,10 @@
       .then(([p, d]) => { purchases = p; drinks = d; loading = false; })
       .catch((e) => { loadError = messageFor(e); loading = false; });
   });
+
+  const drinkOptions = $derived(
+    drinks.map((d) => ({ value: d.id, label: `${d.drinkName} (${d.drinkCode})` }))
+  );
 </script>
 
 <div class="space-y-6">
@@ -57,12 +61,13 @@
           <!-- Was a free-text "Drink ID or name" box, which meant typing a raw
                ObjectId. Now a picker over the actual catalogue. -->
           <Label for="product">Product</Label>
-          <Select id="product" disabled={loading} {...createBarPurchase.fields.product.as('select')}>
-            <option value="">{loading ? 'Loading…' : 'Select drink'}</option>
-            {#each drinks as d}
-              <option value={d.id}>{d.drinkName} ({d.drinkCode})</option>
-            {/each}
-          </Select>
+          <SelectField
+            id="product"
+            disabled={loading}
+            items={drinkOptions}
+            placeholder={loading ? 'Loading' : 'Select drink'}
+            {...createBarPurchase.fields.product.as('select')}
+          />
           <Form.FieldErrors issues={createBarPurchase.fields.product.issues()} />
         </Form.Field>
 

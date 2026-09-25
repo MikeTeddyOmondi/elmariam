@@ -1,7 +1,7 @@
 <script lang="ts">
   import { getBookings, getCustomers, createBooking, type BookingView, type CustomerView } from '$lib/remote/hotel.remote';
   import {
-    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Select, Skeleton,
+    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
     messageFor, toast, toastError
   } from '@elmariam/ui';
@@ -19,6 +19,21 @@
       .then(([b, c]) => { bookings = b; customers = c; loading = false; })
       .catch((e) => { loadError = messageFor(e); loading = false; });
   });
+
+  const ROOM_TYPE_OPTIONS = [
+    { value: 'single', label: 'Single' },
+    { value: 'double', label: 'Double' }
+  ];
+
+  const PAYMENT_OPTIONS = [
+    { value: 'cash', label: 'Cash' },
+    { value: 'mpesa', label: 'M-Pesa' },
+    { value: 'bank', label: 'Bank Transfer' }
+  ];
+
+  const customerOptions = $derived(
+    customers.map((c) => ({ value: c.id_number, label: `${c.firstname} ${c.lastname} (${c.id_number})` }))
+  );
 </script>
 
 <div class="space-y-6">
@@ -50,12 +65,13 @@
         <Form.Field class="sm:col-span-2">
           <Label for="bcustomer">Customer</Label>
           <!-- `createBooking` looks the customer up by ID number, not ObjectId. -->
-          <Select id="bcustomer" disabled={loading} {...createBooking.fields.customerId.as('select')}>
-            <option value="">{loading ? 'Loading…' : 'Select customer'}</option>
-            {#each customers as c}
-              <option value={c.id_number}>{c.firstname} {c.lastname} — {c.id_number}</option>
-            {/each}
-          </Select>
+          <SelectField
+            id="bcustomer"
+            disabled={loading}
+            items={customerOptions}
+            placeholder={loading ? 'Loading' : 'Select customer'}
+            {...createBooking.fields.customerId.as('select')}
+          />
           <Form.FieldErrors issues={createBooking.fields.customerId.issues()} />
         </Form.Field>
 
@@ -73,20 +89,21 @@
 
         <Form.Field>
           <Label for="broomtype">Room Type</Label>
-          <Select id="broomtype" {...createBooking.fields.roomType.as('select', 'single')}>
-            <option value="single">Single</option>
-            <option value="double">Double</option>
-          </Select>
+          <SelectField
+            id="broomtype"
+            items={ROOM_TYPE_OPTIONS}
+            {...createBooking.fields.roomType.as('select', 'single')}
+          />
           <Form.FieldErrors issues={createBooking.fields.roomType.issues()} />
         </Form.Field>
 
         <Form.Field>
           <Label for="bpay">Payment Method</Label>
-          <Select id="bpay" {...createBooking.fields.paymentMethod.as('select', 'cash')}>
-            <option value="cash">Cash</option>
-            <option value="mpesa">M-Pesa</option>
-            <option value="bank">Bank Transfer</option>
-          </Select>
+          <SelectField
+            id="bpay"
+            items={PAYMENT_OPTIONS}
+            {...createBooking.fields.paymentMethod.as('select', 'cash')}
+          />
           <Form.FieldErrors issues={createBooking.fields.paymentMethod.issues()} />
         </Form.Field>
 

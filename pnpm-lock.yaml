@@ -12,10 +12,10 @@ importers:
         specifier: workspace:*
         version: link:packages/auth
       mongodb:
-        specifier: ^6.20.0
+        specifier: 6.20.0
         version: 6.20.0
       turbo:
-        specifier: ^2.0.0
+        specifier: 2.9.12
         version: 2.9.12
 
   apps/admin:
@@ -33,50 +33,50 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@openauthjs/openauth':
-        specifier: ^0.4.3
+        specifier: 0.4.3
         version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       better-result:
-        specifier: ^2.9.2
+        specifier: 2.9.2
         version: 2.9.2
       chart.js:
-        specifier: ^4.4.0
+        specifier: 4.5.1
         version: 4.5.1
       lucide-svelte:
-        specifier: ^0.468.0
+        specifier: 0.468.0
         version: 0.468.0(svelte@5.55.5)
       svelte-sonner:
-        specifier: ^1.1.1
+        specifier: 1.1.1
         version: 1.1.1(svelte@5.55.5)
       valibot:
-        specifier: ^1.0.0
+        specifier: 1.4.0
         version: 1.4.0(typescript@5.9.3)
     devDependencies:
       '@sveltejs/adapter-node':
-        specifier: ^5.0.0
+        specifier: 5.5.4
         version: 5.5.4(@sveltejs/kit@2.59.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))
       '@sveltejs/kit':
-        specifier: ^2.0.0
+        specifier: 2.59.1
         version: 2.59.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^4.0.0
+        specifier: 4.0.4
         version: 4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       '@tailwindcss/vite':
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       svelte:
-        specifier: ^5.0.0
+        specifier: 5.55.5
         version: 5.55.5
       svelte-check:
-        specifier: ^3.6.0
+        specifier: 3.8.6
         version: 3.8.6(postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.14))(postcss@8.5.14)(svelte@5.55.5)
       tailwindcss:
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
       vite:
-        specifier: ^5.0.0
+        specifier: 5.4.21
         version: 5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)
 
   apps/staff:
@@ -94,47 +94,47 @@ importers:
         specifier: workspace:*
         version: link:../../packages/ui
       '@openauthjs/openauth':
-        specifier: ^0.4.3
+        specifier: 0.4.3
         version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       better-result:
-        specifier: ^2.9.2
+        specifier: 2.9.2
         version: 2.9.2
       lucide-svelte:
-        specifier: ^0.468.0
+        specifier: 0.468.0
         version: 0.468.0(svelte@5.55.5)
       svelte-sonner:
-        specifier: ^1.1.1
+        specifier: 1.1.1
         version: 1.1.1(svelte@5.55.5)
       valibot:
-        specifier: ^1.0.0
+        specifier: 1.4.0
         version: 1.4.0(typescript@5.9.3)
     devDependencies:
       '@sveltejs/adapter-node':
-        specifier: ^5.0.0
+        specifier: 5.5.4
         version: 5.5.4(@sveltejs/kit@2.59.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))
       '@sveltejs/kit':
-        specifier: ^2.0.0
+        specifier: 2.59.1
         version: 2.59.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^4.0.0
+        specifier: 4.0.4
         version: 4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       '@tailwindcss/vite':
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       svelte:
-        specifier: ^5.0.0
+        specifier: 5.55.5
         version: 5.55.5
       svelte-check:
-        specifier: ^3.6.0
+        specifier: 3.8.6
         version: 3.8.6(postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.14))(postcss@8.5.14)(svelte@5.55.5)
       tailwindcss:
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
       vite:
-        specifier: ^5.0.0
+        specifier: 5.4.21
         version: 5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)
 
   apps/website:
@@ -146,53 +146,53 @@ importers:
         specifier: workspace:*
         version: link:../../packages/db
       '@elmariam/queue':
-        specifier: workspace:^
+        specifier: workspace:*
         version: link:../../packages/queue
       '@elmariam/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@openauthjs/openauth':
-        specifier: ^0.4.3
+        specifier: 0.4.3
         version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       better-result:
-        specifier: ^2.9.2
+        specifier: 2.9.2
         version: 2.9.2
       lucide-svelte:
-        specifier: ^0.468.0
+        specifier: 0.468.0
         version: 0.468.0(svelte@5.55.5)
       svelte-sonner:
-        specifier: ^1.1.1
+        specifier: 1.1.1
         version: 1.1.1(svelte@5.55.5)
       valibot:
-        specifier: ^1.0.0
+        specifier: 1.4.0
         version: 1.4.0(typescript@5.9.3)
     devDependencies:
       '@sveltejs/adapter-node':
-        specifier: ^5.0.0
+        specifier: 5.5.4
         version: 5.5.4(@sveltejs/kit@2.59.1(@sveltejs/vite-plugin-svelte@3.1.2(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))
       '@sveltejs/kit':
-        specifier: ^2.0.0
+        specifier: 2.59.1
         version: 2.59.1(@sveltejs/vite-plugin-svelte@3.1.2(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       '@sveltejs/vite-plugin-svelte':
-        specifier: ^3.0.0
+        specifier: 3.1.2
         version: 3.1.2(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       '@tailwindcss/vite':
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
       svelte:
-        specifier: ^5.0.0
+        specifier: 5.55.5
         version: 5.55.5
       svelte-check:
-        specifier: ^3.6.0
+        specifier: 3.8.6
         version: 3.8.6(postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.14))(postcss@8.5.14)(svelte@5.55.5)
       tailwindcss:
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
       vite:
-        specifier: ^5.0.0
+        specifier: 5.4.21
         version: 5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)
 
   infra/openauth:
@@ -207,45 +207,45 @@ importers:
         specifier: workspace:*
         version: link:../../packages/queue
       '@openauthjs/openauth':
-        specifier: ^0.4.3
+        specifier: 0.4.3
         version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       bcryptjs:
-        specifier: ^2.4.3
+        specifier: 2.4.3
         version: 2.4.3
       mongodb:
         specifier: 7.2.0
         version: 7.2.0
       valibot:
-        specifier: ^1.1.0
+        specifier: 1.4.0
         version: 1.4.0(typescript@5.9.3)
     devDependencies:
       '@types/bcryptjs':
-        specifier: ^2.4.0
+        specifier: 2.4.6
         version: 2.4.6
       '@types/node':
-        specifier: ^22.0.0
+        specifier: 22.19.19
         version: 22.19.19
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
   packages/auth:
     dependencies:
       '@openauthjs/openauth':
-        specifier: ^0.4.3
+        specifier: 0.4.3
         version: 0.4.3(arctic@2.3.4)(hono@4.12.18)
       express:
-        specifier: ^4.18.0
+        specifier: 4.22.2
         version: 4.22.2
       valibot:
-        specifier: ^1.0.0
+        specifier: 1.4.0
         version: 1.4.0(typescript@5.9.3)
     devDependencies:
       '@types/express':
-        specifier: ^4.17.0
+        specifier: 4.17.25
         version: 4.17.25
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
   packages/config: {}
@@ -253,70 +253,70 @@ importers:
   packages/db:
     dependencies:
       better-result:
-        specifier: ^2.9.2
+        specifier: 2.9.2
         version: 2.9.2
       mongoose:
-        specifier: ^8.0.0
+        specifier: 8.23.1
         version: 8.23.1
     devDependencies:
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
   packages/queue:
     dependencies:
       amqplib:
-        specifier: ^0.10.3
+        specifier: 0.10.9
         version: 0.10.9
     devDependencies:
       '@types/amqplib':
-        specifier: ^0.10.4
+        specifier: 0.10.8
         version: 0.10.8
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
   packages/types:
     devDependencies:
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
   packages/ui:
     dependencies:
       bits-ui:
-        specifier: ^2
+        specifier: 2.18.1
         version: 2.18.1(@internationalized/date@3.12.2)(@sveltejs/kit@2.59.1(@sveltejs/vite-plugin-svelte@4.0.4(svelte@5.55.5)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)(typescript@5.9.3)(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0)))(svelte@5.55.5)
       clsx:
-        specifier: ^2.1.1
+        specifier: 2.1.1
         version: 2.1.1
       lucide-svelte:
-        specifier: ^0.468.0
+        specifier: 0.468.0
         version: 0.468.0(svelte@5.55.5)
       svelte-sonner:
-        specifier: ^1.1.1
+        specifier: 1.1.1
         version: 1.1.1(svelte@5.55.5)
       tailwind-merge:
-        specifier: ^3.6.0
+        specifier: 3.6.0
         version: 3.6.0
       tailwind-variants:
-        specifier: ^3
+        specifier: 3.3.0
         version: 3.3.0(tailwind-merge@3.6.0)(tailwindcss@4.3.3)
       tw-animate-css:
-        specifier: ^1.4.0
+        specifier: 1.4.0
         version: 1.4.0
     devDependencies:
       svelte:
-        specifier: ^5.0.0
+        specifier: 5.55.5
         version: 5.55.5
       svelte-check:
-        specifier: ^3.6.0
+        specifier: 3.8.6
         version: 3.8.6(postcss-load-config@6.0.1(jiti@2.7.0)(postcss@8.5.14))(postcss@8.5.14)(svelte@5.55.5)
       tailwindcss:
-        specifier: ^4
+        specifier: 4.3.3
         version: 4.3.3
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
   services/integrations:
@@ -325,35 +325,35 @@ importers:
         specifier: workspace:*
         version: link:../../packages/queue
       axios:
-        specifier: ^1.6.0
+        specifier: 1.16.0
         version: 1.16.0
       dotenv:
-        specifier: ^16.0.0
+        specifier: 16.6.1
         version: 16.6.1
       express:
-        specifier: ^4.18.2
+        specifier: 4.22.2
         version: 4.22.2
       handlebars:
-        specifier: ^4.7.8
+        specifier: 4.7.9
         version: 4.7.9
       intasend-node:
-        specifier: ^1.1.0
+        specifier: 1.1.2
         version: 1.1.2
       nodemailer:
-        specifier: ^6.9.0
+        specifier: 6.10.1
         version: 6.10.1
     devDependencies:
       '@types/express':
-        specifier: ^4.17.21
+        specifier: 4.17.25
         version: 4.17.25
       '@types/nodemailer':
-        specifier: ^6.4.14
+        specifier: 6.4.23
         version: 6.4.23
       ts-node:
-        specifier: ^10.9.2
+        specifier: 10.9.2
         version: 10.9.2(@types/node@22.19.19)(typescript@5.9.3)
       typescript:
-        specifier: ^5.0.0
+        specifier: 5.9.3
         version: 5.9.3
 
 packages:
@@ -1509,6 +1509,7 @@ packages:
 
   lucide-svelte@0.468.0:
     resolution: {integrity: sha512-n0ecAFtCY5LEeL+PJ1Xj4n3c2gzj8tMpak0KMGnvoSJEjCsCnRB0mekBtJZAo7beyynW9Qj5Um1KfMBAeTNplw==}
+    deprecated: Package deprecated. Please use @lucide/svelte instead.
     peerDependencies:
       svelte: ^3 || ^4 || ^5.0.0-next.42
 
