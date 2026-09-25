@@ -98,7 +98,9 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 - [x] Git hooks installed via `.githooks` plus a `prepare` script, including a new rule rejecting unpinned dependency versions
 - [x] Em and en dashes stripped from everything authored during this work
 - [x] All buttons show a pointer cursor, via `packages/ui` `Button`
-- [ ] Browser verification of the new delete flows, edit rows, `/invoices` and `management` 403s against the running stack
+- [x] Browser verification against the running stack: edit rows on `/users` and `/menu-items` persist to MongoDB, a drink and purchase and sale round-trip with stock moving 0 to 10 to 5, a refused delete toasts its reason, a permitted delete removes the row, and `management` sees no write controls while `deleteDrink` returns 403
+- [ ] `buyingPrice` and `sellingPrice` on `Drink` have no writer and are always 0. Either populate them or drop them from the schema
+- [ ] Apply the `can()` permission gating to the staff app the way the admin app now does
 
 ## Planned: update & delete flows
 

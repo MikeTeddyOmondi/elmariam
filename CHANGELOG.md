@@ -8,6 +8,25 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Fixed: mutations and error reporting
+
+- **Every domain error surfaced as an opaque 500.** The `unwrap`/`unwrapForm` helpers in all 11 `.remote.ts` files threw `invalid()` or `error()` from inside a better-result `match({ err })` handler. better-result treats a throw from a match handler as a panic and wraps it in "match err handler threw", so a message meant for the form (or a 400/403) reached the client as `Internal Error`. They now branch on `isErr()` and throw outside `match`
+- **`Form.Message` took the whole page down.** Every form page read `fields.issues?.()`, but there is no `issues` accessor on `fields`: any property read returns a field proxy, so `?.()` did not guard and hydration died with "c.call is not a function". The page rendered server-side then went blank on the client. All 17 call sites now pass `fields.allIssues()`, and `Form.Message` keeps the path-less entries so field errors stay inline under their input
+- **Creating a drink was impossible.** `Drink.imageUrl` was `required`, but the multipart upload that supplied it was removed with the gateway and no surface accepts an image today, so every submission failed validation. Now optional
+- **Every bar sale was valued at zero.** `createSale` multiplied `drink.sellingPrice`, which has no writer anywhere and keeps its schema default of 0. It now uses `sellingStockPrice`, the field the drink form collects and the one `createPurchase` already pairs with for buying. The two drink tables showed the same dead field and now show the populated one
+- **A refused delete said nothing.** The dependant checks return a form-level issue, but the delete form is a hidden element holding only the id, so there was nowhere to render it and the dialog just sat open. New `toastIssues` helper toasts the reason
+- **A dismissed `AlertDialog` could not be reopened.** Call sites pass `open={true}` unbound, so Cancel, Escape or an outside click flipped bits-ui's internal state to false while the page still thought a row was pending. Because the instance survives, no later row could open it. New `onclose` prop clears the caller's state
+
+### Fixed: sessions
+
+- **"Sign out" did not sign out.** It linked to `/login`, which starts a fresh authorize flow but leaves `access_token` and `refresh_token` in place, so the session survived: Back, or any guarded route, still worked as the previous user. All three apps now have a `/logout` route that clears the cookies and redirects
+- The website had no sign-out control at all. A signed-in customer now gets one
+
+### Changed: read-only roles
+
+- Admin pages hide create forms, edit rows and delete buttons a role cannot use, via `permissions` on `page.data` and a new `$lib/permissions.ts` `can()` helper. `management` previously saw the full set and every click 403'd. The server guards remain authoritative: this is cosmetic
+
+
 ### Changed: reproducible builds
 
 - `just build-all` builds the five images **one at a time**. Five concurrent SvelteKit builds exhausted the Docker VM and killed BuildKit mid-run, which leaves no usable image behind an opaque `rpc error: code = Unavailable` failure. `build-all-parallel` keeps the old behaviour for machines with headroom, and `build-verify` builds then lists the images so "did it finish" has one answer

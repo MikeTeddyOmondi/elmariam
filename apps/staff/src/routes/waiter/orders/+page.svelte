@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getOrders, updateOrderStatus } from '$lib/remote/restaurant.remote';
   import { Button, Alert, AlertDescription, messageFor } from '@elmariam/ui';
+  import { can } from '$lib/permissions';
 
   type Row = Awaited<ReturnType<typeof getOrders>>[number];
 
@@ -44,6 +45,11 @@
       msgError = true;
     }
   }
+
+  // Cosmetic: the create route guards itself in +page.server.ts, and the
+  // remote function guards itself too. This just hides a link that would
+  // only 403 for a read-only role.
+  const canWrite = $derived(can('orders:write'));
 </script>
 
 <div class="space-y-6">
@@ -52,10 +58,12 @@
       <h1 class="text-2xl font-bold text-foreground">Orders</h1>
       <p class="text-sm text-muted-foreground mt-1">Manage restaurant orders</p>
     </div>
-    <a href="/waiter/orders/new"
-      class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
-      + New Order
-    </a>
+    {#if canWrite}
+      <a href="/waiter/orders/new"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-md text-sm font-medium bg-accent text-accent-foreground hover:bg-accent/90 transition-colors">
+        + New Order
+      </a>
+    {/if}
   </div>
 
   {#if msg}
