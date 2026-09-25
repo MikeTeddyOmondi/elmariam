@@ -100,7 +100,7 @@ them from `{#await}` in markup causes `hydratable_missing_but_required`.
 - [x] All buttons show a pointer cursor, via `packages/ui` `Button`
 - [x] Browser verification against the running stack: edit rows on `/users` and `/menu-items` persist to MongoDB, a drink and purchase and sale round-trip with stock moving 0 to 10 to 5, a refused delete toasts its reason, a permitted delete removes the row, and `management` sees no write controls while `deleteDrink` returns 403
 - [ ] `buyingPrice` and `sellingPrice` on `Drink` have no writer and are always 0. Either populate them or drop them from the schema
-- [ ] Apply the `can()` permission gating to the staff app the way the admin app now does
+- [x] Apply the `can()` permission gating to the staff app the way the admin app now does, plus a server guard on each create route
 
 ## Planned: update & delete flows
 

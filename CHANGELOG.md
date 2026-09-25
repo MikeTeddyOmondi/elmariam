@@ -22,6 +22,10 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - **"Sign out" did not sign out.** It linked to `/login`, which starts a fresh authorize flow but leaves `access_token` and `refresh_token` in place, so the session survived: Back, or any guarded route, still worked as the previous user. All three apps now have a `/logout` route that clears the cookies and redirects
 - The website had no sign-out control at all. A signed-in customer now gets one
 
+### Removed: barista stock purchasing
+
+- `apps/staff/src/routes/barista/purchases/new` and `createBarPurchase` from the staff bar remotes, and `bar_purchases:write` from the `barista` role. Receiving stock is an admin process, recorded in the admin app, the same call already made for the drinks catalogue. The barista `/purchases` page stays as a read so they can see what came in, and they keep `bar_sales:write` to sell from the stock on hand
+
 ### Changed: read-only roles
 
 - Admin pages hide create forms, edit rows and delete buttons a role cannot use, via `permissions` on `page.data` and a new `$lib/permissions.ts` `can()` helper. `management` previously saw the full set and every click 403'd. The server guards remain authoritative: this is cosmetic

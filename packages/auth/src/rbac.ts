@@ -108,13 +108,12 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "notifications:send",
   ],
 
-  // `drinks:read` only: the drinks catalogue is maintained in the admin app.
-  // A barista moves stock through purchases and sales, but does not define new
-  // products.
+  // Reads only, apart from sales. The drinks catalogue and stock purchasing are
+  // both admin processes: a barista sells from the stock on hand and can see
+  // what was bought, but does not define products or receive deliveries.
   barista: [
     "drinks:read",
     "bar_purchases:read",
-    "bar_purchases:write",
     "bar_sales:read",
     "bar_sales:write",
   ],

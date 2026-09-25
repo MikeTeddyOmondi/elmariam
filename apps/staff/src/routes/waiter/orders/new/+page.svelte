@@ -114,7 +114,11 @@
               </Button>
             </div>
           {/each}
-          <Form.FieldErrors issues={createOrder.fields.items.allIssues?.()} />
+          <!-- `issues()`, not `allIssues()`: the latter exists only on the `fields`
+               root. On a single field, reading it returns a nested field proxy, so
+               `?.()` does not guard and calling it kills hydration. This renders the
+               array-level rule, e.g. "add at least one item". -->
+          <Form.FieldErrors issues={createOrder.fields.items.issues()} />
         </div>
 
         <Button type="button" variant="outline" onclick={() => (rowCount += 1)}>

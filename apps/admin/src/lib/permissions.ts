@@ -1,5 +1,4 @@
-import { page } from '$app/stores';
-import { get } from 'svelte/store';
+import { page } from '$app/state';
 import type { Permission } from '@elmariam/auth';
 
 /**
@@ -14,6 +13,6 @@ import type { Permission } from '@elmariam/auth';
  * Call it inside `$derived` so it re-evaluates when the session changes.
  */
 export function can(permission: Permission): boolean {
-  const permissions = get(page).data.permissions as readonly Permission[] | undefined;
+  const permissions = page.data.permissions as readonly Permission[] | undefined;
   return permissions?.includes(permission) ?? false;
 }

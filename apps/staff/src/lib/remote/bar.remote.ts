@@ -2,7 +2,7 @@ import type { Result } from 'better-result';
 import { query, form } from '$app/server';
 import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { listDrinks, listPurchases, listSales, createPurchase, createSale } from '@elmariam/db';
+import { listDrinks, listPurchases, listSales, createSale } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
@@ -56,23 +56,9 @@ export const getBarSales = query(async () => {
   return unwrap(await listSales());
 });
 
-// No `createDrink` here on purpose: the drinks catalogue is maintained in the
-// admin app. Baristas read it and move stock through purchases and sales.
-
-export const createBarPurchase = form(
-  v.object({
-    receiptNumber: v.pipe(v.string(), v.minLength(1, 'Receipt number is required')),
-    product:       v.pipe(v.string(), v.minLength(1, 'Select a product')),
-    quantity:      v.pipe(v.number(), v.minValue(1, 'Must be at least 1')),
-    supplier:      v.pipe(v.string(), v.minLength(1, 'Supplier is required')),
-  }),
-  async (data) => {
-    requirePermission('bar_purchases:write');
-    const created = unwrapForm(await createPurchase(data));
-    await getBarPurchases().refresh();
-    return created;
-  }
-);
+// No `createDrink` or `createBarPurchase` here on purpose: maintaining the
+// drinks catalogue and receiving stock are both admin processes. A barista reads
+// the catalogue, sees what was purchased, and sells from the stock on hand.
 
 /**
  * The cart is a dynamic list built in the browser rather than flat FormData
