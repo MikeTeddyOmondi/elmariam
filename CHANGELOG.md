@@ -25,6 +25,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 ### Changed: read-only roles
 
 - Admin pages hide create forms, edit rows and delete buttons a role cannot use, via `permissions` on `page.data` and a new `$lib/permissions.ts` `can()` helper. `management` previously saw the full set and every click 403'd. The server guards remain authoritative: this is cosmetic
+- The five staff create routes (`*/new`) now guard themselves in `+page.server.ts` with the matching `:write` permission, so a read-only role fails at the door instead of reaching a form whose submit could only 403. Their "New ..." links are hidden the same way
 
 
 ### Changed: reproducible builds
@@ -52,7 +53,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `Button` sets `cursor-pointer` with `disabled:cursor-not-allowed`. There are no raw `<button>` elements in `apps/`, so the component covers every button in all three apps
 - `isActive` on `updateUser` and `isAvailable` on `updateMenuItem` default to `false` rather than staying optional. An unchecked box sends no FormData entry at all, so `undefined` was dropped from the update and an account could never be deactivated nor an item marked unavailable
 
-### Removed
+### Removed: admin dead code
 
 - `initiateMpesaPayment` and `sendSmsNotification` from the admin remotes. They had no admin call site; the staff copies are live and stay
 - Em and en dashes from everything authored during this work, per the repo writing convention
@@ -100,7 +101,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `waiter/orders/new` enforces "at least one item" in the schema instead of a client-side check
 - `barista/purchases/new` product is a drink picker
 
-### Removed
+### Removed: staff drinks page
 
 - `apps/staff/src/routes/barista/drinks/new`: it POSTed a multipart body to the API gateway on `:8009`, which was removed in the rewrite, so the page had been dead. New drinks are added in the admin app only
 - `createDrink` from the staff bar remotes, and `drinks:write` from the `barista` role: a barista reads the catalogue and moves stock through purchases and sales, but does not define new products
