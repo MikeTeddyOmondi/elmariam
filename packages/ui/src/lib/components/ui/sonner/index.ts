@@ -14,6 +14,30 @@ export function toastError(err: unknown, fallback = "Something went wrong."): vo
   toast.error(messageFor(err, fallback));
 }
 
+/**
+ * Toasts the form-level issues from a rejected `form()` submission.
+ *
+ * For a form rendered on the page, `Form.Message` shows these inline. A delete
+ * confirmed through `AlertDialog` has no visible form to render them in: the
+ * `<form>` is a hidden element holding only the id, so without this a refused
+ * delete (the dependant checks in `packages/db`) failed silently and the dialog
+ * just sat there.
+ *
+ * Pass `myForm.fields.allIssues()`. Only the path-less entries are shown, for
+ * the same reason as `Form.Message`: field issues belong under their input.
+ */
+export function toastIssues(
+  issues: readonly { message: string; path?: readonly unknown[] }[] | undefined,
+  fallback = "That could not be completed."
+): void {
+  const formLevel = issues?.filter((i) => !i.path?.length) ?? [];
+  if (formLevel.length === 0) {
+    toast.error(fallback);
+    return;
+  }
+  for (const issue of formLevel) toast.error(issue.message);
+}
+
 /** The message `toastError` would show. Exported for inline error rendering. */
 export function messageFor(err: unknown, fallback = "Something went wrong."): string {
   const status = statusOf(err);

@@ -209,7 +209,11 @@ export async function createSale(input: CreateSaleInput) {
     let totalStockValue = 0;
     const drinksSaleDetails = input.checkoutDrinkItems.map((item, i) => {
       const drink = drinks[i]!;
-      const stockValue = drink.sellingPrice * item.quantity;
+      // `sellingStockPrice`, not `sellingPrice`: the drink form collects the
+      // former (and `createPurchase` values stock with its `buyingStockPrice`
+      // counterpart), while `sellingPrice` has no writer anywhere and keeps its
+      // schema default of 0. Using it valued every sale at zero.
+      const stockValue = drink.sellingStockPrice * item.quantity;
       totalStockValue += stockValue;
       return { productID: drink._id, qtyBought: item.quantity, stockValue };
     });

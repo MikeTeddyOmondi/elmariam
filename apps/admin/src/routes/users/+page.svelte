@@ -13,7 +13,7 @@
     Skeleton,
     messageFor,
     toast,
-    toastError
+    toastError, toastIssues
   } from "@elmariam/ui";
   import { ASSIGNABLE_STAFF_ROLES } from "@elmariam/auth";
   import Pencil from "lucide-svelte/icons/pencil";
@@ -322,6 +322,11 @@
         if (ok) {
           toast.success(`${target.firstname} ${target.lastname} deleted.`.trim());
           pendingDelete = null;
+        } else {
+          // A refused delete (a dependant exists) comes back as a form-level
+          // issue. The hidden delete form has nowhere to render it, so without
+          // this the dialog just sits there saying nothing.
+          toastIssues(deleteForm.fields.allIssues());
         }
       } catch (e) {
         toastError(e);
@@ -339,5 +344,6 @@
     destructive
     pending={deleteForm.pending > 0}
     confirmForm="delete-user-form"
+    onclose={() => (editingId = null)}
   />
 {/if}

@@ -49,7 +49,8 @@
               <td class="px-4 py-3 text-muted-foreground capitalize">{drink.uom}</td>
               <td class="px-4 py-3 text-muted-foreground">{drink.packageQty}</td>
               <td class="px-4 py-3 text-muted-foreground">{drink.stockQty}</td>
-              <td class="px-4 py-3 text-muted-foreground">KES {drink.sellingPrice?.toLocaleString()}</td>
+              <!-- `sellingStockPrice`, not `sellingPrice`: only the former is ever written. -->
+              <td class="px-4 py-3 text-muted-foreground">KES {drink.sellingStockPrice?.toLocaleString()}</td>
               <td class="px-4 py-3">
                 <span class="inline-flex px-2 py-0.5 rounded-full text-xs font-medium
                   {drink.inStock ? 'bg-green-400/10 text-green-400' : 'bg-red-400/10 text-red-400'}">

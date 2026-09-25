@@ -3,7 +3,7 @@
   import {
     Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor, toast, toastError, AlertDialog } from '@elmariam/ui';
+    messageFor, toast, toastError, toastIssues, AlertDialog } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import Trash2 from 'lucide-svelte/icons/trash-2';
 
@@ -149,7 +149,9 @@
                 <TableCell class="capitalize text-muted-foreground">{drink.typeOfDrink}</TableCell>
                 <TableCell class="capitalize text-muted-foreground">{drink.uom}</TableCell>
                 <TableCell class="text-right text-muted-foreground">{drink.stockQty}</TableCell>
-                <TableCell class="text-right text-muted-foreground">KES {drink.sellingPrice?.toLocaleString()}</TableCell>
+                <!-- `sellingStockPrice` is the field the create form writes. `sellingPrice`
+                     has no writer anywhere and stays at its schema default of 0. -->
+                <TableCell class="text-right text-muted-foreground">KES {drink.sellingStockPrice?.toLocaleString()}</TableCell>
                 <TableCell>
                   <Badge variant={drink.inStock ? 'success' : 'destructive'}>
                     {drink.inStock ? 'Yes' : 'No'}
@@ -192,6 +194,11 @@
         if (ok) {
           toast.success(`${target.label} deleted.`);
           pendingDelete = null;
+        } else {
+          // A refused delete (a dependant exists) comes back as a form-level
+          // issue. The hidden delete form has nowhere to render it, so without
+          // this the dialog just sits there saying nothing.
+          toastIssues(deleteForm.fields.allIssues());
         }
       } catch (e) {
         toastError(e);
@@ -209,5 +216,6 @@
     destructive
     pending={deleteForm.pending > 0}
     confirmForm="delete-drink-form"
+    onclose={() => (pendingDelete = null)}
   />
 {/if}

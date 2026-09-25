@@ -23,6 +23,16 @@
      */
     confirmForm?: string;
     onconfirm?: () => void;
+    /**
+     * Called when the dialog is dismissed (Cancel, Escape, outside click).
+     *
+     * Call sites drive visibility from their own state, e.g.
+     * `{#if pendingDelete}...open={true}`. Without this they never learn about a
+     * dismissal: bits-ui flips its internal `open` to false, the parent state
+     * still says a row is pending, and because the component instance survives
+     * it cannot be reopened. Clear the state here.
+     */
+    onclose?: () => void;
     /** Optional extra content rendered between the description and the buttons. */
     children?: Snippet;
   }
@@ -37,11 +47,17 @@
     pending = false,
     confirmForm,
     onconfirm,
+    onclose,
     children
   }: Props = $props();
 </script>
 
-<AlertDialogPrimitive.Root bind:open>
+<AlertDialogPrimitive.Root
+  bind:open
+  onOpenChange={(next: boolean) => {
+    if (!next) onclose?.();
+  }}
+>
   <AlertDialogPrimitive.Portal>
     <AlertDialogPrimitive.Overlay
       class="fixed inset-0 z-50 bg-black/80 data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
