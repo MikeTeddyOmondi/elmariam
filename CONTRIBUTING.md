@@ -16,8 +16,8 @@ docs/          Architecture and guide documents
 
 ## Branch Strategy
 
-- `feat/simplifying-stack` — active development branch; direct-DB architecture
-- `rewrite` — frozen reference; gateway-based architecture (do not merge back)
+- `feat/simplifying-stack`: active development branch; direct-DB architecture
+- `rewrite`: frozen reference; gateway-based architecture (do not merge back)
 - Feature branches: `feat/<name>` off `feat/simplifying-stack`
 - Bug fixes: `fix/<name>` off `feat/simplifying-stack`
 
@@ -47,7 +47,7 @@ No `Co-Authored-By` lines.
 ## Error Handling
 
 - All DB access must go through `packages/db/src/operations/` functions that return `Result<T, E>`
-- Remote functions use `result.match` to unwrap — never raw try/catch
+- Remote functions use `result.match` to unwrap: never raw try/catch
 - New domains: add `packages/db/src/errors/<domain>.ts` with `TaggedError` classes first, then operations
 - See [docs/ERROR_HANDLING.md](docs/ERROR_HANDLING.md) for the full pattern
 
@@ -65,7 +65,7 @@ No `Co-Authored-By` lines.
 
 ## Single `MONGODB_URL`
 
-All apps and the integrations service connect to `mongodb://mongo:27017/elmariam`. The env var is `MONGODB_URL` — see `.env.sample`. Never hardcode the connection string.
+All apps and the integrations service connect to `mongodb://mongo:27017/elmariam`. The env var is `MONGODB_URL`: see `.env.sample`. Never hardcode the connection string.
 
 ---
 
@@ -91,7 +91,7 @@ pnpm --filter @elmariam/staff dev
 ## CI
 
 GitHub Actions runs on every push and PR:
-- **typecheck** — `pnpm turbo typecheck`
-- **build** — `pnpm turbo build` for the three apps
+- **typecheck**: `pnpm turbo typecheck`
+- **build**: `pnpm turbo build` for the three apps
 
 Both jobs use pnpm v10 and Node 22. The lockfile must be committed (`--frozen-lockfile` is enforced).

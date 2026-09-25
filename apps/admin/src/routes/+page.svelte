@@ -384,23 +384,23 @@
                   class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors"
                 >
                   <td class="px-4 py-2.5 text-foreground">
-                    {b.customer?.firstname ?? b.occupant?.firstname ?? "—"}
+                    {b.customer?.firstname ?? b.occupant?.firstname ?? "-"}
                     {b.customer?.lastname ?? b.occupant?.lastname ?? ""}
                   </td>
                   <td class="px-4 py-2.5 text-muted-foreground capitalize"
                     >{b.roomType?.roomType ??
                       b["room-type"]?.roomType ??
-                      "—"}</td
+                      "-"}</td
                   >
                   <td class="px-4 py-2.5 text-muted-foreground"
                     >{b.checkInDate
                       ? new Date(b.checkInDate).toLocaleDateString()
-                      : "—"}</td
+                      : "-"}</td
                   >
                   <td class="px-4 py-2.5 text-muted-foreground"
                     >{b.checkOutDate
                       ? new Date(b.checkOutDate).toLocaleDateString()
-                      : "—"}</td
+                      : "-"}</td
                   >
                   <td class="px-4 py-2.5">
                     <span
@@ -408,7 +408,7 @@
                     >
                       {b.invoice?.paymentMethod ??
                         b.invoiceRef?.paymentMethod ??
-                        "—"}
+                        "-"}
                     </span>
                   </td>
                 </tr>

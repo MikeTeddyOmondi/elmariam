@@ -2,7 +2,7 @@ import type { Result } from 'better-result';
 import { query, form } from '$app/server';
 import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { listDrinks, listPurchases, listSales, createDrink as dbCreateDrink, createPurchase, createSale } from '@elmariam/db';
+import { listDrinks, listPurchases, listSales, createDrink as dbCreateDrink, createPurchase, createSale, deleteDrink as dbDeleteDrink } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
@@ -12,7 +12,7 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-/** Unwraps inside a `form()` handler — domain failures render on the form. */
+/** Unwraps inside a `form()` handler: domain failures render on the form. */
 function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
@@ -120,3 +120,10 @@ export const checkoutBarSale = form(
     return created;
   }
 );
+
+export const deleteDrink = form(v.object({ id: v.string() }), async ({ id }) => {
+  requirePermission('drinks:delete');
+  unwrapForm(await dbDeleteDrink(id));
+  await getDrinks().refresh();
+  return { deleted: id };
+});

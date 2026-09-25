@@ -22,7 +22,7 @@
 </script>
 
 <div class="flex min-h-screen bg-background text-foreground">
-  <!-- Portal sidebar — flush with header, using sidebar CSS vars -->
+  <!-- Portal sidebar: flush with header, using sidebar CSS vars -->
   <aside class="w-56 flex-shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
     <!-- Brand aligned with the site header logo -->
     <div class="px-4 py-5">

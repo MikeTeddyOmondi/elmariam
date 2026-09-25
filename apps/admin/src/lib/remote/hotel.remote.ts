@@ -1,5 +1,5 @@
 import type { Result } from 'better-result';
-import { query, command, form } from '$app/server';
+import { query, form } from '$app/server';
 import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
 import {
@@ -13,9 +13,10 @@ import {
   listInvoices,
   createRoom as dbCreateRoom,
   createRoomType as dbCreateRoomType,
+  deleteCustomer as dbDeleteCustomer,
+  deleteRoom as dbDeleteRoom,
+  deleteRoomType as dbDeleteRoomType,
 } from '@elmariam/db';
-import { RabbitMQConfig, rabbitMQEnvFrom } from '@elmariam/queue';
-import { env } from '$env/dynamic/private';
 import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
@@ -113,7 +114,7 @@ export const getOneBooking = query(v.string(), async (bookingId: string) => {
 });
 
 // `form()` rather than `command()`: these submit without JavaScript and render
-// field-level issues inline. Numeric fields stay numeric in the schema —
+// field-level issues inline. Numeric fields stay numeric in the schema.
 // `field.as('number')` on the input performs the FormData coercion.
 
 export const createCustomer = form(
@@ -182,48 +183,26 @@ export const createRoom = form(
   }
 );
 
-export const initiateMpesaPayment = command(
-  v.object({ bookingId: v.string() }),
-  async ({ bookingId }) => {
-    requirePermission('payments:initiate');
-    const booking  = unwrap(await getBooking(bookingId));
-    const customer = (booking as any).occupant ?? {};
-    const invoice  = (booking as any).invoice  ?? {};
-    const message  = {
-      first_name:   customer.firstname,
-      last_name:    customer.lastname,
-      email:        customer.email,
-      host:         'hotel-elmariam',
-      amount:       invoice.totalCost,
-      phone_number: customer.phone_number,
-      api_ref:      `hotel-elmariam-booking-${bookingId}`,
-    };
-    const queue = new RabbitMQConfig(rabbitMQEnvFrom(env));
-    await queue.connect();
-    await queue.createQueue('mpesa');
-    await queue.publishToQueue('mpesa', message);
-    await queue.close();
-    return { message: 'Payment initiated' };
-  }
-);
+// Deletes. Each refuses when a dependant record would be orphaned; the db layer
+// returns that as a domain error, which `invalid()` renders on the form.
 
-export const sendSmsNotification = command(
-  v.object({ bookingId: v.string() }),
-  async ({ bookingId }) => {
-    requirePermission('notifications:send');
-    const booking  = unwrap(await getBooking(bookingId));
-    const customer = (booking as any).occupant ?? {};
-    const invoice  = (booking as any).invoice  ?? {};
-    const checkOut = new Date(booking.checkOutDate).toDateString();
-    const phoneStr = String(customer.phone_number ?? '');
-    const queue    = new RabbitMQConfig(rabbitMQEnvFrom(env));
-    await queue.connect();
-    await queue.createQueue('sms');
-    await queue.publishToQueue('sms', {
-      message:      `Greetings ${customer.firstname}. Your hotel booking invoice of amount Kes. ${invoice.totalCost} is due on ${checkOut}`,
-      phoneNumbers: '0' + phoneStr.slice(3),
-    });
-    await queue.close();
-    return { message: 'SMS notification sent' };
-  }
-);
+export const deleteCustomer = form(v.object({ id: v.string() }), async ({ id }) => {
+  requirePermission('customers:delete');
+  unwrapForm(await dbDeleteCustomer(id));
+  await getCustomers().refresh();
+  return { deleted: id };
+});
+
+export const deleteRoom = form(v.object({ id: v.string() }), async ({ id }) => {
+  requirePermission('rooms:delete');
+  unwrapForm(await dbDeleteRoom(id));
+  await getRooms().refresh();
+  return { deleted: id };
+});
+
+export const deleteRoomType = form(v.object({ id: v.string() }), async ({ id }) => {
+  requirePermission('roomtypes:delete');
+  unwrapForm(await dbDeleteRoomType(id));
+  await getRoomTypes().refresh();
+  return { deleted: id };
+});

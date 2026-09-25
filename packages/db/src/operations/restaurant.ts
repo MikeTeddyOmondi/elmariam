@@ -193,3 +193,17 @@ export async function markOrderPaid(
     },
   });
 }
+
+export async function deleteMenuItem(id: string) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await MenuItem.findByIdAndDelete(id).lean<IMenuItem>({ virtuals: true });
+      if (!doc) throw new MenuItemNotFoundError({ id, message: "Menu item not found" });
+      return { id };
+    },
+    catch: (e): RestaurantError => {
+      if (e instanceof MenuItemNotFoundError) return e;
+      return dbErr("deleteMenuItem", e);
+    },
+  });
+}

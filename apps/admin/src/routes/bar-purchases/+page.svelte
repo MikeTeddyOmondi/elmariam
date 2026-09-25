@@ -118,7 +118,7 @@
             {#each purchases as p}
               <TableRow>
                 <TableCell class="font-mono text-xs text-muted-foreground">{p.receiptNumber}</TableCell>
-                <TableCell class="font-medium text-foreground">{p.product?.drinkName ?? '—'}</TableCell>
+                <TableCell class="font-medium text-foreground">{p.product?.drinkName ?? '-'}</TableCell>
                 <TableCell class="text-right text-muted-foreground">{p.quantity}</TableCell>
                 <TableCell class="text-right text-muted-foreground">KES {p.stockValue?.toLocaleString()}</TableCell>
                 <TableCell class="text-muted-foreground">{p.supplier}</TableCell>

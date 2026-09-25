@@ -3,7 +3,7 @@
 
 /*
   Single source of truth for the design system. All three apps import this via
-  `@elmariam/ui/app.css` — do not copy it back into an app.
+  `@elmariam/ui/app.css`: do not copy it back into an app.
 
   This package is symlinked into node_modules, which Tailwind's automatic
   content detection skips, so its components must be declared explicitly or
@@ -53,7 +53,7 @@
 }
 
 .dark {
-  /* Dark theme — El'Mariam */
+  /* Dark theme: El'Mariam */
   --background: 222 47% 6%;
   --foreground: 210 40% 96%;
   --card: 222 47% 9%;

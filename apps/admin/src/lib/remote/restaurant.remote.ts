@@ -7,6 +7,7 @@ import {
   createMenuItem as dbCreateMenuItem,
   updateMenuItem as dbUpdateMenuItem,
   updateOrderStatus as dbUpdateOrderStatus,
+  deleteMenuItem as dbDeleteMenuItem,
 } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
 
@@ -17,7 +18,7 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-/** Unwraps inside a `form()` handler — domain failures render on the form. */
+/** Unwraps inside a `form()` handler: domain failures render on the form. */
 function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
@@ -76,18 +77,24 @@ export const createMenuItem = form(
   }
 );
 
-export const updateMenuItem = command(
+/** Use `updateMenuItem.for(item.id)` so each edit row gets its own instance. */
+export const updateMenuItem = form(
   v.object({
     id:          v.string(),
-    name:        v.optional(v.string()),
+    name:        v.pipe(v.string(), v.minLength(1, 'Name is required')),
     description: v.optional(v.string()),
-    category:    v.optional(v.picklist(['appetizer', 'main', 'dessert', 'beverage', 'side'])),
-    price:       v.optional(v.number()),
-    isAvailable: v.optional(v.boolean()),
+    category:    v.picklist(['appetizer', 'main', 'dessert', 'beverage', 'side']),
+    price:       v.pipe(v.number(), v.minValue(0, 'Price cannot be negative')),
+    // Defaulted to false, not left optional: an unchecked box sends no
+    // FormData entry at all, so `undefined` would be dropped from the update
+    // and an item could never be marked unavailable.
+    isAvailable: v.optional(v.boolean(), false),
   }),
   async ({ id, ...rest }) => {
     requirePermission('menu:write');
-    return unwrap(await dbUpdateMenuItem(id, rest));
+    const updated = unwrapForm(await dbUpdateMenuItem(id, rest));
+    await getMenuItems().refresh();
+    return updated;
   }
 );
 
@@ -101,3 +108,10 @@ export const updateOrderStatus = command(
     return unwrap(await dbUpdateOrderStatus(orderId, status));
   }
 );
+
+export const deleteMenuItem = form(v.object({ id: v.string() }), async ({ id }) => {
+  requirePermission('menu:delete');
+  unwrapForm(await dbDeleteMenuItem(id));
+  await getMenuItems().refresh();
+  return { deleted: id };
+});

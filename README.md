@@ -10,7 +10,7 @@ A full-stack hospitality management platform for hotel, bar, and restaurant oper
 | Database | MongoDB via Mongoose (`@elmariam/db`) |
 | Auth | OpenAuth (PKCE, JWT) |
 | Messaging | RabbitMQ (`@elmariam/queue`) |
-| Integrations | Express service — M-Pesa, UjumbeSMS, Gmail |
+| Integrations | Express service: M-Pesa, UjumbeSMS, Gmail |
 | Object storage | MinIO |
 | Error handling | `better-result` (Result<T, E>) |
 | Reverse proxy | Traefik |
@@ -19,10 +19,10 @@ A full-stack hospitality management platform for hotel, bar, and restaurant oper
 
 | Service | Port | Purpose |
 |---------|------|---------|
-| `apps/admin` | 3000 | Admin panel — rooms, bookings, analytics |
-| `apps/staff` | 3001 | Staff panel — hotel, bar, restaurant ops |
-| `apps/website` | 3002 | Public site — room browsing, booking |
-| `infra/openauth` | 3100 | Auth server — login, token issue |
+| `apps/admin` | 3000 | Admin panel: rooms, bookings, analytics |
+| `apps/staff` | 3001 | Staff panel: hotel, bar, restaurant ops |
+| `apps/website` | 3002 | Public site: room browsing, booking |
+| `infra/openauth` | 3100 | Auth server: login, token issue |
 | `services/integrations` | 8010 | M-Pesa STK push, SMS, email notifications |
 | MongoDB | 27017 | Primary datastore |
 | RabbitMQ | 5672 / 15672 | Message queue |
@@ -55,7 +55,7 @@ pnpm --filter @elmariam/website dev
 
 ### Direct-DB Architecture (`feat/simplifying-stack`)
 
-SvelteKit remote functions call Mongoose directly via `@elmariam/db` operations — no HTTP gateway hop:
+SvelteKit remote functions call Mongoose directly via `@elmariam/db` operations: no HTTP gateway hop:
 
 ```
 Browser → SvelteKit remote function → packages/db/src/operations/ → MongoDB
@@ -72,11 +72,11 @@ External side effects (M-Pesa, SMS, email) are published to RabbitMQ queues and 
 
 ## Docs
 
-- [CONTRIBUTING.md](CONTRIBUTING.md) — conventions for contributors
-- [PLAN.md](PLAN.md) — architecture decision and implementation plan
-- [BACKLOG.md](BACKLOG.md) — task backlog
-- [CHANGELOG.md](CHANGELOG.md) — release history
-- [docs/ERROR_HANDLING.md](docs/ERROR_HANDLING.md) — `better-result` pattern guide
+- [CONTRIBUTING.md](CONTRIBUTING.md): conventions for contributors
+- [PLAN.md](PLAN.md): architecture decision and implementation plan
+- [BACKLOG.md](BACKLOG.md): task backlog
+- [CHANGELOG.md](CHANGELOG.md): release history
+- [docs/ERROR_HANDLING.md](docs/ERROR_HANDLING.md): `better-result` pattern guide
 
 ## Required Secrets (GitHub Actions)
 

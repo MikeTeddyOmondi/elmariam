@@ -40,7 +40,7 @@
     {...createBooking.enhance(async ({ submit }) => {
       try {
         // `submit()` resolves to false when the server returns validation
-        // issues — it does not throw. Toasting unconditionally would report
+        // issues: it does not throw. Toasting unconditionally would report
         // success on an invalid form.
         const ok = await submit();
         if (ok) toast.success('Booking created.');

@@ -17,7 +17,7 @@ VPS) using `docker-compose.yml`.
   colima stop && colima start --cpu 4 --memory 8
   ```
 
-  If you cannot raise it, build the apps **one at a time** — a single app build
+  If you cannot raise it, build the apps **one at a time**: a single app build
   fits in 4 GB:
 
   ```sh
@@ -34,7 +34,7 @@ VPS) using `docker-compose.yml`.
 
 ## 2. Environment
 
-Copy the sample and fill it in. `.env` is gitignored — it never leaves the host.
+Copy the sample and fill it in. `.env` is gitignored: it never leaves the host.
 
 ```sh
 cp .env.sample .env
@@ -44,7 +44,7 @@ cp .env.sample .env
 
 | Variable | Notes |
 | --- | --- |
-| `OPENAUTH_ALLOW_LOCALHOST` | **`true` for a personal PC.** The issuer only accepts `https://*.otienoobogeandcompany.com` redirect URIs otherwise, and login will fail with `unauthorized_client`. Keep it `false` on a public deployment — an attacker-controlled localhost listener would be a valid place to send an authorization code. |
+| `OPENAUTH_ALLOW_LOCALHOST` | **`true` for a personal PC.** The issuer only accepts `https://*.otienoobogeandcompany.com` redirect URIs otherwise, and login will fail with `unauthorized_client`. Keep it `false` on a public deployment: an attacker-controlled localhost listener would be a valid place to send an authorization code. |
 | `RABBITMQ_DEFAULT_USER` / `_PASS` / `_VHOST` | Default to `user` / `password` / `elmariam`. Change the password for anything reachable off-host. |
 
 ### Required for features, not for boot
@@ -53,11 +53,11 @@ The stack starts without these; the corresponding feature fails at send time.
 
 | Variable | Needed for |
 | --- | --- |
-| `RESEND_API_KEY`, `EMAIL_SENDER` | All outbound email. **Password reset and registration codes go through this** — `NODE_ENV=production` publishes codes to the `mails` queue instead of logging them, so without a working key nobody can complete a password reset. |
+| `RESEND_API_KEY`, `EMAIL_SENDER` | All outbound email. **Password reset and registration codes go through this**: `NODE_ENV=production` publishes codes to the `mails` queue instead of logging them, so without a working key nobody can complete a password reset. |
 | `UJUMBESMS_API_KEY`, `UJUMBESMS_ACCOUNT_EMAIL`, `UJUMBESMS_API_URL` | Booking SMS notifications. |
 | `INTASEND_API_TOKEN`, `INTASEND_PUBLISHABLE_KEY`, `INTASEND_TEST_MODE` | M-Pesa STK push. |
 
-`docker compose config` prints a warning for each unset variable — use it as a
+`docker compose config` prints a warning for each unset variable: use it as a
 checklist before starting.
 
 ---
@@ -68,7 +68,7 @@ checklist before starting.
 docker compose up -d
 ```
 
-Wait for the issuer to report healthy — the apps depend on it:
+Wait for the issuer to report healthy: the apps depend on it:
 
 ```sh
 docker compose ps openauth      # expect "(healthy)"
@@ -104,7 +104,7 @@ older versions of the issuer.
 | Role | Apps | Capability |
 | --- | --- | --- |
 | `admin` | admin, staff, website | Every permission |
-| `management` | admin, staff | **Read-only** — every `*:read`, no writes |
+| `management` | admin, staff | **Read-only**: every `*:read`, no writes |
 | `receptionist` / `barista` / `waiter` | staff | Their own section only |
 | `customer` | website | Own bookings and invoices only |
 
@@ -114,18 +114,17 @@ older versions of the issuer.
 
 Both routes work; pick one.
 
-- **Direct ports** — `http://localhost:3000` / `:3001` / `:3002`. This is the
+- **Direct ports**: `http://localhost:3000` / `:3001` / `:3002`. This is the
   path for a personal PC and needs no DNS.
-- **Traefik** — the compose labels route
+- **Traefik**: the compose labels route
   `admin-panel.otienoobogeandcompany.com`, `staff.…`, `auth.…`. These only
   resolve if you own the DNS or add hosts entries.
 
 If you serve the apps on real hostnames, three things must change together:
 
 1. `ORIGIN` in each app's Dockerfile (currently `http://localhost:300{0,1,2}`).
-   `adapter-node` rejects cross-origin POSTs, and the forms submit natively —
-   a wrong `ORIGIN` breaks every form with a 403.
-2. `VITE_OPENAUTH_ISSUER` at **build time** — the browser-side auth client bakes
+   `adapter-node` rejects cross-origin POSTs, and the forms submit natively: a wrong `ORIGIN` breaks every form with a 403.
+2. `VITE_OPENAUTH_ISSUER` at **build time**: the browser-side auth client bakes
    it into the bundle and falls back to `http://localhost:3100`.
 3. `ALLOWED_HOST_SUFFIX` in `infra/openauth/src/index.ts`, which is currently
    pinned to `.otienoobogeandcompany.com`.
@@ -137,7 +136,7 @@ If you serve the apps on real hostnames, three things must change together:
 - `csrf.trustedOrigins: ['*']` in all three `svelte.config.js` disables
   SvelteKit's CSRF origin check. Tighten this before exposing the stack
   publicly.
-- `scripts/smoke-test.sh` is stale — it probes a gateway on `:8009` that was
+- `scripts/smoke-test.sh` is stale: it probes a gateway on `:8009` that was
   removed in the rewrite.
 - No automated backup of the `elmariam-mongodb-data` volume. Both the
   application data and the auth store (password hashes, signing keys) live in

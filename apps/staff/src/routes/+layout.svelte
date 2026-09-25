@@ -23,7 +23,7 @@
   const role = $derived($page.data.user?.userType);
 
   // Only the sections this role can actually open. The server guards in each
-  // section's +layout.server.ts remain authoritative — this just avoids showing
+  // section's +layout.server.ts remain authoritative: this just avoids showing
   // links that would bounce the user straight back.
   const visibleSections = $derived(
     sectionLinks.filter((l) => canAccessStaffSection(role, l.section))

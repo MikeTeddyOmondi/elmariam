@@ -1,6 +1,6 @@
 # Error Handling with `better-result`
 
-This project uses [`better-result`](https://github.com/dmorsing/better-result) — a Rust-inspired `Result<T, E>` library for TypeScript — to make error handling explicit and type-safe across the DB operations layer.
+This project uses [`better-result`](https://github.com/dmorsing/better-result), a Rust-inspired `Result<T, E>` library for TypeScript, to make error handling explicit and type-safe across the DB operations layer.
 
 ---
 
@@ -9,7 +9,7 @@ This project uses [`better-result`](https://github.com/dmorsing/better-result) �
 Raw try/catch in remote functions loses error type information by the time the error reaches the UI:
 
 ```ts
-// Bad — error type is unknown, message may be mangled by KrakenD or service layer
+// Bad: error type is unknown, message may be mangled by KrakenD or service layer
 try {
   await apiFetch('/api/hotel/customers', { method: 'POST', body });
 } catch (e) {
@@ -20,7 +20,7 @@ try {
 With `better-result`, each operation declares exactly what errors it can return:
 
 ```ts
-// Good — error type is known, message is user-readable
+// Good: error type is known, message is user-readable
 const result = await createCustomer(data);
 result.match({
   ok: (customer) => customer,
@@ -124,7 +124,7 @@ export async function createBooking(input: CreateBookingInput) {
 }
 ```
 
-If any `yield*` step returns `Err`, the generator short-circuits and the final `Result` is that error — no further steps run.
+If any `yield*` step returns `Err`, the generator short-circuits and the final `Result` is that error: no further steps run.
 
 ---
 
@@ -134,7 +134,7 @@ Every `catch` clause in `Result.tryPromise` must:
 1. Check for known error codes/types first (e.g. `e.code === 11000` for duplicate key)
 2. Fall back to the domain's `*DatabaseError` for anything unexpected
 
-Never swallow errors silently — always pass `cause: e` to preserve the stack for debugging.
+Never swallow errors silently: always pass `cause: e` to preserve the stack for debugging.
 
 ---
 
@@ -142,7 +142,7 @@ Never swallow errors silently — always pass `cause: e` to preserve the stack f
 
 | Mistake | Fix |
 |---------|-----|
-| Calling `result.unwrap()` — throws generic `ResultError` | Use `result.match` with a descriptive `throw new Error(e.message)` |
+| Calling `result.unwrap()`: throws generic `ResultError` | Use `result.match` with a descriptive `throw new Error(e.message)` |
 | Forgetting `Result.await` inside `Result.gen` | Every async step in a generator must be `yield* Result.await(...)` |
 | Catching `unknown` without narrowing | Use `e instanceof Error ? e.message : String(e)` before passing to `DatabaseError` |
 | Raw try/catch in a remote function | Always use operations from `@elmariam/db` which return `Result` |

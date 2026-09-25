@@ -1,5 +1,5 @@
 // Framework-agnostic entry point. Deliberately does NOT re-export
-// `./middleware`, which imports `express` — the SvelteKit apps import this
+// `./middleware`, which imports `express`: the SvelteKit apps import this
 // barrel and must not pull express into their server bundle. Express consumers
 // import `@elmariam/auth/middleware` directly.
 

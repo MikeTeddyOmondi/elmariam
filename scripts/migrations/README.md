@@ -74,7 +74,7 @@ npx ts-node migrate-openauth-users.ts
 |---|---|---|---|
 | `MONGODB_URI` | No | `mongodb://localhost:27017/elmariam` | MongoDB connection string |
 | `OPENAUTH_ISSUER` | No | `http://localhost:3100` | OpenAuth server base URL |
-| `TEMP_PASSWORD` | **Yes** | — | Temporary password set for all migrated users |
+| `TEMP_PASSWORD` | **Yes** |: | Temporary password set for all migrated users |
 
 ### After Migration
 

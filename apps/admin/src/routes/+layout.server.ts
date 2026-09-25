@@ -8,6 +8,6 @@ export const load: LayoutServerLoad = async ({ locals, url }) => {
   const user = requireAppAccess(locals);
 
   // `permissions` drives which action buttons the UI renders. The server-side
-  // `requirePermission` guards remain authoritative — this is cosmetic only.
+  // `requirePermission` guards remain authoritative: this is cosmetic only.
   return { user, permissions: permissionsOf(user) };
 };

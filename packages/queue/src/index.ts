@@ -139,7 +139,7 @@ export class RabbitMQConfig {
  *
  * SvelteKit apps must pass `$env/dynamic/private` rather than relying on
  * `process.env`: Vite does not copy `.env` files into `process.env`, so
- * `rabbitMQEnvFromProcess()` silently falls back to every default — including
+ * `rabbitMQEnvFromProcess()` silently falls back to every default: including
  * vhost `"/"`, which does not exist in this deployment and fails the handshake.
  */
 export function rabbitMQEnvFrom(source: Record<string, string | undefined>): RabbitMQEnv {

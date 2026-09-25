@@ -5,7 +5,7 @@
  * The new system uses OpenAuth PasswordProvider for authentication.
  * This script creates OpenAuth subject entries for users who don't yet have one.
  *
- * It does NOT reset passwords — users will need to use the "forgot password" flow
+ * It does NOT reset passwords: users will need to use the "forgot password" flow
  * (or have a temporary password set via TEMP_PASSWORD) to log in the first time.
  *
  * Usage:
@@ -74,7 +74,7 @@ async function run() {
   for (const user of unmigrated) {
     const email = user.get('email') as string;
     if (!email) {
-      console.warn(`  Skipping user ${user._id} — no email.`);
+      console.warn(`  Skipping user ${user._id}: no email.`);
       continue;
     }
 
@@ -84,7 +84,7 @@ async function run() {
         await User.updateOne({ _id: user._id }, { $set: { openauth_subject_id: subjectId } });
         console.log(`  ✓ ${email} registered (subject: ${subjectId})`);
       } else {
-        console.warn(`  ? ${email} — registration succeeded but no subject ID returned`);
+        console.warn(`  ? ${email}: registration succeeded but no subject ID returned`);
       }
       migrated++;
     } catch (err: any) {

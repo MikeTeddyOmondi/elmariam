@@ -12,7 +12,7 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-/** Unwraps inside a `form()` handler — domain failures render on the form. */
+/** Unwraps inside a `form()` handler: domain failures render on the form. */
 function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,

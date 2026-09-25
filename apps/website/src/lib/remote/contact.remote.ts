@@ -11,7 +11,7 @@ import { env } from '$env/dynamic/private';
  * Publishes a website enquiry to the `mails` queue, where the SMTP consumer in
  * `services/integrations` forwards it to the business inbox.
  *
- * Public and unauthenticated by design — anyone may contact the hotel.
+ * Public and unauthenticated by design: anyone may contact the hotel.
  */
 export const sendContactMessage = form(
   v.object({

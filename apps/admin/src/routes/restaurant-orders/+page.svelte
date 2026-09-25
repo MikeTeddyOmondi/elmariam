@@ -73,16 +73,16 @@
           {#each orders as order}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order.id}</td>
-              <td class="px-4 py-3 text-foreground">{order.tableNumber ?? '—'}</td>
+              <td class="px-4 py-3 text-foreground">{order.tableNumber ?? '-'}</td>
               <td class="px-4 py-3 text-foreground">{order.items?.length ?? 0}</td>
-              <td class="px-4 py-3 text-foreground font-medium">{order.totalAmount?.toLocaleString() ?? '—'}</td>
+              <td class="px-4 py-3 text-foreground font-medium">{order.totalAmount?.toLocaleString() ?? '-'}</td>
               <td class="px-4 py-3">
                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium capitalize
                   {statusCls[order.status] ?? 'bg-secondary text-muted-foreground'}">
                   {order.status}
                 </span>
               </td>
-              <td class="px-4 py-3 text-muted-foreground capitalize">{order.paymentStatus ?? '—'}</td>
+              <td class="px-4 py-3 text-muted-foreground capitalize">{order.paymentStatus ?? '-'}</td>
               <td class="px-4 py-3">
                 <select
                   value={order.status}

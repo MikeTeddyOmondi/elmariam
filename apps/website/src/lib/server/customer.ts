@@ -14,7 +14,7 @@ export type OwnCustomer = {
  * Resolves the `Customer` record belonging to the signed-in session, or `null`.
  *
  * The session subject `id` is a `User` `_id` from the auth store, which is a
- * different collection from `Customer` — the two are linked by email. Every
+ * different collection from `Customer`: the two are linked by email. Every
  * customer-facing query must go through here so it can be scoped to a single
  * owner rather than reading the whole collection.
  *

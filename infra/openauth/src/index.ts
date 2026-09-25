@@ -7,11 +7,11 @@ import { MongoStorage } from "./mongo-storage.js";
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from "@elmariam/queue";
 import { isRole, type Role } from "@elmariam/auth";
 
-/** Application data — the `users` collection lives here. */
+/** Application data: the `users` collection lives here. */
 const DATABASE_NAME = process.env.OPENAUTH_USERS_DB || "elmariam";
 
 /**
- * Auth storage — password hashes, signing/encryption keys and refresh tokens.
+ * Auth storage: password hashes, signing/encryption keys and refresh tokens.
  *
  * This is deliberately a *separate* database from the application data, and
  * defaults to `openauth` because that is where the existing credentials are.
@@ -39,7 +39,7 @@ const ALLOW_LOCALHOST_REDIRECTS = process.env.OPENAUTH_ALLOW_LOCALHOST === "true
 const ACCESS_TTL = 60 * 60 * 24 * 7; // 7 days
 const REFRESH_TTL = 60 * 60 * 24 * 30; // 30 days
 
-// One client for the whole process — the storage adapter reuses it rather than
+// One client for the whole process: the storage adapter reuses it rather than
 // opening a second connection to the same database.
 const mongoClient = new MongoClient(DATABASE_URL);
 await mongoClient.connect();
@@ -56,7 +56,7 @@ class AuthUserError extends Error {}
  * required `username`/`id_number` and collided on the non-sparse unique
  * `id_number` index as soon as a second user signed up.
  *
- * Staff and management roles are never assigned here — an admin assigns them
+ * Staff and management roles are never assigned here: an admin assigns them
  * through the admin app. Someone who should be staff but was never pre-created
  * is provisioned as a customer and then rejected by the staff app's callback.
  */
@@ -107,7 +107,7 @@ const ALLOWED_CLIENTS = new Set(["admin", "staff", "website"]);
 const ALLOWED_HOST_SUFFIX = ".otienoobogeandcompany.com";
 
 async function sendVerificationCode(email: string, code: string) {
-  // No mail transport is wired up in dev — log so the flow stays testable.
+  // No mail transport is wired up in dev: log so the flow stays testable.
   if (IS_DEV) {
     console.log(`[OpenAuth] Code for ${email}: ${code}`);
     return;

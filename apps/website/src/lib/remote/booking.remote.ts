@@ -21,11 +21,11 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
 }
 
 // Every query here is scoped to the signed-in customer. Holding `bookings:read`
-// is not permission to read *everyone's* bookings — the owner filter is what
+// is not permission to read *everyone's* bookings: the owner filter is what
 // actually enforces that.
 
 // No profile yet means nothing can belong to them, so these return an empty
-// list rather than erroring — the portal shows its normal empty state.
+// list rather than erroring: the portal shows its normal empty state.
 
 export const getMyBookings = query(async (): Promise<IBooking[]> => {
   requirePermission('bookings:read');
@@ -42,13 +42,13 @@ export const getMyInvoices = query(async (): Promise<IInvoice[]> => {
 });
 
 // Room types are public catalogue data and live in `catalog.remote.ts`,
-// shared with the public /rooms page — import `getRoomTypes` from there.
+// shared with the public /rooms page: import `getRoomTypes` from there.
 
 export const getOneBooking = query(v.string(), async (bookingId: string): Promise<IBooking> => {
   requirePermission('bookings:read');
   const customer = await findOwnCustomer();
 
-  // Do not 404 vs 403 differently — that would leak which ids exist.
+  // Do not 404 vs 403 differently: that would leak which ids exist.
   if (!customer) throw httpError(404, 'Booking not found');
 
   const booking = unwrap(await getBooking(bookingId));

@@ -16,6 +16,12 @@ services:
     restart: always
     ports:
       - "27017:27017"
+    healthcheck:
+      test: ["CMD", "mongo", "--quiet", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
     volumes:
       - elmariam-mongodb-data:/data/db
     networks:
@@ -46,6 +52,12 @@ services:
       - RABBITMQ_DEFAULT_USER=${RABBITMQ_DEFAULT_USER:-user}
       - RABBITMQ_DEFAULT_PASS=${RABBITMQ_DEFAULT_PASS:-password}
       - RABBITMQ_DEFAULT_VHOST=${RABBITMQ_DEFAULT_VHOST:-elmariam}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 40s
     networks:
       - elmariam-network
 
@@ -124,7 +136,8 @@ services:
       - "traefik.http.routers.auth.rule=Host(`auth.otienoobogeandcompany.com`)"
       - "traefik.http.services.auth.loadbalancer.server.port=3100"
     depends_on:
-      - mongo
+      mongo:
+        condition: service_healthy
     networks:
       - elmariam-network
 
@@ -149,7 +162,8 @@ services:
       EMAIL_RECIPIENT: ${EMAIL_RECIPIENT}
       RESEND_API_KEY: ${RESEND_API_KEY}
     depends_on:
-      - rabbitmq
+      rabbitmq:
+        condition: service_healthy
     networks:
       - elmariam-network
 
@@ -171,8 +185,10 @@ services:
       - "traefik.http.routers.admin.rule=Host(`admin-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.admin.loadbalancer.server.port=3000"
     depends_on:
-      - mongo
-      - openauth
+      mongo:
+        condition: service_healthy
+      openauth:
+        condition: service_healthy
     networks:
       - elmariam-network
 
@@ -193,8 +209,10 @@ services:
       - "traefik.http.routers.staff.rule=Host(`staff-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.staff.loadbalancer.server.port=3001"
     depends_on:
-      - mongo
-      - openauth
+      mongo:
+        condition: service_healthy
+      openauth:
+        condition: service_healthy
     networks:
       - elmariam-network
 
@@ -215,8 +233,10 @@ services:
       - "traefik.http.routers.website.rule=Host(`elmariam.otienoobogeandcompany.com`)"
       - "traefik.http.services.website.loadbalancer.server.port=3002"
     depends_on:
-      - mongo
-      - openauth
+      mongo:
+        condition: service_healthy
+      openauth:
+        condition: service_healthy
     networks:
       - elmariam-network
 

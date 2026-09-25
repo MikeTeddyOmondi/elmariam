@@ -1,4 +1,4 @@
-// @ts-ignore — intasend-node has no types
+// @ts-ignore: intasend-node has no types
 import IntaSend from "intasend-node";
 import { env } from "../config/env";
 

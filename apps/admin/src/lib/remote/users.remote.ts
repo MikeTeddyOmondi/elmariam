@@ -49,8 +49,8 @@ export type UserView = {
 };
 
 // Remote functions are their own HTTP endpoints and are NOT covered by
-// `+layout.server.ts`. Without these guards any authenticated session — a
-// customer included — could call `createUser`/`updateUser` and self-promote.
+// `+layout.server.ts`. Without these guards any authenticated session, a
+// customer included, could call `createUser`/`updateUser` and self-promote.
 
 export const getUsers = query(async (): Promise<UserView[]> => {
   requirePermission("users:read");
@@ -95,9 +95,11 @@ export const updateUser = form(
     lastname: v.optional(v.string()),
     phone_number: v.optional(v.string()),
     userType: v.optional(v.picklist(ASSIGNABLE_STAFF_ROLES)),
-    // `field.as('checkbox')` handles the on/absent FormData quirk, so the
-    // schema declares a plain boolean.
-    isActive: v.optional(v.boolean()),
+    // Defaulted to false rather than left optional: `field.as('checkbox')`
+    // handles the on/absent FormData quirk, but an unchecked box sends no
+    // entry, so `undefined` would be dropped from the update and an account
+    // could never be deactivated.
+    isActive: v.optional(v.boolean(), false),
   }),
   async ({ id, phone_number, ...rest }) => {
     requirePermission("users:write");

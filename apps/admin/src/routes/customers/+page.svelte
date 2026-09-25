@@ -1,10 +1,10 @@
 <script lang="ts">
-  import { getCustomers, createCustomer, type CustomerView } from '$lib/remote/hotel.remote';
+  import { getCustomers, createCustomer, type CustomerView, deleteCustomer } from '$lib/remote/hotel.remote';
   import {
     Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor, toast, toastError
-  } from '@elmariam/ui';
+    messageFor, toast, toastError, AlertDialog } from '@elmariam/ui';
+  import Trash2 from 'lucide-svelte/icons/trash-2';
   import UserPlus from 'lucide-svelte/icons/user-plus';
 
   let customers: CustomerView[] = $state([]);
@@ -18,6 +18,9 @@
       .then((d) => { customers = d; loading = false; })
       .catch((e) => { loadError = messageFor(e); loading = false; });
   });
+
+  // Confirmed through AlertDialog rather than window.confirm().
+  let pendingDelete = $state<{ id: string; label: string } | null>(null);
 </script>
 
 <div class="space-y-6">
@@ -110,6 +113,7 @@
               <TableHead>ID Number</TableHead>
               <TableHead>Email</TableHead>
               <TableHead>Phone</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -118,11 +122,22 @@
                 <TableCell class="font-medium text-foreground">{c.firstname} {c.lastname}</TableCell>
                 <TableCell class="font-mono text-xs text-muted-foreground">{c.id_number}</TableCell>
                 <TableCell class="text-muted-foreground">{c.email}</TableCell>
-                <TableCell class="text-muted-foreground">{c.phone_number || '—'}</TableCell>
-              </TableRow>
+                <TableCell class="text-muted-foreground">{c.phone_number || '-'}</TableCell>
+                              <TableCell class="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="text-destructive hover:text-destructive"
+                    aria-label="Delete {`${c.firstname} ${c.lastname}`}"
+                    onclick={() => (pendingDelete = { id: c.id, label: `${c.firstname} ${c.lastname}` })}
+                  >
+                    <Trash2 />
+                  </Button>
+                </TableCell>
+</TableRow>
             {:else}
               <TableRow>
-                <TableCell colspan={4} class="py-6 text-center text-muted-foreground">
+                <TableCell colspan={5} class="py-6 text-center text-muted-foreground">
                   No customers found
                 </TableCell>
               </TableRow>
@@ -133,3 +148,34 @@
     {/if}
   </Card>
 </div>
+
+{#if pendingDelete}
+  {@const target = pendingDelete}
+  {@const deleteForm = deleteCustomer.for(target.id)}
+  <form
+    id="delete-customer-form"
+    {...deleteForm.enhance(async ({ submit }) => {
+      try {
+        const ok = await submit();
+        if (ok) {
+          toast.success(`${target.label} deleted.`);
+          pendingDelete = null;
+        }
+      } catch (e) {
+        toastError(e);
+      }
+    })}
+  >
+    <input type="hidden" name="id" value={target.id} />
+  </form>
+
+  <AlertDialog
+    open={true}
+    title="Delete this customer?"
+    description="{target.label} will be removed. This cannot be undone."
+    confirmLabel={deleteForm.pending > 0 ? 'Deleting' : 'Delete'}
+    destructive
+    pending={deleteForm.pending > 0}
+    confirmForm="delete-customer-form"
+  />
+{/if}

@@ -32,8 +32,8 @@
     if (errorParam) {
       error = ({
         no_code: 'No authorization code received.',
-        no_verifier: 'Session expired — please try again.',
-        no_redirect_uri: 'Session expired — please try again.',
+        no_verifier: 'Session expired: please try again.',
+        no_redirect_uri: 'Session expired: please try again.',
         exchange_failed: 'Failed to exchange authorization code.',
         unauthorized: 'Access restricted to customer accounts.',
       } as Record<string, string>)[errorParam] ?? decodeURIComponent(errorParam);

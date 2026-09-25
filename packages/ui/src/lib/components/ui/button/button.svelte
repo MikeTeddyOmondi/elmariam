@@ -17,7 +17,7 @@
         secondary: "bg-secondary text-secondary-foreground hover:bg-secondary/80",
         ghost: "hover:bg-secondary hover:text-secondary-foreground",
         link: "text-primary underline-offset-4 hover:underline",
-        // Brand accent — not part of stock shadcn, kept for El'Mariam.
+        // Brand accent: not part of stock shadcn, kept for El'Mariam.
         accent: "bg-accent text-accent-foreground hover:bg-accent/90"
       },
       size: {

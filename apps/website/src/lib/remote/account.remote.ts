@@ -28,7 +28,7 @@ export const getMyProfile = query(async () => {
 /**
  * Completes the signed-in user's own customer profile.
  *
- * `email` is taken from the session rather than the request body — otherwise
+ * `email` is taken from the session rather than the request body: otherwise
  * any visitor could create customer records under an arbitrary address and
  * subsequently read that person's bookings through the email link.
  */

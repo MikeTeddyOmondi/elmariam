@@ -2,8 +2,8 @@
 /**
  * Inspect and fix user roles.
  *
- * Roles are only ever assigned by an admin — the issuer auto-provisions
- * `customer` and nothing else — so this script is how the first admin account
+ * Roles are only ever assigned by an admin (the issuer auto-provisions
+ * `customer` and nothing else), so this script is how the first admin account
  * comes into existence, and how you repair accounts that predate the RBAC work.
  *
  *   node scripts/seed-roles.mjs list
@@ -42,7 +42,7 @@ async function list() {
     if (!isRole(role)) problems.push(`invalid role "${role}"`);
     if (!u.username) problems.push('missing username');
     if (!u.id_number) problems.push('missing id_number');
-    if (u.isActive === false) problems.push('INACTIVE — cannot log in');
+    if (u.isActive === false) problems.push('INACTIVE: cannot log in');
     if (u.isActive === undefined) problems.push('isActive unset');
 
     console.log(`\n${u.email}`);

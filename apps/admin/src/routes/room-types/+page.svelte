@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { getRoomTypes, createRoomType, type RoomTypeView } from '$lib/remote/hotel.remote';
+  import { getRoomTypes, createRoomType, type RoomTypeView, deleteRoomType } from '$lib/remote/hotel.remote';
   import {
     Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor, toast, toastError
-  } from '@elmariam/ui';
+    messageFor, toast, toastError, AlertDialog } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
+  import Trash2 from 'lucide-svelte/icons/trash-2';
 
   let roomTypes: RoomTypeView[] = $state([]);
   let loading = $state(true);
@@ -23,6 +23,9 @@
     { value: 'single', label: 'Single' },
     { value: 'double', label: 'Double' }
   ];
+
+  // Confirmed through AlertDialog rather than window.confirm().
+  let pendingDelete = $state<{ id: string; label: string } | null>(null);
 </script>
 
 <div class="space-y-6">
@@ -113,6 +116,7 @@
               <TableHead>Type</TableHead>
               <TableHead class="text-right">Rate</TableHead>
               <TableHead class="text-right">Capacity</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -122,10 +126,21 @@
                 <TableCell class="capitalize text-muted-foreground">{rt.roomType}</TableCell>
                 <TableCell class="text-right text-muted-foreground">KES {rt.rate?.toLocaleString()}</TableCell>
                 <TableCell class="text-right text-muted-foreground">{rt.capacity}</TableCell>
-              </TableRow>
+                              <TableCell class="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="text-destructive hover:text-destructive"
+                    aria-label="Delete {rt.title}"
+                    onclick={() => (pendingDelete = { id: rt.id, label: rt.title })}
+                  >
+                    <Trash2 />
+                  </Button>
+                </TableCell>
+</TableRow>
             {:else}
               <TableRow>
-                <TableCell colspan={4} class="py-6 text-center text-muted-foreground">
+                <TableCell colspan={5} class="py-6 text-center text-muted-foreground">
                   No room types found
                 </TableCell>
               </TableRow>
@@ -136,3 +151,34 @@
     {/if}
   </Card>
 </div>
+
+{#if pendingDelete}
+  {@const target = pendingDelete}
+  {@const deleteForm = deleteRoomType.for(target.id)}
+  <form
+    id="delete-roomtype-form"
+    {...deleteForm.enhance(async ({ submit }) => {
+      try {
+        const ok = await submit();
+        if (ok) {
+          toast.success(`${target.label} deleted.`);
+          pendingDelete = null;
+        }
+      } catch (e) {
+        toastError(e);
+      }
+    })}
+  >
+    <input type="hidden" name="id" value={target.id} />
+  </form>
+
+  <AlertDialog
+    open={true}
+    title="Delete this room type?"
+    description="{target.label} will be removed. This cannot be undone."
+    confirmLabel={deleteForm.pending > 0 ? 'Deleting' : 'Delete'}
+    destructive
+    pending={deleteForm.pending > 0}
+    confirmForm="delete-roomtype-form"
+  />
+{/if}

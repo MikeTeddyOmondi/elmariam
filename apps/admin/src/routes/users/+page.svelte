@@ -1,8 +1,11 @@
 <script lang="ts">
-  import { getUsers, createUser, deleteUser, type UserView } from "$lib/remote/users.remote";
+  import {
+    getUsers, createUser, updateUser, deleteUser, type UserView
+  } from "$lib/remote/users.remote";
   import {
     AlertDialog,
     Button,
+    Checkbox,
     Form,
     Input,
     Label,
@@ -13,6 +16,7 @@
     toastError
   } from "@elmariam/ui";
   import { ASSIGNABLE_STAFF_ROLES } from "@elmariam/auth";
+  import Pencil from "lucide-svelte/icons/pencil";
   import Trash2 from "lucide-svelte/icons/trash-2";
   import UserPlus from "lucide-svelte/icons/user-plus";
 
@@ -30,6 +34,10 @@
 
   // Delete is confirmed through AlertDialog rather than window.confirm().
   let pendingDelete = $state<UserView | null>(null);
+
+  // Editing happens inline, in a row that expands under the one being edited,
+  // rather than on a separate page. Only one row is open at a time.
+  let editingId = $state<string | null>(null);
 
   const typeCls: Record<string, string> = {
     admin: 'bg-purple-500/15 text-purple-400',
@@ -60,7 +68,7 @@
       {...createUser.enhance(async ({ submit }) => {
         try {
           // `submit()` resolves to false when the server returns validation
-          // issues — it does not throw. Toasting unconditionally would report
+          // issues: it does not throw. Toasting unconditionally would report
           // success on an invalid form.
           const ok = await submit();
           if (ok) toast.success('User created.');
@@ -173,19 +181,122 @@
                 </span>
               </td>
               <td class="px-4 py-3">
-                <!-- Icon-only, so it needs an accessible name of its own. -->
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  class="text-destructive hover:text-destructive"
-                  aria-label="Delete {user.email}"
-                  title="Delete user"
-                  onclick={() => (pendingDelete = user)}
-                >
-                  <Trash2 />
-                </Button>
+                <!-- Icon-only, so each needs an accessible name of its own. -->
+                <div class="flex justify-end gap-1">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    aria-label="Edit {user.email}"
+                    title="Edit user"
+                    onclick={() => (editingId = editingId === user.id ? null : user.id)}
+                  >
+                    <Pencil />
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="text-destructive hover:text-destructive"
+                    aria-label="Delete {user.email}"
+                    title="Delete user"
+                    onclick={() => (pendingDelete = user)}
+                  >
+                    <Trash2 />
+                  </Button>
+                </div>
               </td>
             </tr>
+
+            {#if editingId === user.id}
+              {@const editForm = updateUser.for(user.id)}
+              <!--
+                A second row rather than inputs in the row above: a `<form>` is
+                not valid markup between `<tr>` and `<td>`, so the form lives
+                inside one spanning cell. `.for(id)` keeps pending state and
+                issues scoped to this row.
+              -->
+              <tr class="border-b border-border bg-secondary/20">
+                <td colspan="4" class="px-4 py-4">
+                  <form
+                    {...editForm.enhance(async ({ submit }) => {
+                      try {
+                        const ok = await submit();
+                        if (ok) {
+                          toast.success('User updated.');
+                          editingId = null;
+                        }
+                      } catch (e) {
+                        toastError(e);
+                      }
+                    })}
+                    class="grid sm:grid-cols-2 lg:grid-cols-4 gap-3 items-start"
+                  >
+                    <input type="hidden" name="id" value={user.id} />
+
+                    <div class="sm:col-span-2 lg:col-span-4 empty:hidden">
+                      <Form.Message issues={editForm.fields.issues?.()} />
+                    </div>
+
+                    <Form.Field>
+                      <Label for="ef-{user.id}">First Name</Label>
+                      <Input
+                        id="ef-{user.id}"
+                        {...editForm.fields.firstname.as('text', user.firstname ?? '')}
+                      />
+                      <Form.FieldErrors issues={editForm.fields.firstname.issues()} />
+                    </Form.Field>
+
+                    <Form.Field>
+                      <Label for="el-{user.id}">Last Name</Label>
+                      <Input
+                        id="el-{user.id}"
+                        {...editForm.fields.lastname.as('text', user.lastname ?? '')}
+                      />
+                      <Form.FieldErrors issues={editForm.fields.lastname.issues()} />
+                    </Form.Field>
+
+                    <Form.Field>
+                      <Label for="ep-{user.id}">Phone</Label>
+                      <Input
+                        id="ep-{user.id}"
+                        {...editForm.fields.phone_number.as(
+                          'tel',
+                          user.phone_number ? String(user.phone_number) : ''
+                        )}
+                      />
+                      <Form.FieldErrors issues={editForm.fields.phone_number.issues()} />
+                    </Form.Field>
+
+                    <Form.Field>
+                      <Label for="et-{user.id}">Role</Label>
+                      <SelectField
+                        id="et-{user.id}"
+                        class="capitalize"
+                        items={ROLE_OPTIONS}
+                        {...editForm.fields.userType.as('select', user.userType)}
+                      />
+                      <Form.FieldErrors issues={editForm.fields.userType.issues()} />
+                    </Form.Field>
+
+                    <div class="flex items-center gap-2 self-end pb-1">
+                      <Checkbox
+                        id="ea-{user.id}"
+                        {...editForm.fields.isActive.as('checkbox', user.isActive)}
+                      />
+                      <Label for="ea-{user.id}" class="cursor-pointer">Active</Label>
+                    </div>
+
+                    <div class="sm:col-span-2 lg:col-span-3 flex justify-end gap-2 self-end">
+                      <Button variant="outline" type="button" onclick={() => (editingId = null)}>
+                        Cancel
+                      </Button>
+                      <Button type="submit" disabled={editForm.pending > 0}>
+                        {editForm.pending > 0 ? 'Saving…' : 'Save Changes'}
+                      </Button>
+                    </div>
+                  </form>
+                </td>
+              </tr>
+            {/if}
           {:else}
             <tr><td colspan="4" class="px-4 py-6 text-center text-sm text-muted-foreground">No users found</td></tr>
           {/each}

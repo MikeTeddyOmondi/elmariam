@@ -157,16 +157,16 @@
               <TableRow>
                 <TableCell class="font-mono text-xs text-muted-foreground">{b.id}</TableCell>
                 <TableCell class="text-foreground">
-                  {b.customer?.firstname ?? '—'} {b.customer?.lastname ?? ''}
+                  {b.customer?.firstname ?? '-'} {b.customer?.lastname ?? ''}
                 </TableCell>
                 <TableCell class="capitalize text-muted-foreground">
-                  {b.roomType?.roomType ?? b.roomType ?? '—'}
+                  {b.roomType?.roomType ?? b.roomType ?? '-'}
                 </TableCell>
                 <TableCell class="text-muted-foreground">
-                  {b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '—'}
+                  {b.checkInDate ? new Date(b.checkInDate).toLocaleDateString() : '-'}
                 </TableCell>
                 <TableCell class="text-muted-foreground">
-                  {b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '—'}
+                  {b.checkOutDate ? new Date(b.checkOutDate).toLocaleDateString() : '-'}
                 </TableCell>
                 <TableCell class="text-right text-foreground">{b.numberAdults ?? 0}</TableCell>
                 <TableCell class="text-right text-foreground">{b.numberKids ?? 0}</TableCell>

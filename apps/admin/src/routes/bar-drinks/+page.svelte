@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { getDrinks, createDrink, type DrinkView } from '$lib/remote/bar.remote';
+  import { getDrinks, createDrink, type DrinkView, deleteDrink } from '$lib/remote/bar.remote';
   import {
     Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor, toast, toastError
-  } from '@elmariam/ui';
+    messageFor, toast, toastError, AlertDialog } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
+  import Trash2 from 'lucide-svelte/icons/trash-2';
 
   let drinks: DrinkView[] = $state([]);
   let loading = $state(true);
@@ -24,6 +24,9 @@
 
   const DRINK_TYPE_OPTIONS = DRINK_TYPES.map((t) => ({ value: t, label: t }));
   const UNIT_OPTIONS = UNITS.map((u) => ({ value: u, label: u }));
+
+  // Confirmed through AlertDialog rather than window.confirm().
+  let pendingDelete = $state<{ id: string; label: string } | null>(null);
 </script>
 
 <div class="space-y-6">
@@ -135,6 +138,7 @@
               <TableHead class="text-right">Stock Qty</TableHead>
               <TableHead class="text-right">Selling Price</TableHead>
               <TableHead>In Stock</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -151,10 +155,21 @@
                     {drink.inStock ? 'Yes' : 'No'}
                   </Badge>
                 </TableCell>
-              </TableRow>
+                              <TableCell class="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="text-destructive hover:text-destructive"
+                    aria-label="Delete {drink.drinkName}"
+                    onclick={() => (pendingDelete = { id: drink.id, label: drink.drinkName })}
+                  >
+                    <Trash2 />
+                  </Button>
+                </TableCell>
+</TableRow>
             {:else}
               <TableRow>
-                <TableCell colspan={7} class="py-6 text-center text-muted-foreground">
+                <TableCell colspan={8} class="py-6 text-center text-muted-foreground">
                   No drinks found
                 </TableCell>
               </TableRow>
@@ -165,3 +180,34 @@
     {/if}
   </Card>
 </div>
+
+{#if pendingDelete}
+  {@const target = pendingDelete}
+  {@const deleteForm = deleteDrink.for(target.id)}
+  <form
+    id="delete-drink-form"
+    {...deleteForm.enhance(async ({ submit }) => {
+      try {
+        const ok = await submit();
+        if (ok) {
+          toast.success(`${target.label} deleted.`);
+          pendingDelete = null;
+        }
+      } catch (e) {
+        toastError(e);
+      }
+    })}
+  >
+    <input type="hidden" name="id" value={target.id} />
+  </form>
+
+  <AlertDialog
+    open={true}
+    title="Delete this drink?"
+    description="{target.label} will be removed. This cannot be undone."
+    confirmLabel={deleteForm.pending > 0 ? 'Deleting' : 'Delete'}
+    destructive
+    pending={deleteForm.pending > 0}
+    confirmForm="delete-drink-form"
+  />
+{/if}

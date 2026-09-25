@@ -3,7 +3,7 @@
  *
  * Stock shadcn-svelte `Form.*` is built on formsnap + sveltekit-superforms.
  * This project validates with the remote function's own valibot schema, so
- * these read from `RemoteForm.fields` instead — no second validation layer.
+ * these read from `RemoteForm.fields` instead: no second validation layer.
  *
  * ```svelte
  * <form {...createDrink}>

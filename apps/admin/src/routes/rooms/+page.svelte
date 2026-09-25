@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { getRooms, getRoomTypes, createRoom, type RoomView, type RoomTypeView } from '$lib/remote/hotel.remote';
+  import { getRooms, getRoomTypes, createRoom, type RoomView, type RoomTypeView, deleteRoom } from '$lib/remote/hotel.remote';
   import {
     Badge, Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor, toast, toastError
-  } from '@elmariam/ui';
+    messageFor, toast, toastError, AlertDialog } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
+  import Trash2 from 'lucide-svelte/icons/trash-2';
 
   let rooms: RoomView[] = $state([]);
   let roomTypes: RoomTypeView[] = $state([]);
@@ -23,6 +23,9 @@
   const roomTypeOptions = $derived(
     roomTypes.map((t) => ({ value: t.id, label: `${t.title} (${t.roomType})` }))
   );
+
+  // Confirmed through AlertDialog rather than window.confirm().
+  let pendingDelete = $state<{ id: string; label: string } | null>(null);
 </script>
 
 <div class="space-y-6">
@@ -97,6 +100,7 @@
             <TableRow>
               <TableHead>Room #</TableHead>
               <TableHead>Status</TableHead>
+              <TableHead></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -108,10 +112,21 @@
                     {room.isBooked ? 'Booked' : 'Available'}
                   </Badge>
                 </TableCell>
-              </TableRow>
+                              <TableCell class="text-right">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    class="text-destructive hover:text-destructive"
+                    aria-label="Delete {room.number}"
+                    onclick={() => (pendingDelete = { id: room.id, label: room.number })}
+                  >
+                    <Trash2 />
+                  </Button>
+                </TableCell>
+</TableRow>
             {:else}
               <TableRow>
-                <TableCell colspan={2} class="py-6 text-center text-muted-foreground">
+                <TableCell colspan={3} class="py-6 text-center text-muted-foreground">
                   No rooms found
                 </TableCell>
               </TableRow>
@@ -122,3 +137,34 @@
     {/if}
   </Card>
 </div>
+
+{#if pendingDelete}
+  {@const target = pendingDelete}
+  {@const deleteForm = deleteRoom.for(target.id)}
+  <form
+    id="delete-room-form"
+    {...deleteForm.enhance(async ({ submit }) => {
+      try {
+        const ok = await submit();
+        if (ok) {
+          toast.success(`${target.label} deleted.`);
+          pendingDelete = null;
+        }
+      } catch (e) {
+        toastError(e);
+      }
+    })}
+  >
+    <input type="hidden" name="id" value={target.id} />
+  </form>
+
+  <AlertDialog
+    open={true}
+    title="Delete this room?"
+    description="{target.label} will be removed. This cannot be undone."
+    confirmLabel={deleteForm.pending > 0 ? 'Deleting' : 'Delete'}
+    destructive
+    pending={deleteForm.pending > 0}
+    confirmForm="delete-room-form"
+  />
+{/if}

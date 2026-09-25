@@ -7,7 +7,7 @@
 
   interface Props {
     /**
-     * Pass `myForm.fields.someField.issues()` straight through — it is
+     * Pass `myForm.fields.someField.issues()` straight through: it is
      * `undefined` when the field is valid or has not been touched.
      */
     issues?: Issue[];

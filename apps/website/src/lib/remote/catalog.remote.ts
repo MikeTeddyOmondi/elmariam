@@ -14,7 +14,7 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
 /**
  * Public catalogue data for the marketing pages.
  *
- * Deliberately unguarded — room rates and the menu are public information, and
+ * Deliberately unguarded: room rates and the menu are public information, and
  * these pages are served to anonymous visitors.
  *
  * These replace `+page.server.ts` loads that fetched

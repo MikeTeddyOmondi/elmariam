@@ -237,3 +237,25 @@ export async function createSale(input: CreateSaleInput) {
     return Result.ok({ sale, totalStockValue });
   });
 }
+
+export async function deleteDrink(id: string) {
+  return Result.tryPromise({
+    try: async () => {
+      // Refuse while purchase history references it, so stock records stay readable.
+      const purchases = await BarPurchase.countDocuments({ product: id });
+      if (purchases > 0) {
+        throw new DrinkNotFoundError({
+          id,
+          message: `Cannot delete: this drink has ${purchases} purchase record(s).`,
+        });
+      }
+      const doc = await Drink.findByIdAndDelete(id).lean<IDrink>({ virtuals: true });
+      if (!doc) throw new DrinkNotFoundError({ id, message: "Drink not found" });
+      return { id };
+    },
+    catch: (e): BarError => {
+      if (e instanceof DrinkNotFoundError) return e;
+      return dbErr("deleteDrink", e);
+    },
+  });
+}

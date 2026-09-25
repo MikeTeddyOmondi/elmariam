@@ -6,8 +6,7 @@
     import {
     LayoutDashboard, Users, UserCheck, CalendarDays, BedDouble,
     Layers, GlassWater, ShoppingCart, BarChart3, UtensilsCrossed,
-    ClipboardList, LogOut,
-  } from 'lucide-svelte';
+    ClipboardList, LogOut, Receipt } from 'lucide-svelte';
 
   interface Props { children: Snippet }
   let { children }: Props = $props();
@@ -17,6 +16,7 @@
     { href: '/users',             label: 'Users',             icon: Users },
     { href: '/customers',         label: 'Customers',         icon: UserCheck },
     { href: '/bookings',          label: 'Bookings',          icon: CalendarDays },
+    { href: '/invoices',          label: 'Invoices',          icon: Receipt },
     { href: '/rooms',             label: 'Rooms',             icon: BedDouble },
     { href: '/room-types',        label: 'Room Types',        icon: Layers },
     { href: '/bar-drinks',        label: 'Bar Drinks',        icon: GlassWater },

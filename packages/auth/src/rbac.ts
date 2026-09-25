@@ -80,10 +80,10 @@ export const PERMISSIONS = [
 
 export type Permission = (typeof PERMISSIONS)[number];
 
-/** Every permission — what `admin` holds. Derived, so new entries are automatic. */
+/** Every permission: what `admin` holds. Derived, so new entries are automatic. */
 export const ALL_PERMISSIONS: readonly Permission[] = PERMISSIONS;
 
-/** Every `*:read` permission plus analytics — what `management` holds. */
+/** Every `*:read` permission plus analytics: what `management` holds. */
 const READ_ONLY_PERMISSIONS: readonly Permission[] = PERMISSIONS.filter((p) =>
   p.endsWith(":read"),
 );
@@ -108,7 +108,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "notifications:send",
   ],
 
-  // `drinks:read` only — the drinks catalogue is maintained in the admin app.
+  // `drinks:read` only: the drinks catalogue is maintained in the admin app.
   // A barista moves stock through purchases and sales, but does not define new
   // products.
   barista: [
@@ -121,7 +121,7 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
 
   waiter: ["menu:read", "orders:read", "orders:write", "orders:status", "customers:read"],
 
-  // Customers are additionally narrowed by ownership at the query level —
+  // Customers are additionally narrowed by ownership at the query level:
   // holding `bookings:read` does not mean reading *everyone's* bookings.
   customer: ["bookings:read", "bookings:write", "invoices:read", "roomtypes:read"],
 };
@@ -185,7 +185,7 @@ export function canAccessStaffSection(
   return STAFF_SECTIONS[section].includes(role);
 }
 
-/** Permissions a role holds — handy for passing a `can(...)` set to the client. */
+/** Permissions a role holds: handy for passing a `can(...)` set to the client. */
 export function permissionsFor(role: string | undefined): readonly Permission[] {
   return isRole(role) ? ROLE_PERMISSIONS[role] : [];
 }
@@ -195,7 +195,7 @@ export function permissionsFor(role: string | undefined): readonly Permission[] 
  * through the issuer.
  *
  * Written as an explicit tuple rather than `ROLES.filter(...)` so the literal
- * union survives — a filtered array widens to `Role[]`, which would let
+ * union survives: a filtered array widens to `Role[]`, which would let
  * `v.picklist(ASSIGNABLE_STAFF_ROLES)` type-check `customer` as assignable even
  * though it is rejected at runtime.
  */

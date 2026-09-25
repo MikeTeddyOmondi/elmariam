@@ -47,7 +47,7 @@
         <Separator />
         <div class="flex items-center justify-between py-2">
           <dt class="text-muted-foreground">Phone</dt>
-          <dd class="font-medium text-foreground">{profile.phone_number || '—'}</dd>
+          <dd class="font-medium text-foreground">{profile.phone_number || '-'}</dd>
         </div>
       </dl>
     {:else}

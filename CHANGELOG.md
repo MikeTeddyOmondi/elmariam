@@ -8,42 +8,73 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
-### Changed — Tailwind v4
+### Changed: reproducible builds
+
+- `just build-all` builds the five images **one at a time**. Five concurrent SvelteKit builds exhausted the Docker VM and killed BuildKit mid-run, which leaves no usable image behind an opaque `rpc error: code = Unavailable` failure. `build-all-parallel` keeps the old behaviour for machines with headroom, and `build-verify` builds then lists the images so "did it finish" has one answer
+- **Every external dependency is pinned to an exact version** (86 specifiers across 12 `package.json` files, several previously major-only such as `"tailwindcss": "^4"`). Versions were read from `pnpm-lock.yaml`, so nothing installed actually changed: `git diff pnpm-lock.yaml` shows only `specifier:` lines moving. A root `.npmrc` sets `save-exact=true` so the next `pnpm add` does not reintroduce a range
+- All five Dockerfiles install `pnpm@9.0.0` explicitly, matching the repo's `packageManager`. They ran bare `npm install -g pnpm`, which now resolves to 12.x, and modern pnpm refuses `pnpm deploy --prod` for non-injected workspace packages without `--legacy`. The app images only built earlier because that layer was cached
+- `mongo` and `rabbitmq` have healthchecks, and the app services wait on `condition: service_healthy` for mongo and openauth, so a cold `just up` does not race the issuer
+- `scripts/smoke-test.sh` rewritten against the surface that actually exists: mongo, rabbitmq, the openauth `/health` and OAuth metadata endpoints, the three apps, and three guarded routes. `test-api.sh` deleted: it probed the removed KrakenD gateway and the eleven services that replaced it
+
+### Fixed: build blockers
+
+- **`services/integrations` could not install.** Every Dockerfile copies the root `package.json` before `pnpm install --frozen-lockfile`, and the root links `@elmariam/auth` as a devDependency for `scripts/seed-roles.mjs`. pnpm resolves every workspace link at install time even for a service that never imports it, so the build failed until `packages/auth/package.json` was added to the context
+
+### Added: admin row actions
+
+- Delete on admin customers, rooms, room-types, bar-drinks and menu-items, each guarded by the matching `:delete` permission and confirmed through `AlertDialog`. The five backing operations in `packages/db` refuse when dependants exist, so a room with bookings or a drink with purchases cannot be orphaned
+- Inline edit rows on `/users` and `/menu-items`, using `updateUser.for(id)` / `updateMenuItem.for(id)`. The form sits in a second row spanning the table rather than in the row above, because a `<form>` is not valid markup between a row and its cells
+- `/bar-sales` can record a sale, wiring the previously orphaned `checkoutBarSale`, and its table moved onto the shared `Table` components
+- `/invoices` route in the admin app, wiring the previously orphaned `getInvoices`, with a billed total
+
+### Changed: UI package
+
+- `Select` is now the real shadcn-svelte component backed by bits-ui, replacing the styled native `<select>`, across 19 call sites. **Tradeoff:** bits-ui Select is JavaScript-driven, so forms containing one no longer submit with JavaScript disabled. Text, number, date and checkbox fields keep their native inputs, so the rest of each form is unaffected. This deliberately reverses the earlier native-select decision
+- `Button` sets `cursor-pointer` with `disabled:cursor-not-allowed`. There are no raw `<button>` elements in `apps/`, so the component covers every button in all three apps
+- `isActive` on `updateUser` and `isAvailable` on `updateMenuItem` default to `false` rather than staying optional. An unchecked box sends no FormData entry at all, so `undefined` was dropped from the update and an account could never be deactivated nor an item marked unavailable
+
+### Removed
+
+- `initiateMpesaPayment` and `sendSmsNotification` from the admin remotes. They had no admin call site; the staff copies are live and stay
+- Em and en dashes from everything authored during this work, per the repo writing convention
+
+
+### Changed: Tailwind v4
 
 - Migrated all three apps and `packages/ui` from Tailwind v3 to v4. Tailwind now runs as a Vite plugin (`@tailwindcss/vite`); `postcss.config.cjs`, `autoprefixer`, `postcss` and all four `tailwind.config.ts` files are deleted
-- The theme moved into `packages/ui/src/app.css` using `@theme inline` + `@custom-variant dark`. `inline` is required because the colour tokens reference custom properties that `.dark` redefines — without it dark mode resolves once at build time and stops switching
+- The theme moved into `packages/ui/src/app.css` using `@theme inline` + `@custom-variant dark`. `inline` is required because the colour tokens reference custom properties that `.dark` redefines: without it dark mode resolves once at build time and stops switching
 - The four duplicated `app.css` files collapsed to one: each app's `src/app.css` is now just `@import "@elmariam/ui/app.css"`, so `+layout.svelte` imports are unchanged
 - `@source "./lib"` added to the shared stylesheet: `packages/ui` is symlinked into `node_modules`, which Tailwind's automatic content detection skips, so its classes would otherwise be purged
-- Explicit `border-color` base rule added — v3 defaulted `border-*` to gray-200, v4 defaults to `currentColor`, which would have made every existing `border` utility inherit the text colour
+- Explicit `border-color` base rule added: v3 defaulted `border-*` to gray-200, v4 defaults to `currentColor`, which would have made every existing `border` utility inherit the text colour
 - `tailwindcss-animate` replaced by `tw-animate-css`; `tailwind-merge` bumped to v4-compatible v3
 - Added `bits-ui` and `tailwind-variants` to `packages/ui` for the shadcn-svelte component work
 
-### Fixed — forms
+### Fixed: forms
 
 - **Success toast fired on invalid submissions.** `submit()` inside `form.enhance` resolves to `false` when the server returns validation issues; it does not throw. Every call site now checks the boolean before toasting
 - Website portal booking pages hardcoded `background: #fff` and `color: #1a1a2e` in `<style>` blocks, rendering white forms and cards in dark mode. Rebuilt on theme tokens
 
-### Changed — staff navigation
+### Changed: staff navigation
 
-- The staff sidebar now lists only the sections a role can open. A receptionist sees just "Receptionist"; `admin` and `management` still see all three plus "Dashboard". The `+layout.server.ts` guards remain authoritative — this only stops showing links that would bounce the user
+- The staff sidebar now lists only the sections a role can open. A receptionist sees just "Receptionist"; `admin` and `management` still see all three plus "Dashboard". The `+layout.server.ts` guards remain authoritative: this only stops showing links that would bounce the user
 - Single-section roles no longer get a "Dashboard" entry, since `/` just redirects them to the section they are already on
 - `@elmariam/auth/rbac` subpath export added so components can import role helpers without pulling openauth into the client bundle
 
-### Added — contact form
+### Added: contact form
 
 - `/contact` now works. It was a `// placeholder` that set `sent = true` and sent nothing, so every enquiry was silently discarded
 - `sendContactMessage` publishes to the `mails` queue; the SMTP consumer forwards the enquiry to `EMAIL_RECIPIENT` with `replyTo` set to the visitor, so replying from the inbox reaches them
 - On success the page thanks the sender and says the hotel will reach out soon. A queue failure surfaces as a form error rather than a false thank-you
 - New `contact-enquiry` mail type and Handlebars template in `services/integrations`
 
-### Fixed — public website pages
+### Fixed: public website pages
 
-- **`/rooms` and `/restaurant` had been rendering empty.** Their `+page.server.ts` loads fetched `http://gateway:8009/api/public/{roomtypes,menu}` — a service removed in the rewrite — and swallowed the failure in a `catch` that returned `[]`. The pages showed "No room types available" and "Menu coming soon" indefinitely, with no error anywhere
+- **`/rooms` and `/restaurant` had been rendering empty.** Their `+page.server.ts` loads fetched `http://gateway:8009/api/public/{roomtypes,menu}`, a service removed in the rewrite, and swallowed the failure in a `catch` that returned `[]`. The pages showed "No room types available" and "Menu coming soon" indefinitely, with no error anywhere
 - Both now read from new public remote queries in `apps/website/src/lib/remote/catalog.remote.ts`, called in `$effect`; the `+page.server.ts` files are deleted
 - `getRoomTypes` moved out of `booking.remote.ts` into `catalog.remote.ts` so the public page and the portal booking form share one query
-- `/rooms`, `/restaurant` and `/about` rebuilt on `Card`/`Badge`/`Skeleton` with theme tokens — they hardcoded `#fff`, `#1a1a2e` and `#666`, so they ignored dark mode entirely
+- `/rooms`, `/restaurant` and `/about` rebuilt on `Card`/`Badge`/`Skeleton` with theme tokens: they hardcoded `#fff`, `#1a1a2e` and `#666`, so they ignored dark mode entirely
 
-### Changed — staff forms
+### Changed: staff forms
 
 - All five remaining staff create forms converted to `form()` remote functions and rebuilt on shadcn components in `max-w-lg`/`max-w-xl` cards
 - `barista/sales/new` and `waiter/orders/new` keep their dynamic line-item lists, but the values now live on indexed form fields (`fields.items[i].quantity`) rather than client `$state`, so the server schema receives them through normal FormData
@@ -52,46 +83,46 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ### Removed
 
-- `apps/staff/src/routes/barista/drinks/new` — it POSTed a multipart body to the API gateway on `:8009`, which was removed in the rewrite, so the page had been dead. New drinks are added in the admin app only
-- `createDrink` from the staff bar remotes, and `drinks:write` from the `barista` role — a barista reads the catalogue and moves stock through purchases and sales, but does not define new products
+- `apps/staff/src/routes/barista/drinks/new`: it POSTed a multipart body to the API gateway on `:8009`, which was removed in the rewrite, so the page had been dead. New drinks are added in the admin app only
+- `createDrink` from the staff bar remotes, and `drinks:write` from the `barista` role: a barista reads the catalogue and moves stock through purchases and sales, but does not define new products
 - The drink image upload that went with that page. Nothing server-side accepts one today
 
-### Changed — admin forms
+### Changed: admin forms
 
 - All seven admin create forms (`customers`, `bookings`, `rooms`, `room-types`, `bar-drinks`, `bar-purchases`, `menu-items`) converted to `form()` remote functions and rebuilt on shadcn components
 - Forms now sit in a **width-constrained `Card` (`max-w-2xl`)** with a two-column grid that collapses to one column on mobile, instead of stretching the full page width. Lists stay full width and scroll horizontally on small screens
 - Lists rebuilt on `Table`/`Badge`/`Skeleton`; row actions and submit buttons use lucide icons
-- Bar purchases: the "Product (Drink ID)" free-text box is now a select over the drinks catalogue — it previously required typing a raw ObjectId
+- Bar purchases: the "Product (Drink ID)" free-text box is now a select over the drinks catalogue: it previously required typing a raw ObjectId
 - Menu items: availability is a checkbox rather than a Yes/No select
 - Selects that map to a picklist now pass an explicit default (`as('select', 'single')`) so the first option is not silently chosen
 - `TableCell` / `TableHead` accept `colspan`/`rowspan`; `HTMLAttributes` omits them, so empty-state rows could not span the table
 - `Checkbox` is a styled native input rather than the bits-ui button: `field.as('checkbox')` supplies `type`/`checked` attributes a `<button>` cannot take, and a JS-driven control submits nothing with JavaScript disabled
 - Deleted the dead `apps/admin/src/routes/bar-drinks/+page.server.ts` stub
 
-### Changed — forms
+### Changed: admin users and website portal
 
 - `createUser` / `updateUser` / `deleteUser` (admin) and `createBooking` (website) converted from `command()` to `form()`, so those pages submit without JavaScript and render field-level validation inline
 - Domain failures now use `invalid()` instead of throwing `error(400)`, so they appear against the form rather than as an opaque error
 - Admin `/users` rebuilt on the shadcn components: `Form.Field` / `Form.FieldErrors`, `Input`, `Select`, `Skeleton`, and an `AlertDialog` replacing `window.confirm()`. Row actions are lucide icon buttons with `aria-label`s
 - Website portal pages rebuilt on `Card` / `Table` / `Badge` / `Skeleton`. They previously hardcoded `#fff` and `#1a1a2e`, so they ignored the dark theme entirely
-- Remote queries moved into `$effect` + `$state` across the website portal. Calling them at component top level fetches during SSR — Svelte warns *"Avoid calling `fetch` eagerly during server-side rendering"* and the result is not hydratable, which surfaced as `hydratable_missing_but_required` on `/portal/bookings`
-- `AlertDialog` gained `confirmForm`, associating its confirm button with a form by id — the dialog content is portalled, so it cannot be a descendant of the form it submits
+- Remote queries moved into `$effect` + `$state` across the website portal. Calling them at component top level fetches during SSR: Svelte warns *"Avoid calling `fetch` eagerly during server-side rendering"* and the result is not hydratable, which surfaced as `hydratable_missing_but_required` on `/portal/bookings`
+- `AlertDialog` gained `confirmForm`, associating its confirm button with a form by id: the dialog content is portalled, so it cannot be a descendant of the form it submits
 - The role `<Select>` on `/users` defaults explicitly to `receptionist`; without a default the first option won, silently making `admin` the default for every new user
 
-### Added
+### Added: RBAC
 
-- `packages/auth/src/rbac.ts` — single source of truth for roles, permissions, per-app access and staff sections. Replaces six duplicated role arrays across `packages/auth`, `packages/db`, both staff guards and the admin picklists
+- `packages/auth/src/rbac.ts`: single source of truth for roles, permissions, per-app access and staff sections. Replaces six duplicated role arrays across `packages/auth`, `packages/db`, both staff guards and the admin picklists
 - Role model: `admin` holds every permission and may log into all three apps; `management` is read-only (every `*:read`, no writes); `receptionist`/`barista`/`waiter` hold granular staff permissions; `customer` is scoped to the website portal
-- `src/lib/server/guard.ts` in each app — `requireUser`, `requirePermission`, `requireAppAccess`, plus `requireStaffSection` in staff. Callable from inside remote functions
+- `src/lib/server/guard.ts` in each app: `requireUser`, `requirePermission`, `requireAppAccess`, plus `requireStaffSection` in staff. Callable from inside remote functions
 - `+layout.server.ts` guards for `/receptionist`, `/barista` and `/waiter` in the staff app
-- `apps/website/src/lib/server/customer.ts` — `requireOwnCustomer()`, resolving the session's `Customer` record for ownership scoping
+- `apps/website/src/lib/server/customer.ts`: `requireOwnCustomer()`, resolving the session's `Customer` record for ownership scoping
 - `OwnerScope` filter on `listBookings` / `listInvoices` in `packages/db`
-- `scripts/seed-roles.mjs` (`pnpm roles`) — list / set / activate / repair user roles. The issuer only ever auto-provisions `customer`, so this is how the first admin account is created
+- `scripts/seed-roles.mjs` (`pnpm roles`): list / set / activate / repair user roles. The issuer only ever auto-provisions `customer`, so this is how the first admin account is created
 - `/health` endpoint on `infra/openauth` plus a docker-compose healthcheck
 - `OPENAUTH_ALLOW_LOCALHOST` env flag, defaulting to `false`, gating whether `http://localhost:*` is an acceptable redirect target
 - Verification-code email template and `mails` queue payload type in `services/integrations`
 
-### Changed
+### Changed: RBAC and auth
 
 - All 10 `.remote.ts` files now guard every query and mutation with `requirePermission`
 - `subjects` collapsed from five copies into `@elmariam/auth`, with `userType` typed as a picklist of `ROLES` instead of a bare string
@@ -103,7 +134,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `infra/openauth` sets explicit access/refresh TTLs; redirect URIs must now be https on the allowed host unless `OPENAUTH_ALLOW_LOCALHOST=true`
 - `infra/openauth/Dockerfile` builds `@elmariam/auth` and `@elmariam/queue`, which the issuer now depends on
 
-### Fixed
+### Fixed: security
 
 - **Every mutation was unauthenticated.** Remote functions are their own HTTP endpoints and are not covered by `+layout.server.ts`, so any authenticated session could call `createUser`/`updateUser`/`deleteUser` and self-promote to admin
 - **Website leaked every customer's data.** `getMyBookings` / `getMyInvoices` called `listBookings()` / `listInvoices()` with no owner filter; `getOneBooking` had no ownership check; `createBooking` accepted an arbitrary `customerId` from the client
@@ -115,24 +146,24 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - `infra/openauth` did not check `isActive`, so deactivated accounts could still log in
 - `sendCode` only logged verification codes to stdout; it now publishes to the `mails` queue in production
 - Portal pages crashed for a customer with no `Customer` profile. The issuer provisions a `User` on first login but the profile is only created when filled in, so "no profile" is a normal state. `getMyBookings`/`getMyInvoices` now return an empty list and `getMyProfile` returns `null`, rather than throwing 404. Writes still reject with 409
-- **"Password is incorrect" for valid passwords.** The issuer's storage adapter was pointed at the `elmariam` database while every credential lives in `openauth`. Nothing errors in that state — the issuer finds no `email/<address>/password` entry, rejects every login, and quietly mints a fresh signing key. Storage now defaults to `openauth` and is separate from the users database, both overridable via `OPENAUTH_STORAGE_DB` / `OPENAUTH_USERS_DB`
+- **"Password is incorrect" for valid passwords.** The issuer's storage adapter was pointed at the `elmariam` database while every credential lives in `openauth`. Nothing errors in that state: the issuer finds no `email/<address>/password` entry, rejects every login, and quietly mints a fresh signing key. Storage now defaults to `openauth` and is separate from the users database, both overridable via `OPENAUTH_STORAGE_DB` / `OPENAUTH_USERS_DB`
 - Staff app read `OPENAUTH_ISSUER` from bare `process.env` rather than `$env/dynamic/private`
 - `docker-compose.yml` did not set `NODE_ENV` for the issuer, which would have left dev-only behaviour active in production
 
-## [v0.1.0] — 2026-06-17 (`feat/simplifying-stack`)
+## [v0.1.0]: 2026-06-17 (`feat/simplifying-stack`)
 
 ### Added
 
-- `packages/db/src/errors/` — domain `TaggedError` classes for hotel, bar, restaurant, and users
-- `packages/db/src/operations/` — typed DB operation functions returning `Result<T, DomainError>` via `better-result`
+- `packages/db/src/errors/`: domain `TaggedError` classes for hotel, bar, restaurant, and users
+- `packages/db/src/operations/`: typed DB operation functions returning `Result<T, DomainError>` via `better-result`
 - `better-result` dependency in `packages/db` for Rust-inspired typed error handling
-- `services/integrations` — consolidated Express service (port 8010) replacing three separate services: M-Pesa STK push, UjumbeSMS SMS, Gmail OAuth2 email
+- `services/integrations`: consolidated Express service (port 8010) replacing three separate services: M-Pesa STK push, UjumbeSMS SMS, Gmail OAuth2 email
 - DB connection singleton in `hooks.server.ts` for all three apps using `sequence` from `@sveltejs/kit/hooks`
 - `MONGODB_URL` as single canonical MongoDB connection string across all apps and services
 - `x-common-env` and `x-rabbitmq-env` YAML anchors in `docker-compose.yml`
 - Legacy services (`hotel`, `bar`, `restaurant`, `gateway`) moved to `profiles: [legacy]`
-- `.github/workflows/ci.yml` — typecheck + build on push/PR (pnpm v10, Node 22)
-- `.github/workflows/release.yml` — Docker matrix build + GitHub Release on `v*` tags
+- `.github/workflows/ci.yml`: typecheck + build on push/PR (pnpm v10, Node 22)
+- `.github/workflows/release.yml`: Docker matrix build + GitHub Release on `v*` tags
 - `docs/ERROR_HANDLING.md`, `CONTRIBUTING.md`, `README.md`, `PLAN.md`, `BACKLOG.md`
 
 ### Changed
@@ -152,18 +183,18 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [c158744] fix: resolve all KrakenD gateway issues and public/POST endpoint failures
 
-- Removed `requireReceptionist` from `GET /rooms/types` (hotel) and `requireAuth` from `GET /menu` (restaurant) — public KrakenD endpoints can't inject auth headers, so these routes must be open at the service level
-- Added `"input_body_encoding": "json"` to all POST/PUT endpoint configs in krakend.json — KrakenD v2.4+ does not forward request bodies unless this is explicitly set
-- Added `"method": "POST"/"PUT"` to every backend object for mutating endpoints — without this KrakenD defaults the backend call to GET, stripping the body
+- Removed `requireReceptionist` from `GET /rooms/types` (hotel) and `requireAuth` from `GET /menu` (restaurant): public KrakenD endpoints can't inject auth headers, so these routes must be open at the service level
+- Added `"input_body_encoding": "json"` to all POST/PUT endpoint configs in krakend.json: KrakenD v2.4+ does not forward request bodies unless this is explicitly set
+- Added `"method": "POST"/"PUT"` to every backend object for mutating endpoints: without this KrakenD defaults the backend call to GET, stripping the body
 - Added `x-user-id`, `x-user-email`, `x-user-type`, `X-Requested-With` to service-level CORS `allow_headers` and `expose_headers`
 - Removed martian `fifo.Group` header injection from public endpoints (no longer needed)
-- Rebuilt gateway Docker image — krakend.json is `COPY`'d at build time; `docker restart` alone does not pick up config changes
+- Rebuilt gateway Docker image: krakend.json is `COPY`'d at build time; `docker restart` alone does not pick up config changes
 - Added `.http` request file with curl equivalents for all endpoints
 - Added `test-api.sh` smoke test script: 19 tests pass / 0 fail / 12 skipped (Docker-internal services)
 
 ## [178f264] fix: align KrakenD JWT issuer with OpenAuth's actual iss claim
 
-- Changed all 39 `"issuer"` values in krakend.json from the production URL to `"http://openauth:3100"` — OpenAuth derives `iss` from the request URL, which inside Docker is the container hostname
+- Changed all 39 `"issuer"` values in krakend.json from the production URL to `"http://openauth:3100"`: OpenAuth derives `iss` from the request URL, which inside Docker is the container hostname
 - Protected endpoints now validate JWT correctly; previously all returning 401
 
 ## [76c10b7] fix: replace deprecated checkOrigin with trustedOrigins
@@ -177,7 +208,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [9557515] fix: show fallback select when room types fail to load
 
-- Added `{:catch}` block to the `{#await roomTypes}` expression on the Add Rooms page — without it the room type `<select>` silently disappeared on API error
+- Added `{:catch}` block to the `{#await roomTypes}` expression on the Add Rooms page: without it the room type `<select>` silently disappeared on API error
 
 ## [7f46db4] fix: standardise typography and theme across all admin pages
 
@@ -191,21 +222,21 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Added `Chart.Container` CSS-var injector component to `packages/ui`; reads HSL vars via `cssVar()` helper at runtime
 - Chart instances created/destroyed via Svelte 5 `$effect` with canvas refs
 
-## [c73bc78] feat: Task 18 — integration smoke test script
+## [c73bc78] feat: Task 18: integration smoke test script
 
 - scripts/smoke-test.sh: verifies service reachability (gateway, OpenAuth, 3 apps), public endpoints return success, protected endpoints reject 401, OpenAuth JWKS + OIDC config present
 - Includes e2e flow instructions for manual token-based verification
 - Run with: ./scripts/smoke-test.sh (after docker compose up -d)
 - Implements: REWRITE_SPEC.md integration verification
 
-## [77b8703] feat: Task 17 — migration tooling
+## [77b8703] feat: Task 17: migration tooling
 
 - scripts/migrations/migrate-staff-roles.ts: updates userType "staff" → receptionist|barista|waiter|management; supports ROLE_MAP for per-user overrides
 - scripts/migrations/migrate-openauth-users.ts: registers existing MongoDB users with OpenAuth PasswordProvider, backfills openauth_subject_id
 - scripts/migrations/README.md: prerequisites, usage, env vars, order of operations
 - Implements: REWRITE_SPEC.md Part 18
 
-## [ff29fa5] feat: Task 16 — apps/website SvelteKit customer-facing website
+## [ff29fa5] feat: Task 16: apps/website SvelteKit customer-facing website
 
 - svelte.config.js (adapter-node, port 3002), vite.config.js, tsconfig.json
 - Public pages: / (homepage), /rooms (SSR +page.server.ts → /api/public/roomtypes), /restaurant (SSR +page.server.ts → /api/public/menu), /about, /contact
@@ -215,7 +246,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Dockerfile (port 3002)
 - Implements: REWRITE_SPEC.md Part 15
 
-## [96cdcbf] feat: Task 15 — apps/staff SvelteKit role-based staff portal
+## [96cdcbf] feat: Task 15: apps/staff SvelteKit role-based staff portal
 
 - svelte.config.js (adapter-node, port 3001), vite.config.js, tsconfig.json
 - Root +page.svelte reads user_type cookie and redirects to /receptionist|/barista|/waiter
@@ -227,7 +258,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Dockerfile
 - Implements: REWRITE_SPEC.md Part 14
 
-## [92129f6] feat: Task 14 — apps/admin SvelteKit management portal
+## [92129f6] feat: Task 14: apps/admin SvelteKit management portal
 
 - svelte.config.js (adapter-node), vite.config.js (port 3000), tsconfig.json
 - src/lib/server/auth.ts: requireManagement helper (verifies token + userType===management)
@@ -237,7 +268,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Sidebar layout (non-login routes), Dockerfile
 - Implements: REWRITE_SPEC.md Part 13
 
-## [652bf61] feat: Tasks 12-13 — docker-compose.yml (14 services), .env.sample, Justfile
+## [652bf61] feat: Tasks 12-13: docker-compose.yml (14 services), .env.sample, Justfile
 
 - docker-compose.yml: mongo, rabbitmq, minio, reverse-proxy (Traefik), openauth, hotel, bar, restaurant, checkout, sms, smtp, gateway, admin, staff, website
 - All services on elmariam-network bridge, Traefik labels for host-based routing
@@ -245,7 +276,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - .justfile: dev, docker, database, utility, and production commands
 - Implements: REWRITE_SPEC.md Parts 16, 17
 
-## [61efcf7] feat: Task 11 — infra/gateway KrakenD config with 37 endpoints, JWT validation, CORS
+## [61efcf7] feat: Task 11: infra/gateway KrakenD config with 37 endpoints, JWT validation, CORS
 
 - Added krakend.json: global config (port 8009, 30s timeout, CORS for *.otienoobogeandcompany.com)
 - Added 15 hotel endpoints, 13 bar endpoints, 11 restaurant endpoints (all protected)
@@ -255,15 +286,15 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Added KrakenD Dockerfile (devopsfaith/krakend:2)
 - Implements: REWRITE_SPEC.md Part 12
 
-## [3ce8644] feat: Tasks 7-10 — restaurant, checkout, SMS, and SMTP services
+## [3ce8644] feat: Tasks 7-10: restaurant, checkout, SMS, and SMTP services
 
-- Task 7: Restaurant service — 11 endpoints (menu CRUD + order lifecycle pending→preparing→ready→served→cancelled), port 8005
-- Task 8: Checkout service — Hono/Bun, subscribes to "mpesa" queue, calls IntaSend STK push, port 8008
-- Task 9: SMS service — subscribes to "sms" queue, calls UjumbeSMS API with email+X-Authorization headers, port 7879
-- Task 10: SMTP service — subscribes to "mails" queue, Gmail OAuth2 + Nodemailer + Handlebars email.hbs template, port 3300
+- Task 7: Restaurant service: 11 endpoints (menu CRUD + order lifecycle pending→preparing→ready→served→cancelled), port 8005
+- Task 8: Checkout service: Hono/Bun, subscribes to "mpesa" queue, calls IntaSend STK push, port 8008
+- Task 9: SMS service: subscribes to "sms" queue, calls UjumbeSMS API with email+X-Authorization headers, port 7879
+- Task 10: SMTP service: subscribes to "mails" queue, Gmail OAuth2 + Nodemailer + Handlebars email.hbs template, port 3300
 - Implements: REWRITE_SPEC.md Parts 8, 9, 10, 11
 
-## [0fe024f] feat: Task 6 — services/bar with 11 endpoints, Multer+MinIO upload, bug fix fetchBarSale
+## [0fe024f] feat: Task 6: services/bar with 11 endpoints, Multer+MinIO upload, bug fix fetchBarSale
 
 - Added 11 Express routes: drinks (3), purchases (3), sales (3), lipa-mpesa (1), API info (1)
 - Implemented addBarDrinks with Multer+MinIO upload, per-unit price calc (crates/pack ÷ packageQty)
@@ -273,16 +304,16 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Added lipaNaMpesa stub that publishes to "mpesa" queue
 - Implements: REWRITE_SPEC.md Part 7
 
-## [185576d] feat: Task 5 — services/hotel with 17 Express endpoints and 14-step booking flow
+## [185576d] feat: Task 5: services/hotel with 17 Express endpoints and 14-step booking flow
 
 - Added 17 Express routes: customers (4), bookings (3), invoices (2), rooms (5), M-Pesa/SMS (2), API info (1)
 - Implemented full 14-step addBookings flow: validation, customer/roomType lookup, room availability, invoice calc (16% VAT), booking create, room marking
 - Added getDatesInRange utility, initiateMpesaPayment and initiateSmsNotification RabbitMQ publishers
 - Added createRoom with RoomType.rooms $push, createRoomType
-- No CORS on service — KrakenD handles gateway-level CORS
+- No CORS on service: KrakenD handles gateway-level CORS
 - Implements: REWRITE_SPEC.md Part 6
 
-## [ec7cb58] feat: Task 4 — packages/queue with RabbitMQConfig and rabbitMQEnvFromProcess
+## [ec7cb58] feat: Task 4: packages/queue with RabbitMQConfig and rabbitMQEnvFromProcess
 
 - Added RabbitMQConfig class with exponential backoff retry (maxRetries, initialDelay, maxDelay, factor)
 - Added connect, createQueue, publishToQueue, subscribeToQueue, close methods
@@ -290,7 +321,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Added rabbitMQEnvFromProcess helper to read env vars
 - Implements: REWRITE_SPEC.md Part 5
 
-## [7c704a9] feat: Task 3 — packages/auth middleware + infra/openauth server
+## [7c704a9] feat: Task 3: packages/auth middleware + infra/openauth server
 
 - Added infra/openauth/src/subjects.ts with valibot user subject shape
 - Added infra/openauth/src/index.ts: PasswordProvider + MongoDB user lookup, Bun entry
@@ -300,7 +331,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Added packages/auth/src/middleware.ts: extractUser, requireAuth, requireUserType, requireReceptionist, requireBarista, requireWaiter, requireAdmin
 - Implements: REWRITE_SPEC.md Part 4
 
-## [a031ee1] feat: Task 2 — packages/db with all 11 Mongoose schemas and connection helper
+## [a031ee1] feat: Task 2: packages/db with all 11 Mongoose schemas and connection helper
 
 - Added 11 Mongoose models: User, Customer, RoomType, Room, Booking, Invoice, Drink, BarPurchase, BarSale, MenuItem, RestaurantOrder
 - User schema: expanded userType enum, removed password/resetLink/isAdmin, added openauth_subject_id
@@ -309,7 +340,7 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 - Added barrel exports via src/index.ts and src/models/index.ts
 - Implements: REWRITE_SPEC.md Part 3
 
-## [d94a27d] feat: Task 1 — monorepo scaffold with root config and placeholder packages
+## [d94a27d] feat: Task 1: monorepo scaffold with root config and placeholder packages
 
 - Added pnpm-workspace.yaml covering apps/*, services/*, packages/*, infra/openauth
 - Added turbo.json with build/dev/lint/typecheck/db:migrate tasks per spec

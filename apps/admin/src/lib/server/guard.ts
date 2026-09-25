@@ -16,7 +16,7 @@ export type SessionUser = { id: string; email: string; userType: Role };
 /**
  * The authenticated user, or a 401.
  *
- * Safe to call from inside remote functions — they are their own HTTP
+ * Safe to call from inside remote functions: they are their own HTTP
  * endpoints and are NOT covered by `+layout.server.ts`, so every mutation must
  * guard itself.
  */
@@ -41,7 +41,7 @@ export function requirePermission(...permissions: Permission[]): SessionUser {
   return user;
 }
 
-/** For `+layout.server.ts` / `+page.server.ts` — redirects rather than errors. */
+/** For `+layout.server.ts` / `+page.server.ts`: redirects rather than errors. */
 export function requireAppAccess(locals: App.Locals): SessionUser {
   if (!locals.user) redirect(302, '/login');
   if (!canAccessApp(locals.user.userType, APP)) {

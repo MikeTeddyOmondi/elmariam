@@ -7,7 +7,7 @@
 </script>
 
 <svelte:head>
-  <title>Contact Us — El'Mariam Hotel</title>
+  <title>Contact Us: El'Mariam Hotel</title>
 </svelte:head>
 
 <div class="mx-auto max-w-2xl px-4 py-16">
@@ -50,7 +50,7 @@
             if (ok) {
               // Confirmation is a toast like everywhere else in the product,
               // rather than a bespoke panel replacing the form.
-              toast.success('Thank you for contacting us — we will reach out to you soon.');
+              toast.success('Thank you for contacting us: we will reach out to you soon.');
               form.reset();
             }
           } catch (e) {

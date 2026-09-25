@@ -12,7 +12,7 @@
   // fetches during SSR and the result is not hydratable.
   //
   // This replaces a `+page.server.ts` load that fetched
-  // `http://gateway:8009/api/public/menu` — a service removed in the rewrite —
+  // `http://gateway:8009/api/public/menu`, a service removed in the rewrite,
   // and swallowed the failure in a `catch` returning an empty array, so the
   // page rendered "Menu coming soon" indefinitely.
   $effect(() => {

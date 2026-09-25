@@ -5,6 +5,7 @@ import {
   CustomerAlreadyExistsError,
   CustomerNotFoundError,
   RoomTypeNotFoundError,
+  RoomNotFoundError,
   BookingNotFoundError,
   BookingConflictError,
   InvoiceNotFoundError,
@@ -125,7 +126,7 @@ export async function createCustomer(input: CreateCustomerInput) {
 
 /**
  * Restricts a listing to a single customer. Callers acting on behalf of a
- * customer (the public website) MUST pass this — without it every customer can
+ * customer (the public website) MUST pass this: without it every customer can
  * read every other customer's bookings and invoices.
  */
 export interface OwnerScope {
@@ -317,7 +318,7 @@ export async function listInvoices(scope: OwnerScope = {}) {
       let filter: Record<string, unknown> = {};
 
       if (scope.customerId) {
-        // Invoices have no customer of their own — they hang off a booking.
+        // Invoices have no customer of their own: they hang off a booking.
         const bookingIds = await Booking.find({ customer: scope.customerId }).distinct("_id");
         filter = { bookingRef: { $in: bookingIds } };
       }
@@ -416,5 +417,70 @@ export async function createRoom(roomTypeId: string, input: CreateRoomInput) {
     );
 
     return Result.ok(room);
+  });
+}
+
+// ── Deletes ───────────────────────────────────────────────────────────────────
+
+export async function deleteCustomer(id: string) {
+  return Result.tryPromise({
+    try: async () => {
+      // Refuse while bookings reference them, so an invoice never loses its guest.
+      const bookings = await Booking.countDocuments({ customer: id });
+      if (bookings > 0) {
+        throw new CustomerNotFoundError({
+          id,
+          message: `Cannot delete: this customer has ${bookings} booking(s).`,
+        });
+      }
+      const doc = await Customer.findByIdAndDelete(id).lean<ICustomer>({ virtuals: true });
+      if (!doc) throw new CustomerNotFoundError({ id, message: "Customer not found" });
+      return { id };
+    },
+    catch: (e): HotelError => {
+      if (e instanceof CustomerNotFoundError) return e;
+      return dbErr("deleteCustomer", e);
+    },
+  });
+}
+
+export async function deleteRoom(id: string) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await Room.findById(id);
+      if (!doc) throw new RoomNotFoundError({ id, message: "Room not found" });
+      if (doc.isBooked) {
+        throw new RoomNotFoundError({ id, message: "Cannot delete a room that is booked." });
+      }
+      // Drop the back-reference so the room type does not keep a dangling id.
+      await RoomType.updateMany({ rooms: doc._id }, { $pull: { rooms: doc._id } });
+      await doc.deleteOne();
+      return { id };
+    },
+    catch: (e): HotelError => {
+      if (e instanceof RoomNotFoundError) return e;
+      return dbErr("deleteRoom", e);
+    },
+  });
+}
+
+export async function deleteRoomType(id: string) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await RoomType.findById(id);
+      if (!doc) throw new RoomTypeNotFoundError({ id, message: "Room type not found" });
+      if (doc.rooms?.length) {
+        throw new RoomTypeNotFoundError({
+          id,
+          message: `Cannot delete: ${doc.rooms.length} room(s) still use this type.`,
+        });
+      }
+      await doc.deleteOne();
+      return { id };
+    },
+    catch: (e): HotelError => {
+      if (e instanceof RoomTypeNotFoundError) return e;
+      return dbErr("deleteRoomType", e);
+    },
   });
 }

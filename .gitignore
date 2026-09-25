@@ -8,6 +8,6 @@ build/
 .DS_Store
 .turbo/
 
-# Node compile cache (NODE_COMPILE_CACHE) — machine-specific build artefact
+# Node compile cache (NODE_COMPILE_CACHE): machine-specific build artefact
 node-compile-cache/
 .node-compile-cache/

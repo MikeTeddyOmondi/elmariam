@@ -35,7 +35,7 @@
     </CardHeader>
     <CardContent class="space-y-4">
       <p class="text-sm text-muted-foreground bg-secondary rounded-md px-3 py-2">
-        You'll be taken to our secure sign-in page — use "Sign up" there to create
+        You'll be taken to our secure sign-in page: use "Sign up" there to create
         a new account with your email and password.
       </p>
       <Button onclick={handleRegister} disabled={loading} class="w-full">

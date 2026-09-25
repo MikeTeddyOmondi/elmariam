@@ -8,7 +8,7 @@
     {
       icon: "🍽️",
       title: "Fine Dining",
-      desc: "Enjoy fresh meals prepared by our kitchen team — from hearty breakfasts to elegant dinners.",
+      desc: "Enjoy fresh meals prepared by our kitchen team: from hearty breakfasts to elegant dinners.",
     },
     {
       icon: "🍹",
@@ -34,7 +34,7 @@
 </script>
 
 <svelte:head>
-  <title>El'Mariam Hotel — Comfort & Hospitality</title>
+  <title>El'Mariam Hotel: Comfort & Hospitality</title>
 </svelte:head>
 
 <!-- Hero -->
@@ -50,7 +50,7 @@
     </h1>
     <p class="max-w-2xl mx-auto mt-6 text-lg text-muted-foreground">
       El'Mariam Hotel offers warm hospitality, quality rooms, fine dining,
-      and a full-service bar — everything you need for a comfortable and
+      and a full-service bar: everything you need for a comfortable and
       memorable stay.
     </p>
     <div class="flex flex-col sm:flex-row justify-center gap-3 mt-8">
@@ -130,8 +130,8 @@
       <div class="p-4 font-mono text-sm text-muted-foreground leading-relaxed space-y-1">
         <p><span class="text-accent">$</span> check-in: 12:00 noon</p>
         <p><span class="text-accent">$</span> check-out: 10:00 am</p>
-        <p><span class="text-accent">$</span> bar-hours: 5 pm – midnight</p>
-        <p><span class="text-accent">$</span> restaurant: 7 am – 10 pm</p>
+        <p><span class="text-accent">$</span> bar-hours: 5 pm to midnight</p>
+        <p><span class="text-accent">$</span> restaurant: 7 am to 10 pm</p>
         <p><span class="text-accent">$</span> wi-fi: complimentary</p>
         <p><span class="text-accent">$</span> parking: available on-site</p>
       </div>
@@ -151,7 +151,7 @@
         href="/register"
         class="inline-flex items-center justify-center px-6 py-3 font-medium text-accent-foreground bg-accent hover:bg-accent/90 rounded-xl transition-colors"
       >
-        Book Now — it's free
+        Book Now: it's free
       </a>
       <a
         href="/login"

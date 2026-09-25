@@ -23,7 +23,7 @@ function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
   });
 }
 
-/** Unwraps inside a `form()` handler — domain failures render on the form. */
+/** Unwraps inside a `form()` handler: domain failures render on the form. */
 function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
   return result.match({
     ok: (d) => JSON.parse(JSON.stringify(d)) as T,
@@ -78,7 +78,7 @@ export const getOneBooking = query(v.string(), async (bookingId: string) => {
 });
 
 // `form()` rather than `command()`: these submit without JavaScript and render
-// field-level issues inline. Numeric fields stay numeric in the schema —
+// field-level issues inline. Numeric fields stay numeric in the schema.
 // `field.as('number')` on the input performs the FormData coercion.
 
 export const createCustomer = form(

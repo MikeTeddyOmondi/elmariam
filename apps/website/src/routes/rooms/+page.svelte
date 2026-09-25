@@ -12,8 +12,8 @@
   // fetches during SSR and the result is not hydratable.
   //
   // This replaces a `+page.server.ts` load that fetched
-  // `http://gateway:8009/api/public/roomtypes` — a service removed in the
-  // rewrite — and swallowed the failure in a `catch` returning an empty array,
+  // `http://gateway:8009/api/public/roomtypes`, a service removed in the
+  // rewrite, and swallowed the failure in a `catch` returning an empty array,
   // so the page rendered "No room types available" indefinitely.
   $effect(() => {
     getRoomTypes()
