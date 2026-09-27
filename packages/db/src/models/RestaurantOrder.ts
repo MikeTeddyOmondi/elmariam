@@ -14,6 +14,10 @@ export interface IRestaurantOrder extends Document {
   tableNumber?: string;
   status: "pending" | "preparing" | "ready" | "served" | "cancelled";
   items: OrderItem[];
+  subTotal: number;
+  vat: number;
+  levy: number;
+  // Grand total, inclusive of VAT and levy.
   totalAmount: number;
   paymentMethod?: "cash" | "mpesa" | "bank";
   paymentStatus: "pending" | "paid";
@@ -48,6 +52,9 @@ const RestaurantOrderSchema = new Schema<IRestaurantOrder>(
         subtotal: { type: Number, required: true },
       },
     ],
+    subTotal: { type: Number, required: false, default: 0 },
+    vat: { type: Number, required: false, default: 0 },
+    levy: { type: Number, required: false, default: 0 },
     totalAmount: {
       type: Number,
       default: function (this: IRestaurantOrder) {

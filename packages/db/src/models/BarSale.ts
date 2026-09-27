@@ -11,6 +11,10 @@ export interface IBarSale extends Document {
   id: string;
   customer?: Types.ObjectId;
   drinks: BarSaleDrink[];
+  subTotal: number;
+  vat: number;
+  levy: number;
+  // Grand total, inclusive of VAT and levy.
   totalStockValue: number;
   createdAt: Date;
   updatedAt: Date;
@@ -35,6 +39,9 @@ const BarSaleSchema = new Schema<IBarSale>(
         stockValue: { type: Number, required: true },
       },
     ],
+    subTotal: { type: Number, required: false, default: 0 },
+    vat: { type: Number, required: false, default: 0 },
+    levy: { type: Number, required: false, default: 0 },
     totalStockValue: {
       type: Number,
       default: function (this: IBarSale) {

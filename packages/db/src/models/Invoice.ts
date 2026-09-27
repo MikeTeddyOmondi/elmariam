@@ -7,6 +7,7 @@ export interface IInvoice extends Document {
   status: "paid" | "pending";
   paymentMethod: "cash" | "mpesa" | "bank";
   vat: number;
+  levy: number;
   subTotalCost: number;
   totalCost: number;
   createdAt: Date;
@@ -27,6 +28,7 @@ const InvoiceSchema = new Schema<IInvoice>(
       required: true,
     },
     vat: { type: Number, required: true },
+    levy: { type: Number, required: false, default: 0 },
     subTotalCost: { type: Number, required: true },
     totalCost: { type: Number, required: true },
   },
