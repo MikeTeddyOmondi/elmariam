@@ -32,6 +32,9 @@ type OrderView = {
   tableNumber?: string;
   status: 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
   items: Array<{ menuItem: string; quantity: number; price: number }>;
+  subTotal: number;
+  vat: number;
+  levy: number;
   totalAmount: number;
   paymentMethod?: 'cash' | 'mpesa' | 'bank';
   paymentStatus: 'pending' | 'paid';

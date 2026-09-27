@@ -41,7 +41,8 @@ function unwrapForm<T, E extends { message: string }>(result: Result<T, E>): T {
 type BookingView = {
   id: string;
   customer?: { firstname?: string; lastname?: string; email?: string; phone_number?: number };
-  roomType?: { roomType?: string };
+  roomType?: { roomType?: string; title?: string };
+  room?: { number?: string };
   numberAdults: number;
   numberKids: number;
   checkInDate: Date;
@@ -125,20 +126,40 @@ export const createBooking = form(
   }
 );
 
+// Normalises a Kenyan phone into digits with the 254 country code, or "" if
+// none. Handles "0712…", "712…" and "254712…" inputs.
+function toMsisdn(v: unknown): string {
+  const d = String(v ?? '').replace(/\D/g, '');
+  if (!d) return '';
+  if (d.startsWith('254')) return d;
+  if (d.startsWith('0')) return '254' + d.slice(1);
+  if (d.length === 9) return '254' + d; // 7XXXXXXXX
+  return d;
+}
+// UjumbeSMS wants the local "07XXXXXXXX" form.
+function toLocalPhone(v: unknown): string {
+  const m = toMsisdn(v);
+  return m.startsWith('254') ? '0' + m.slice(3) : m;
+}
+
 export const initiateMpesaPayment = command(
   v.object({ bookingId: v.string() }),
   async ({ bookingId }) => {
     requirePermission('payments:initiate');
     const booking = unwrap(await getBooking(bookingId));
-    const customer = (booking as any).occupant ?? {};
+    // `customer` is populated in place now (was the `occupant` virtual before).
+    const customer = (booking as any).customer ?? {};
     const invoice  = (booking as any).invoice  ?? {};
+    const phone = toMsisdn(customer.phone_number);
+    if (!phone) invalid('This customer has no phone number on file.');
+    if (!invoice.totalCost) invalid('This booking has no invoice total to charge.');
     const message = {
       first_name:   customer.firstname,
       last_name:    customer.lastname,
       email:        customer.email,
       host:         'hotel-elmariam',
       amount:       invoice.totalCost,
-      phone_number: customer.phone_number,
+      phone_number: phone,
       api_ref:      `hotel-elmariam-booking-${bookingId}`,
     };
     const queue = new RabbitMQConfig(rabbitMQEnvFrom(env));
@@ -155,11 +176,11 @@ export const sendSmsNotification = command(
   async ({ bookingId }) => {
     requirePermission('notifications:send');
     const booking  = unwrap(await getBooking(bookingId));
-    const customer = (booking as any).occupant ?? {};
+    const customer = (booking as any).customer ?? {};
     const invoice  = (booking as any).invoice  ?? {};
     const checkOut = new Date(booking.checkOutDate).toDateString();
-    const phoneStr = String(customer.phone_number ?? '');
-    const phoneNumbers = '0' + phoneStr.slice(3);
+    const phoneNumbers = toLocalPhone(customer.phone_number);
+    if (!phoneNumbers) invalid('This customer has no phone number on file.');
     const payload = {
       message:      `Greetings ${customer.firstname}. Your hotel booking invoice of amount Kes. ${invoice.totalCost} is due on ${checkOut}`,
       phoneNumbers,
