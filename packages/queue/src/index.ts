@@ -157,3 +157,66 @@ export function rabbitMQEnvFrom(source: Record<string, string | undefined>): Rab
 export function rabbitMQEnvFromProcess(): RabbitMQEnv {
   return rabbitMQEnvFrom(process.env);
 }
+
+// ── Notifications: shared M-Pesa + SMS publishers ───────────────────────────
+// One implementation both apps reuse, so phone/queue logic is not copied.
+
+/** Normalise a Kenyan phone to 254 country-code digits, or "" if none. */
+export function toMsisdn(v: unknown): string {
+  const d = String(v ?? "").replace(/\D/g, "");
+  if (!d) return "";
+  if (d.startsWith("254")) return d;
+  if (d.startsWith("0")) return "254" + d.slice(1);
+  if (d.length === 9) return "254" + d; // 7XXXXXXXX
+  return d;
+}
+
+/** UjumbeSMS wants the local "07XXXXXXXX" form. */
+export function toLocalPhone(v: unknown): string {
+  const m = toMsisdn(v);
+  return m.startsWith("254") ? "0" + m.slice(3) : m;
+}
+
+export interface MpesaStkInput {
+  amount: number;
+  phone: string | number;
+  reference: string;
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+}
+
+/** Publish an M-Pesa STK push request to the `mpesa` queue. */
+export async function publishMpesaStk(
+  env: Record<string, string | undefined>,
+  input: MpesaStkInput,
+): Promise<void> {
+  const queue = new RabbitMQConfig(rabbitMQEnvFrom(env));
+  await queue.connect();
+  await queue.createQueue("mpesa");
+  await queue.publishToQueue("mpesa", {
+    first_name: input.firstName ?? "Walk-in",
+    last_name: input.lastName ?? "Customer",
+    email: input.email ?? "sales@elmariam.co.ke",
+    host: "hotel-elmariam",
+    amount: input.amount,
+    phone_number: toMsisdn(input.phone),
+    api_ref: input.reference,
+  });
+  await queue.close();
+}
+
+/** Publish an SMS to the `sms` queue. */
+export async function publishSms(
+  env: Record<string, string | undefined>,
+  input: { phone: string | number; message: string },
+): Promise<void> {
+  const queue = new RabbitMQConfig(rabbitMQEnvFrom(env));
+  await queue.connect();
+  await queue.createQueue("sms");
+  await queue.publishToQueue("sms", {
+    message: input.message,
+    phoneNumbers: toLocalPhone(input.phone),
+  });
+  await queue.close();
+}
