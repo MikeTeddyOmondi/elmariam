@@ -61,29 +61,48 @@ services:
     networks:
       - elmariam-network
 
-  minio:
+  # ──── Object storage (S3-compatible) ────
+  # RustFS replaces MinIO. No app code touches object storage yet (the upload
+  # went away with the old gateway and Drink.imageUrl is optional), so this is a
+  # clean-slate swap onto a fresh volume, keeping the same host ports and the
+  # same access/secret credentials MinIO used.
+  rustfs:
     container_name: elmariam-object-store
-    image: ranckosolutionsinc/s3:lts
+    image: rustfs/rustfs:1.0.0
     restart: always
+    # Runs as root so the named volume, created root-owned on first mount, is
+    # writable. RustFS's own user is uid 10001 and cannot write a fresh named
+    # volume without a separate chown step.
+    user: "0:0"
     environment:
-      - MINIO_ROOT_USER=minio
-      - MINIO_ROOT_PASSWORD=minio_password
-      - MINIO_SERVER_URL=https://s3.otienoobogeandcompany.com
-      - MINIO_BROWSER_REDIRECT_URL=https://minio.otienoobogeandcompany.com
+      - RUSTFS_ACCESS_KEY=minio
+      - RUSTFS_SECRET_KEY=minio_password
+      - RUSTFS_VOLUMES=/data
+      - RUSTFS_ADDRESS=0.0.0.0:9000
+      - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
+      - RUSTFS_CONSOLE_ENABLE=true
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
     ports:
       - "9003:9000"
       - "9001:9001"
     volumes:
-      - elmariam-minio-data:/data
-    command: server /data --console-address ":9001"
+      - elmariam-rustfs-data:/data
+    healthcheck:
+      # Any HTTP response on the S3 port means it is up; the API returns 403 to
+      # an unauthenticated root request, so this checks reachability, not -f.
+      test: ["CMD", "sh", "-ec", "curl -s -o /dev/null http://127.0.0.1:9000/"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.s3.rule=Host(`s3.otienoobogeandcompany.com`)"
       - "traefik.http.routers.s3.service=s3"
       - "traefik.http.services.s3.loadbalancer.server.port=9000"
-      - "traefik.http.routers.minio.rule=Host(`minio.otienoobogeandcompany.com`)"
-      - "traefik.http.routers.minio.service=minio"
-      - "traefik.http.services.minio.loadbalancer.server.port=9001"
+      - "traefik.http.routers.rustfs-console.rule=Host(`minio.otienoobogeandcompany.com`)"
+      - "traefik.http.routers.rustfs-console.service=rustfs-console"
+      - "traefik.http.services.rustfs-console.loadbalancer.server.port=9001"
     networks:
       - elmariam-network
 
@@ -242,7 +261,7 @@ services:
 
 volumes:
   elmariam-mongodb-data:
-  elmariam-minio-data:
+  elmariam-rustfs-data:
 
 networks:
   elmariam-network:
