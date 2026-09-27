@@ -8,6 +8,70 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Added: taxes (14% VAT + 2% levy)
+
+- New `packages/db/src/tax.ts` holds `VAT_RATE`, `LEVY_RATE` and `computeTax` so the rates live in one place. Every booking, bar sale and restaurant order now applies 14% VAT and a 2% hotel levy on the pre-tax subtotal. Booking VAT was 16%; it is now 14% with a separate levy line
+- The figures are stored so records stay authoritative: `Invoice` gained `levy`, and `BarSale` and `RestaurantOrder` gained `subTotal`/`vat`/`levy` with tax-inclusive totals
+- Receipts show Subtotal, VAT (14%), Levy (2%) and Total on booking, bar sale and order receipts across admin and staff
+- Records created before this change carry `levy: 0` (and a `subTotal` of 0 on bar sales and orders), so their receipts show 0 on those lines until backfilled
+
+### Added: M-Pesa and SMS on bar and restaurant sales
+
+- Shared helpers in `@elmariam/queue` (`toMsisdn`, `toLocalPhone`, `publishMpesaStk`, `publishSms`) so both apps reuse one implementation instead of copying queue and phone logic
+- Thin `payments.remote.ts` in admin and staff exposes `chargeMpesa({ amount, phone, reference, name? })` and `sendSms({ phone, message })`, each gated on `payments:initiate` / `notifications:send`
+- `barista` and `waiter` now hold `payments:initiate` and `notifications:send` so counter staff can charge and notify
+- A reusable `SalePayActions` component (M-Pesa and SMS buttons with a phone-capture dialog) is wired into bar sales and restaurant orders on both admin and staff. Bar sales and orders store no customer, so the phone is captured at action time and the amount comes from the sale total
+
+### Added: printable receipts
+
+- Shared `packages/ui` `Receipt` (80mm, monospace) and `ReceiptDialog` (preview plus a Print button), with a global print rule in `app.css` that isolates the receipt so only it reaches the thermal printer
+- Wired to bar sale (admin and staff), booking (admin and staff) and menu/restaurant order (staff waiter): each shows the receipt after a successful create or checkout and offers a per-row Print action to reprint
+- `Booking` gained a `room` ref set at create time, and `listBookings` now populates the real `customer`/`roomType`/`room` paths and sorts newest-first, so a receipt shows the guest name and room number and the just-created booking is previewable
+
+### Added: modal create and edit forms
+
+- `packages/ui` `Dialog` rebuilt on bits-ui (portalled, animated, theme tokens) with a `pending` prop that locks the modal: no Escape, no outside click and no close button while a submit is in flight, and one standard `max-w-lg` width set in the component
+- Every admin create form (customers, rooms, room-types, bookings, bar-drinks, bar-purchases, bar-sales, menu-items, users) is now a modal opened from a header button. Edit is a modal too where an update remote exists: `/users` and `/menu-items`, replacing the inline expand-row editor
+- The four staff `*/new` routes (receptionist customers and bookings, waiter orders, barista sales) are collapsed into their listing pages and the route directories deleted. Their `+page.server.ts` guards went with them; the remote functions guard themselves and every trigger button is gated with `can()`
+- Modals close only after a successful post: the `const ok = await submit()` guard closes on `true` and keeps the dialog open with its issues on `false`
+
+### Added: pagination
+
+- Shared `Pagination` component brought into `packages/ui` (bindable `page`, client- or server-side slicing) and wired into every listing across admin and staff at 20 rows per page (10 on admin customers)
+
+### Changed: rebrand to mulberry
+
+- The shared `packages/ui/src/app.css` design tokens moved to a mulberry palette (hue ~330), light and dark, so all three apps changed together. `primary` was darkened until white button text clears WCAG AA in both modes; `destructive` stays red so delete actions still read as danger
+
+### Changed: media storage (MinIO to RustFS)
+
+- Replaced the `minio` compose service with `rustfs/rustfs:1.0.0` on a fresh `elmariam-rustfs-data` volume, same host ports and credentials. There is no S3 client code in source (uploads went with the gateway and `Drink.imageUrl` is optional), so this was a pure infra swap. The old `elmariam-minio-data` volume is now unreferenced
+
+### Changed: toasts replace inline alerts
+
+- Every list or load failure across admin, staff and the website now toasts via `toastError(e)` instead of an inline `{loadError}` block or a nested `<Alert>`; the `loadError` state and its branch are gone
+- Action-feedback alerts (staff bookings M-Pesa/SMS, waiter order status) toast from their handlers; the login pages surface auth errors as toasts. Inline shadcn `Form.FieldErrors` and `Form.Message` validation stay, by decision
+- No page imports `toast` from `svelte-sonner` directly anymore; all use `@elmariam/ui`
+
+### Changed: UI polish
+
+- Cursor-pointer base rule in the shared `app.css` for `button`, `[role="button"]`, `[role="option"]`, `[role="menuitem"]`, `summary` and `label[for]`, restoring the default Tailwind v4 dropped
+- Admin and staff shells are `h-screen overflow-hidden` so the sidebar stays fixed and only `<main>` scrolls
+- Cart and line-item modals (bar sales on admin and staff, waiter orders) stack each line item as a labelled block instead of an inline row with `sr-only` labels
+
+### Fixed: bugs found in review
+
+- The restaurant menu-item availability checkbox could not be toggled: the `packages/ui` `Checkbox` styled its tick with an `appearance-none` variant Tailwind v4 never compiled, so a checked box rendered blank. It now renders a native checkbox with `accent-primary`. Also affected `/users` `isActive`
+- The admin Bar Sales table showed a blank Sale ID: `listSales` returned docs with `_id` only while the table read `sale.id`. `listSales` now lean-maps `id`, matching `listDrinks`
+- Creating a bar sale threw "This query was not created in a reactive context and cannot be awaited": the submit handler re-read the list with a bare awaited query. Both admin and staff sale modals now use `getBarSales().run()`
+- `inStock` was wrong (a drink with `stockQty: 0` still read "Yes"). The stored field is dropped and `inStock` is a Mongoose virtual (`stockQty > 0`) computed at read time, so it cannot drift; the bar stock updates are back to a plain `$inc`
+
+### Fixed: integrations M-Pesa and SMS
+
+- IntaSend returned 401: the SDK constructor is `(publishableKey, secretKey, testMode)` but the service passed the secret token first. The argument order is fixed in `services/integrations/src/consumers/mpesa.ts`
+- `INTASEND_TEST_MODE` was coerced with `Boolean(process.env...)`, which is truthy for the string "false"; it now compares `=== "true"`
+- "SMS sent to 0": the booking producers read `occupant`/`invoice` virtuals, but `getBooking` was switched to populate the real `customer` path. They now read `booking.customer`, with phone normalisation and a guard that rejects clearly when a customer has no phone. M-Pesa and SMS buttons were added to the admin booking listing, gated on `bookings:write`
+
 ### Fixed: mutations and error reporting
 
 - **Every domain error surfaced as an opaque 500.** The `unwrap`/`unwrapForm` helpers in all 11 `.remote.ts` files threw `invalid()` or `error()` from inside a better-result `match({ err })` handler. better-result treats a throw from a match handler as a panic and wraps it in "match err handler threw", so a message meant for the form (or a 400/403) reached the client as `Internal Error`. They now branch on `isErr()` and throw outside `match`
