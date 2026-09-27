@@ -15,79 +15,88 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  /* Light theme */
+  /*
+    Light theme: El'Mariam mulberry. Brand hue is ~330 (the mauve-mulberry of
+    the hotel's columns) on white surfaces. `primary` is dark enough that white
+    `primary-foreground` clears WCAG AA on buttons. `destructive` stays red so
+    delete actions keep their meaning.
+  */
   --background: 0 0% 100%;
-  --foreground: 222 47% 11%;
+  --foreground: 330 25% 12%;
   --card: 0 0% 100%;
-  --card-foreground: 222 47% 11%;
+  --card-foreground: 330 25% 12%;
   --popover: 0 0% 100%;
-  --popover-foreground: 222 47% 11%;
-  --primary: 222 47% 11%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222 47% 11%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215 16% 47%;
-  --accent: 5 64% 46%;
-  --accent-foreground: 0 0% 98%;
+  --popover-foreground: 330 25% 12%;
+  --primary: 330 40% 45%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 330 30% 96%;
+  --secondary-foreground: 330 30% 22%;
+  --muted: 330 24% 96%;
+  --muted-foreground: 330 8% 45%;
+  --accent: 330 44% 42%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
-  --border: 214 32% 91%;
-  --input: 214 32% 91%;
-  --ring: 222 47% 50%;
+  --border: 330 22% 90%;
+  --input: 330 22% 90%;
+  --ring: 330 40% 55%;
   --radius: 0.5rem;
-  --sidebar-background: 210 40% 98%;
-  --sidebar-foreground: 222 47% 20%;
-  --sidebar-primary: 222 47% 11%;
-  --sidebar-primary-foreground: 210 40% 98%;
-  --sidebar-accent: 210 40% 94%;
-  --sidebar-accent-foreground: 222 47% 11%;
-  --sidebar-border: 214 32% 88%;
-  --sidebar-ring: 222 47% 50%;
+  --sidebar-background: 330 30% 98%;
+  --sidebar-foreground: 330 25% 22%;
+  --sidebar-primary: 330 40% 45%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 330 35% 93%;
+  --sidebar-accent-foreground: 330 40% 25%;
+  --sidebar-border: 330 25% 88%;
+  --sidebar-ring: 330 40% 55%;
   /* Chart colors */
-  --chart-1: 217 91% 60%;
-  --chart-2: 142 71% 45%;
-  --chart-3: 271 91% 65%;
-  --chart-4: 32 95% 53%;
-  --chart-5: 346 77% 50%;
+  --chart-1: 330 60% 52%;
+  --chart-2: 268 55% 58%;
+  --chart-3: 12 70% 55%;
+  --chart-4: 199 70% 48%;
+  --chart-5: 42 85% 55%;
 }
 
 .dark {
-  /* Dark theme: El'Mariam */
-  --background: 222 47% 6%;
-  --foreground: 210 40% 96%;
-  --card: 222 47% 9%;
-  --card-foreground: 210 40% 96%;
-  --popover: 222 47% 9%;
-  --popover-foreground: 210 40% 96%;
-  --primary: 210 40% 96%;
-  --primary-foreground: 222 47% 6%;
-  --secondary: 217 33% 17%;
-  --secondary-foreground: 210 40% 96%;
-  --muted: 217 33% 17%;
-  --muted-foreground: 215 20% 60%;
-  --accent: 5 64% 46%;
-  --accent-foreground: 0 0% 98%;
+  /*
+    Dark theme: El'Mariam mulberry. Warm near-black surfaces (hue 330) echo the
+    dark plinths in the photo, with a mulberry `primary` that carries white text
+    at AA on the dark background.
+  */
+  --background: 330 15% 7%;
+  --foreground: 330 15% 92%;
+  --card: 330 14% 10%;
+  --card-foreground: 330 15% 92%;
+  --popover: 330 14% 10%;
+  --popover-foreground: 330 15% 92%;
+  --primary: 330 45% 47%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 330 15% 18%;
+  --secondary-foreground: 330 15% 92%;
+  --muted: 330 12% 17%;
+  --muted-foreground: 330 10% 62%;
+  --accent: 330 45% 47%;
+  --accent-foreground: 0 0% 100%;
   --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
-  --border: 217 33% 18%;
-  --input: 217 33% 18%;
-  --ring: 215 20% 65%;
+  --border: 330 12% 20%;
+  --input: 330 12% 20%;
+  --ring: 330 45% 60%;
   --radius: 0.5rem;
-  --sidebar-background: 222 47% 8%;
-  --sidebar-foreground: 210 40% 88%;
-  --sidebar-primary: 210 40% 96%;
-  --sidebar-primary-foreground: 222 47% 6%;
-  --sidebar-accent: 217 33% 14%;
-  --sidebar-accent-foreground: 210 40% 96%;
-  --sidebar-border: 217 33% 16%;
-  --sidebar-ring: 215 20% 65%;
+  --sidebar-background: 330 15% 9%;
+  --sidebar-foreground: 330 12% 85%;
+  --sidebar-primary: 330 45% 47%;
+  --sidebar-primary-foreground: 0 0% 100%;
+  --sidebar-accent: 330 14% 15%;
+  --sidebar-accent-foreground: 330 15% 92%;
+  --sidebar-border: 330 12% 17%;
+  --sidebar-ring: 330 45% 60%;
   /* Chart colors */
-  --chart-1: 217 91% 65%;
-  --chart-2: 142 76% 50%;
-  --chart-3: 271 91% 70%;
-  --chart-4: 32 95% 58%;
-  --chart-5: 346 84% 60%;
+  --chart-1: 330 65% 62%;
+  --chart-2: 268 60% 68%;
+  --chart-3: 12 72% 62%;
+  --chart-4: 199 72% 56%;
+  --chart-5: 42 88% 62%;
 }
 
 /*
@@ -154,5 +163,48 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /*
+    Tailwind v4 dropped the browser default `cursor: pointer` on buttons, so
+    anything button-like renders with the text cursor unless a component opts
+    back in. Restore it globally for every clickable control (native buttons,
+    ARIA buttons, select options, summary, and label-for), and keep the
+    not-allowed cursor for disabled ones.
+  */
+  button:not(:disabled),
+  [role="button"]:not([aria-disabled="true"]),
+  [role="option"],
+  [role="menuitem"],
+  summary,
+  label[for] {
+    cursor: pointer;
+  }
+
+  button:disabled,
+  [aria-disabled="true"] {
+    cursor: not-allowed;
+  }
+}
+
+/*
+  Printing a receipt: isolate the `[data-receipt]` paper so nothing else in the
+  app (sidebar, dialog chrome, overlay) reaches the thermal printer. The
+  visibility trick keeps layout intact while hiding everything but the receipt,
+  which is then pinned to the top-left at its 80mm width.
+*/
+@media print {
+  body * {
+    visibility: hidden !important;
+  }
+  [data-receipt],
+  [data-receipt] * {
+    visibility: visible !important;
+  }
+  [data-receipt] {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    margin: 0 !important;
   }
 }
