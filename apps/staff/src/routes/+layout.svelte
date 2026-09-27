@@ -52,7 +52,9 @@
 {#if isLoginPage}
   {@render children()}
 {:else}
-  <div class="flex min-h-screen">
+  <!-- h-screen + overflow-hidden pins the shell to the viewport so the sidebar
+       stays put and only <main> scrolls. -->
+  <div class="flex h-screen overflow-hidden">
     <!-- Sidebar -->
     <aside class="w-60 shrink-0 flex flex-col bg-sidebar border-r border-sidebar-border">
       <!-- Brand -->

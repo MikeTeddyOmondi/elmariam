@@ -1,19 +1,21 @@
 <script lang="ts">
+  import { Pagination } from '@elmariam/ui';
+  let __page = $state(1);
+  const __perPage = 20;
   import { getInvoices } from '$lib/remote/hotel.remote';
-  import { Alert, AlertDescription, messageFor } from '@elmariam/ui';
+  import { toastError } from '@elmariam/ui';
 
   type Row = Awaited<ReturnType<typeof getInvoices>>[number];
 
   let invoices = $state<Row[]>([]);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them
   // eagerly fetches during SSR and the result is not hydratable.
   $effect(() => {
     getInvoices()
       .then((d) => { invoices = d as Row[]; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
   const statusClass: Record<string, string> = {
     paid:    'bg-green-400/10 text-green-400',
@@ -30,10 +32,8 @@
 
   {#if loading}
     <p class="text-sm text-muted-foreground">Loading…</p>
-  {:else if loadError}
-    <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
-  {:else}
-      {@const data = invoices}
+{:else}
+      {@const data = invoices.slice((__page - 1) * __perPage, __page * __perPage)}
     <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
       <table class="w-full text-sm">
         <thead class="bg-secondary/50">
@@ -60,6 +60,9 @@
           {/each}
         </tbody>
       </table>
+      <div class="px-4 py-3">
+        <Pagination bind:page={__page} total={invoices.length} perPage={__perPage} label="invoices" />
+      </div>
     </div>
   {/if}
 </div>

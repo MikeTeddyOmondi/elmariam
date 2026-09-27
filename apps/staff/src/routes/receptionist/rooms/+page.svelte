@@ -1,18 +1,20 @@
 <script lang="ts">
+  import { Pagination } from '@elmariam/ui';
+  let __page = $state(1);
+  const __perPage = 20;
   import { getRooms, getRoomTypes } from '$lib/remote/hotel.remote';
-  import { Alert, AlertDescription, messageFor } from '@elmariam/ui';
+  import { toastError } from '@elmariam/ui';
 
   let rooms = $state<Awaited<ReturnType<typeof getRooms>>>([] as never);
   let roomTypes = $state<Awaited<ReturnType<typeof getRoomTypes>>>([] as never);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them
   // eagerly fetches during SSR and the result is not hydratable.
   $effect(() => {
     Promise.all([getRooms(), getRoomTypes()])
       .then(([r, rt]) => { rooms = r; roomTypes = rt; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 </script>
 
@@ -26,10 +28,8 @@
     <h2 class="text-base font-semibold text-foreground">All Rooms</h2>
     {#if loading}
       <p class="text-sm text-muted-foreground">Loading…</p>
-    {:else if loadError}
-      <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
-    {:else}
-      {@const data = rooms}
+{:else}
+      {@const data = rooms.slice((__page - 1) * __perPage, __page * __perPage)}
       <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
         <table class="w-full text-sm">
           <thead class="bg-secondary/50">
@@ -52,6 +52,9 @@
             {/each}
           </tbody>
         </table>
+      <div class="px-4 py-3">
+        <Pagination bind:page={__page} total={rooms.length} perPage={__perPage} label="rooms" />
+      </div>
       </div>
     {/if}
   </section>
@@ -60,9 +63,7 @@
     <h2 class="text-base font-semibold text-foreground">Room Types</h2>
     {#if loading}
       <p class="text-sm text-muted-foreground">Loading…</p>
-    {:else if loadError}
-      <Alert variant="destructive"><AlertDescription>{loadError}</AlertDescription></Alert>
-    {:else}
+{:else}
       {@const data = roomTypes}
       <div class="w-full border border-border rounded-xl overflow-hidden bg-card">
         <table class="w-full text-sm">
