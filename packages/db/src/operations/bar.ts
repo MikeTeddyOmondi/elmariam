@@ -1,6 +1,6 @@
 import { Result } from "better-result";
 import { Drink, BarPurchase, BarSale } from "../models";
-import type { IDrink } from "../models";
+import type { IDrink, IBarSale } from "../models";
 import {
   DrinkAlreadyExistsError,
   DrinkNotFoundError,
@@ -8,6 +8,7 @@ import {
   BarDatabaseError,
 } from "../errors/bar";
 import type { BarError } from "../errors/bar";
+import { computeTax } from "../tax";
 
 // ── Input types ───────────────────────────────────────────────────────────────
 
@@ -140,7 +141,7 @@ export async function createPurchase(input: CreatePurchaseInput) {
         try: () =>
           Drink.updateOne(
             { _id: drink._id },
-            { $set: { inStock: true, stockQty: drink.stockQty + input.quantity } }
+            { $inc: { stockQty: input.quantity } }
           ),
         catch: (e) => dbErr("createPurchase.updateStock", e),
       })
@@ -154,7 +155,11 @@ export async function createPurchase(input: CreatePurchaseInput) {
 
 export async function listSales() {
   return Result.tryPromise({
-    try: () => BarSale.find().populate("drinksBought").sort({ createdAt: -1 }),
+    // `.lean(...).map(withId)` so each row carries a string `id`, like
+    // `listDrinks`. Without it the docs serialise to `_id` only and the admin
+    // table's `sale.id` was undefined, showing a blank Sale ID column.
+    try: async () =>
+      (await BarSale.find().sort({ createdAt: -1 }).lean<IBarSale[]>({ virtuals: true })).map(withId),
     catch: (e) => dbErr("listSales", e),
   });
 }
@@ -206,7 +211,7 @@ export async function createSale(input: CreateSaleInput) {
     }
 
     // Build sale line items
-    let totalStockValue = 0;
+    let subTotal = 0;
     const drinksSaleDetails = input.checkoutDrinkItems.map((item, i) => {
       const drink = drinks[i]!;
       // `sellingStockPrice`, not `sellingPrice`: the drink form collects the
@@ -214,18 +219,23 @@ export async function createSale(input: CreateSaleInput) {
       // counterpart), while `sellingPrice` has no writer anywhere and keeps its
       // schema default of 0. Using it valued every sale at zero.
       const stockValue = drink.sellingStockPrice * item.quantity;
-      totalStockValue += stockValue;
+      subTotal += stockValue;
       return { productID: drink._id, qtyBought: item.quantity, stockValue };
     });
 
+    // 14% VAT + 2% levy on the pre-tax subtotal; `totalStockValue` is the total.
+    const { vat, levy, total: totalStockValue } = computeTax(subTotal);
+
     const sale = yield* Result.await(
       Result.tryPromise({
-        try: () => new BarSale({ drinks: drinksSaleDetails, totalStockValue }).save(),
+        try: () =>
+          new BarSale({ drinks: drinksSaleDetails, subTotal, vat, levy, totalStockValue }).save(),
         catch: (e) => dbErr("createSale.save", e),
       })
     );
 
-    // Decrement stock
+    // Decrement stock. `inStock` is a virtual (stockQty > 0), so nothing else
+    // to update.
     yield* Result.await(
       Result.tryPromise({
         try: () =>
@@ -238,7 +248,44 @@ export async function createSale(input: CreateSaleInput) {
       })
     );
 
-    return Result.ok({ sale, totalStockValue });
+    return Result.ok({ sale, subTotal, vat, levy, totalStockValue });
+  });
+}
+
+export interface UpdateDrinkInput {
+  drinkName?: string;
+  drinkCode?: string;
+  typeOfDrink?: "spirit" | "beer" | "rtd" | "wine" | "water";
+  uom?: "bottles" | "crates" | "pack";
+  packageQty?: number;
+  buyingStockPrice?: number;
+  sellingStockPrice?: number;
+}
+
+// Stock fields (`stockQty`, `inStock`) are owned by purchases/sales and are not
+// editable here; `inStock` is a virtual anyway.
+export async function updateDrink(id: string, input: UpdateDrinkInput) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await Drink.findByIdAndUpdate(
+        id,
+        { $set: input },
+        { new: true, runValidators: true }
+      ).lean<IDrink>({ virtuals: true });
+      if (!doc) throw new DrinkNotFoundError({ id, message: "Drink not found" });
+      return withId(doc);
+    },
+    catch: (e: any): BarError => {
+      if (e instanceof DrinkNotFoundError) return e;
+      if (e.code === 11000) {
+        const field = Object.keys(e.keyPattern ?? {})[0] ?? "field";
+        return new DrinkAlreadyExistsError({
+          field,
+          message: `A drink with that ${field.replace(/_/g, " ")} already exists.`,
+        });
+      }
+      return dbErr("updateDrink", e);
+    },
   });
 }
 
