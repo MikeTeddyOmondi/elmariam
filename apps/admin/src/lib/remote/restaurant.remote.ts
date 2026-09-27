@@ -7,6 +7,7 @@ import {
   createMenuItem as dbCreateMenuItem,
   updateMenuItem as dbUpdateMenuItem,
   updateOrderStatus as dbUpdateOrderStatus,
+  markOrderPaid as dbMarkOrderPaid,
   deleteMenuItem as dbDeleteMenuItem,
 } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
@@ -50,6 +51,9 @@ export type OrderView = {
   tableNumber?: string;
   status: 'pending' | 'preparing' | 'ready' | 'served' | 'cancelled';
   items: Array<{ menuItem: string; quantity: number; price: number }>;
+  subTotal: number;
+  vat: number;
+  levy: number;
   totalAmount: number;
   paymentMethod?: 'cash' | 'mpesa' | 'bank';
   paymentStatus: 'pending' | 'paid';
@@ -113,6 +117,17 @@ export const updateOrderStatus = command(
   async ({ orderId, status }) => {
     requirePermission('orders:status');
     return unwrap(await dbUpdateOrderStatus(orderId, status));
+  }
+);
+
+export const markOrderPaid = command(
+  v.object({
+    orderId:       v.string(),
+    paymentMethod: v.picklist(['cash', 'mpesa', 'bank']),
+  }),
+  async ({ orderId, paymentMethod }) => {
+    requirePermission('orders:pay');
+    return unwrap(await dbMarkOrderPaid(orderId, paymentMethod));
   }
 );
 

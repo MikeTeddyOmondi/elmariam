@@ -2,7 +2,7 @@ import type { Result } from 'better-result';
 import { query, form } from '$app/server';
 import { error as httpError, invalid } from '@sveltejs/kit';
 import * as v from 'valibot';
-import { listDrinks, listPurchases, listSales, createDrink as dbCreateDrink, createPurchase, createSale, deleteDrink as dbDeleteDrink } from '@elmariam/db';
+import { listDrinks, listPurchases, listSales, createDrink as dbCreateDrink, createPurchase, createSale, updateDrink as dbUpdateDrink, deleteDrink as dbDeleteDrink } from '@elmariam/db';
 import { requirePermission } from '$lib/server/guard';
 
 function unwrap<T, E extends { message: string }>(result: Result<T, E>): T {
@@ -59,6 +59,9 @@ export type BarPurchaseView = {
 export type BarSaleView = {
   id: string;
   drinks: Array<{ productID: string; qtyBought: number; stockValue: number }>;
+  subTotal: number;
+  vat: number;
+  levy: number;
   totalStockValue: number;
   createdAt: Date;
   updatedAt: Date;
@@ -125,6 +128,26 @@ export const checkoutBarSale = form(
     const created = unwrapForm(await createSale(data));
     await getBarSales().refresh();
     return created;
+  }
+);
+
+/** Use `updateDrink.for(drink.id)` so each edit modal gets its own instance. */
+export const updateDrink = form(
+  v.object({
+    id:                v.string(),
+    drinkName:         v.pipe(v.string(), v.minLength(1, 'Name is required')),
+    drinkCode:         v.pipe(v.string(), v.minLength(1, 'Code is required')),
+    typeOfDrink:       v.picklist(['spirit', 'beer', 'rtd', 'wine', 'water']),
+    uom:               v.picklist(['bottles', 'crates', 'pack']),
+    packageQty:        v.pipe(v.number(), v.minValue(1, 'Must be at least 1')),
+    buyingStockPrice:  v.pipe(v.number(), v.minValue(0, 'Cannot be negative')),
+    sellingStockPrice: v.pipe(v.number(), v.minValue(0, 'Cannot be negative')),
+  }),
+  async ({ id, ...rest }) => {
+    requirePermission('drinks:write');
+    const updated = unwrapForm(await dbUpdateDrink(id, rest));
+    await getDrinks().refresh();
+    return updated;
   }
 );
 
