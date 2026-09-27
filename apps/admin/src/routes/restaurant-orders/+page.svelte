@@ -1,15 +1,24 @@
 <script lang="ts">
-  import { getOrders, updateOrderStatus, type OrderView } from '$lib/remote/restaurant.remote';
-  import { toast } from '@elmariam/ui';
+  import { Pagination, SalePayActions } from '@elmariam/ui';
+  let __page = $state(1);
+  const __perPage = 20;
+  import { getOrders, updateOrderStatus, markOrderPaid, type OrderView } from '$lib/remote/restaurant.remote';
+  import { chargeMpesa, sendSms } from '$lib/remote/payments.remote';
+  import { toast, toastError} from '@elmariam/ui';
+  import { can } from '$lib/permissions';
 
   let orders: OrderView[] = $state([]);
   let loading = $state(true);
-  let loadError = $state('');
+
+  // Cosmetic gating: the remote guards itself with `orders:pay`. Only admin
+  // holds it, so waiters never see the control.
+  const canPay = $derived(can('orders:pay'));
+  const canNotify = $derived(can('payments:initiate'));
 
   $effect(() => {
     getOrders()
       .then(d => { orders = d; loading = false; })
-      .catch(e => { loadError = e.message; loading = false; });
+      .catch(e => { toastError(e); loading = false; });
   });
 
   const statusCls: Record<string, string> = {
@@ -28,6 +37,17 @@
     try {
       await updateOrderStatus({ orderId, status });
       getOrders().then(d => { orders = d; }).catch(() => {});
+    } catch (err: any) {
+      toast.error(err.message || 'An error occurred');
+    } finally { updating = null; }
+  }
+
+  async function markPaid(orderId: string, paymentMethod: 'cash' | 'mpesa' | 'bank') {
+    updating = orderId;
+    try {
+      await markOrderPaid({ orderId, paymentMethod });
+      toast.success('Order marked as paid.');
+      orders = await getOrders();
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { updating = null; }
@@ -58,9 +78,7 @@
           </div>
         {/each}
       </div>
-    {:else if loadError}
-      <div class="p-6 text-sm text-destructive">{loadError}</div>
-    {:else}
+{:else}
       <table class="w-full text-sm">
         <thead class="bg-secondary/50 border-b border-border">
           <tr>
@@ -70,7 +88,7 @@
           </tr>
         </thead>
         <tbody>
-          {#each orders as order}
+          {#each orders.slice((__page - 1) * __perPage, __page * __perPage) as order}
             <tr class="border-b border-border last:border-0 hover:bg-secondary/30 transition-colors">
               <td class="px-4 py-3 text-muted-foreground font-mono text-xs">{order.id}</td>
               <td class="px-4 py-3 text-foreground">{order.tableNumber ?? '-'}</td>
@@ -82,17 +100,48 @@
                   {order.status}
                 </span>
               </td>
-              <td class="px-4 py-3 text-muted-foreground capitalize">{order.paymentStatus ?? '-'}</td>
               <td class="px-4 py-3">
-                <select
-                  value={order.status}
-                  disabled={updating === order.id}
-                  onchange={(e) => changeStatus(order.id, (e.target as HTMLSelectElement).value as any)}
-                  class={selectCls}>
-                  {#each statuses as s}
-                    <option value={s}>{s}</option>
-                  {/each}
-                </select>
+                {#if order.paymentStatus === 'paid'}
+                  <span class="inline-flex items-center rounded px-2 py-0.5 text-xs font-medium capitalize bg-green-500/15 text-green-500">
+                    paid{order.paymentMethod ? ` · ${order.paymentMethod}` : ''}
+                  </span>
+                {:else if canPay}
+                  <select
+                    value=""
+                    disabled={updating === order.id}
+                    onchange={(e) => { const m = (e.target as HTMLSelectElement).value; if (m) markPaid(order.id, m as any); }}
+                    class={selectCls}>
+                    <option value="" disabled>Mark paid…</option>
+                    <option value="cash">Cash</option>
+                    <option value="mpesa">M-Pesa</option>
+                    <option value="bank">Card / Bank</option>
+                  </select>
+                {:else}
+                  <span class="text-muted-foreground capitalize">{order.paymentStatus ?? '-'}</span>
+                {/if}
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex items-center gap-2">
+                  <select
+                    value={order.status}
+                    disabled={updating === order.id}
+                    onchange={(e) => changeStatus(order.id, (e.target as HTMLSelectElement).value as any)}
+                    class={selectCls}>
+                    {#each statuses as s}
+                      <option value={s}>{s}</option>
+                    {/each}
+                  </select>
+                  {#if canNotify}
+                    <SalePayActions
+                      compact
+                      amount={order.totalAmount ?? 0}
+                      reference={order.id}
+                      smsMessage={`El'Mariam restaurant: your bill is KES ${(order.totalAmount ?? 0).toLocaleString()}. Thank you.`}
+                      onMpesa={(phone) => chargeMpesa({ amount: order.totalAmount ?? 0, phone, reference: `restaurant-order-${order.id}` })}
+                      onSms={(phone, message) => sendSms({ phone, message })}
+                    />
+                  {/if}
+                </div>
               </td>
             </tr>
           {:else}
@@ -100,6 +149,9 @@
           {/each}
         </tbody>
       </table>
+      <div class="px-4 py-3">
+        <Pagination bind:page={__page} total={orders.length} perPage={__perPage} label="orders" />
+      </div>
     {/if}
   </div>
 </div>
