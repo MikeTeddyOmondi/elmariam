@@ -8,6 +8,9 @@ export * from "./lib/components/ui/table/index.js";
 export * from "./lib/components/ui/separator/index.js";
 export * from "./lib/components/ui/alert/index.js";
 export * from "./lib/components/ui/dialog/index.js";
+export * from "./lib/components/ui/receipt/index.js";
+export * from "./lib/components/ui/pagination/index.js";
+export * from "./lib/components/ui/sale-pay-actions/index.js";
 
 // Form controls
 export * from "./lib/components/ui/textarea/index.js";

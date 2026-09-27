@@ -1,56 +1,87 @@
 <script lang="ts">
+  import { Dialog as DialogPrimitive } from "bits-ui";
   import type { Snippet } from "svelte";
+  import X from "lucide-svelte/icons/x";
   import { cn } from "../../../utils.js";
 
   interface Props {
     open?: boolean;
-    onclose?: () => void;
     title?: string;
     description?: string;
+    /**
+     * A submission is in flight. While true the dialog is not dismissable: no
+     * Escape, no outside click, no close button. The caller closes it itself
+     * once the post succeeds.
+     */
+    pending?: boolean;
     class?: string;
+    /**
+     * Called when the dialog is dismissed (Escape, outside click, close button).
+     * Call sites drive visibility from their own state, so clear it here.
+     */
+    onclose?: () => void;
     children?: Snippet;
   }
 
-  let { open = false, onclose, title, description, class: className, children }: Props = $props();
-
-  function handleKeydown(e: KeyboardEvent) {
-    if (e.key === "Escape") onclose?.();
-  }
-
-  function handleBackdropClick(e: MouseEvent) {
-    if (e.target === e.currentTarget) onclose?.();
-  }
+  let {
+    open = $bindable(false),
+    title,
+    description,
+    pending = false,
+    class: className,
+    onclose,
+    children
+  }: Props = $props();
 </script>
 
-{#if open}
-  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
-  <div
-    class="fixed inset-0 z-50 flex items-center justify-center"
-    role="dialog"
-    aria-modal="true"
-    onkeydown={handleKeydown}
-    tabindex="-1"
-  >
-    <div
-      class="absolute inset-0 bg-black/80 backdrop-blur-sm"
-      onclick={handleBackdropClick}
-      aria-hidden="true"
-    ></div>
-    <div
+<DialogPrimitive.Root
+  bind:open
+  onOpenChange={(next: boolean) => {
+    if (!next) onclose?.();
+  }}
+>
+  <DialogPrimitive.Portal>
+    <DialogPrimitive.Overlay
+      class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+    />
+    <DialogPrimitive.Content
+      escapeKeydownBehavior={pending ? "ignore" : "close"}
+      interactOutsideBehavior={pending ? "ignore" : "close"}
       class={cn(
-        "relative z-10 w-full max-w-lg rounded-lg border border-border bg-card p-6 shadow-lg",
+        "fixed left-1/2 top-1/2 z-50 grid w-[calc(100%-2rem)] max-w-lg -translate-x-1/2 -translate-y-1/2 gap-4",
+        "max-h-[calc(100vh-2rem)] overflow-y-auto",
+        "border border-border bg-card p-6 shadow-lg sm:rounded-lg",
+        "data-[state=open]:animate-in data-[state=closed]:animate-out",
+        "data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0",
+        "data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         className
       )}
     >
-      {#if title}
-        <h2 class="text-lg font-semibold leading-none tracking-tight text-card-foreground mb-1">
-          {title}
-        </h2>
+      {#if title || description}
+        <div class="flex flex-col gap-1 text-left">
+          {#if title}
+            <DialogPrimitive.Title class="text-lg font-semibold leading-none tracking-tight text-card-foreground">
+              {title}
+            </DialogPrimitive.Title>
+          {/if}
+          {#if description}
+            <DialogPrimitive.Description class="text-sm text-muted-foreground">
+              {description}
+            </DialogPrimitive.Description>
+          {/if}
+        </div>
       {/if}
-      {#if description}
-        <p class="text-sm text-muted-foreground mb-4">{description}</p>
-      {/if}
+
       {@render children?.()}
-    </div>
-  </div>
-{/if}
+
+      {#if !pending}
+        <DialogPrimitive.Close
+          class="absolute right-4 top-4 rounded-sm text-muted-foreground opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2"
+        >
+          <X class="size-4" />
+          <span class="sr-only">Close</span>
+        </DialogPrimitive.Close>
+      {/if}
+    </DialogPrimitive.Content>
+  </DialogPrimitive.Portal>
+</DialogPrimitive.Root>
