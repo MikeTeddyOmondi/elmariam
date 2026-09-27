@@ -7,6 +7,7 @@ import {
   RestaurantDatabaseError,
 } from "../errors/restaurant";
 import type { RestaurantError } from "../errors/restaurant";
+import { computeTax } from "../tax";
 
 // ── Input types ───────────────────────────────────────────────────────────────
 
@@ -125,7 +126,7 @@ export async function createOrder(input: CreateOrderInput) {
     );
 
     // Build order line items and validate they all exist
-    let totalAmount = 0;
+    let subTotal = 0;
     const orderItems: Array<{ menuItem: any; quantity: number; unitPrice: number; subtotal: number }> = [];
 
     for (let i = 0; i < input.items.length; i++) {
@@ -137,9 +138,12 @@ export async function createOrder(input: CreateOrderInput) {
         );
       }
       const subtotal = menuItem.price * item.quantity;
-      totalAmount += subtotal;
+      subTotal += subtotal;
       orderItems.push({ menuItem: menuItem._id, quantity: item.quantity, unitPrice: menuItem.price, subtotal });
     }
+
+    // 14% VAT + 2% levy on the pre-tax subtotal; `totalAmount` is the total.
+    const { vat, levy, total: totalAmount } = computeTax(subTotal);
 
     const order = yield* Result.await(
       Result.tryPromise({
@@ -147,6 +151,9 @@ export async function createOrder(input: CreateOrderInput) {
           RestaurantOrder.create({
             tableNumber: input.tableNumber,
             items: orderItems,
+            subTotal,
+            vat,
+            levy,
             totalAmount,
             status: "pending",
             paymentStatus: "pending",

@@ -12,6 +12,7 @@ import {
   HotelDatabaseError,
 } from "../errors/hotel";
 import type { HotelError } from "../errors/hotel";
+import { computeTax } from "../tax";
 
 // ── Input types ───────────────────────────────────────────────────────────────
 
@@ -138,9 +139,14 @@ export async function listBookings(scope: OwnerScope = {}) {
   return Result.tryPromise({
     try: async () => {
       const filter = scope.customerId ? { customer: scope.customerId } : {};
+      // Populate the real ref paths (`customer`, `roomType`, `room`) in place so
+      // the view gets the objects directly, rather than the `occupant`/
+      // `room-type` virtuals which left `customer`/`roomType` as raw ObjectIds.
       return (await Booking.find(filter)
-        .populate("occupant")
-        .populate("room-type")
+        .sort({ createdAt: -1 })
+        .populate("customer")
+        .populate("roomType")
+        .populate("room")
         .populate("invoice")
         .lean<IBooking[]>({ virtuals: true })).map(withId);
     },
@@ -152,8 +158,9 @@ export async function getBooking(id: string) {
   return Result.tryPromise({
     try: async () => {
       const doc = await Booking.findById(id)
-        .populate("occupant")
-        .populate("room-type")
+        .populate("customer")
+        .populate("roomType")
+        .populate("room")
         .populate("invoice")
         .lean<IBooking>({ virtuals: true });
       if (!doc) throw new BookingNotFoundError({ id, message: "Booking not found" });
@@ -252,8 +259,7 @@ export async function createBooking(input: CreateBookingInput) {
     );
     const guests = Number(input.numberAdults) + Number(input.numberKids ?? 0);
     const subTotalCost = roomTypeDoc.rate * diffinDays * guests;
-    const vat = 0.16 * subTotalCost;
-    const totalCost = subTotalCost + vat;
+    const { vat, levy, total: totalCost } = computeTax(subTotalCost);
 
     // 6. Create invoice
     const invoice = yield* Result.await(
@@ -263,6 +269,7 @@ export async function createBooking(input: CreateBookingInput) {
             status: "pending",
             paymentMethod: input.paymentMethod,
             vat,
+            levy,
             subTotalCost,
             totalCost,
           }).save(),
@@ -279,6 +286,7 @@ export async function createBooking(input: CreateBookingInput) {
             numberAdults: input.numberAdults,
             numberKids: input.numberKids ?? 0,
             roomType: roomTypeDoc._id,
+            room: selectedRoom._id,
             checkInDate: checkIn,
             checkOutDate: checkOut,
             invoiceRef: invoice._id,
@@ -417,6 +425,102 @@ export async function createRoom(roomTypeId: string, input: CreateRoomInput) {
     );
 
     return Result.ok(room);
+  });
+}
+
+// ── Updates ─────────────────────────────────────────────────────────────────
+
+export interface UpdateCustomerInput {
+  firstname?: string;
+  lastname?: string;
+  email?: string;
+  phone_number?: number;
+}
+
+// `id_number` is the customer's identity and is intentionally not editable here.
+export async function updateCustomer(id: string, input: UpdateCustomerInput) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await Customer.findByIdAndUpdate(
+        id,
+        { $set: input },
+        { new: true, runValidators: true }
+      ).lean<ICustomer>({ virtuals: true });
+      if (!doc) throw new CustomerNotFoundError({ id, message: "Customer not found" });
+      return withId(doc);
+    },
+    catch: (e: any): HotelError => {
+      if (e instanceof CustomerNotFoundError) return e;
+      if (e.code === 11000) {
+        const field = Object.keys(e.keyPattern ?? {})[0] ?? "field";
+        return new CustomerAlreadyExistsError({
+          field,
+          message: `A customer with that ${field.replace(/_/g, " ")} already exists.`,
+        });
+      }
+      return dbErr("updateCustomer", e);
+    },
+  });
+}
+
+export interface UpdateRoomInput {
+  number?: string;
+}
+
+export async function updateRoom(id: string, input: UpdateRoomInput) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await Room.findByIdAndUpdate(
+        id,
+        { $set: input },
+        { new: true, runValidators: true }
+      ).lean<IRoom>({ virtuals: true });
+      if (!doc) throw new RoomNotFoundError({ id, message: "Room not found" });
+      return withId(doc);
+    },
+    catch: (e: any): HotelError => {
+      if (e instanceof RoomNotFoundError) return e;
+      if (e.code === 11000) {
+        return new HotelDatabaseError({
+          operation: "updateRoom",
+          message: `Room number "${input.number}" already exists.`,
+          cause: e,
+        });
+      }
+      return dbErr("updateRoom", e);
+    },
+  });
+}
+
+export interface UpdateRoomTypeInput {
+  title?: string;
+  description?: string;
+  rate?: number;
+  capacity?: number;
+  roomType?: "single" | "double";
+}
+
+export async function updateRoomType(id: string, input: UpdateRoomTypeInput) {
+  return Result.tryPromise({
+    try: async () => {
+      const doc = await RoomType.findByIdAndUpdate(
+        id,
+        { $set: input },
+        { new: true, runValidators: true }
+      ).lean<IRoomType>({ virtuals: true });
+      if (!doc) throw new RoomTypeNotFoundError({ id, message: "Room type not found" });
+      return withId(doc);
+    },
+    catch: (e: any): HotelError => {
+      if (e instanceof RoomTypeNotFoundError) return e;
+      if (e.code === 11000) {
+        return new RoomTypeNotFoundError({
+          id: input.roomType ?? id,
+          message: `Room type "${input.roomType}" already exists.`,
+        });
+      }
+      return dbErr("updateRoomType", e);
+    },
   });
 }
 

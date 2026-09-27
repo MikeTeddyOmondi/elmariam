@@ -8,6 +8,7 @@ export interface IBooking extends Document {
   numberAdults: number;
   numberKids: number;
   roomType: Types.ObjectId;
+  room?: Types.ObjectId;
   checkInDate: Date;
   checkOutDate: Date;
   invoiceRef: Types.ObjectId;
@@ -29,6 +30,14 @@ const BookingSchema = new Schema<IBooking>(
       type: Schema.Types.ObjectId,
       required: true,
       ref: "RoomType",
+    },
+    // The specific room assigned at booking time, so a receipt can show its
+    // number. Optional for backwards compatibility with bookings made before
+    // this field existed.
+    room: {
+      type: Schema.Types.ObjectId,
+      required: false,
+      ref: "Room",
     },
     checkInDate: { type: Date, required: true },
     checkOutDate: { type: Date, required: true },
