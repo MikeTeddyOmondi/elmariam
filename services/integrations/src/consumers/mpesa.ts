@@ -2,9 +2,12 @@
 import IntaSend from "intasend-node";
 import { env } from "../config/env";
 
+// Constructor order is (publishableKey, secretKey, testMode). Passing the
+// secret token first (as before) authenticated with the wrong key and IntaSend
+// returned 401.
 const intasend = new IntaSend(
-  env.INTASEND_API_TOKEN,
   env.INTASEND_PUBLISHABLE_KEY,
+  env.INTASEND_API_TOKEN,
   env.INTASEND_TEST_MODE
 );
 
