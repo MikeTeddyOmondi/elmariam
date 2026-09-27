@@ -116,9 +116,21 @@ export const ROLE_PERMISSIONS: Record<Role, readonly Permission[]> = {
     "bar_purchases:read",
     "bar_sales:read",
     "bar_sales:write",
+    // Charge / notify a customer at the counter for a bar sale.
+    "payments:initiate",
+    "notifications:send",
   ],
 
-  waiter: ["menu:read", "orders:read", "orders:write", "orders:status", "customers:read"],
+  waiter: [
+    "menu:read",
+    "orders:read",
+    "orders:write",
+    "orders:status",
+    "customers:read",
+    // Charge / notify a customer at the counter for a restaurant sale.
+    "payments:initiate",
+    "notifications:send",
+  ],
 
   // Customers are additionally narrowed by ownership at the query level:
   // holding `bookings:read` does not mean reading *everyone's* bookings.
