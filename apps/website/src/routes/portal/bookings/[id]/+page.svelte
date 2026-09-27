@@ -1,13 +1,12 @@
 <script lang="ts">
   import { page } from '$app/stores';
   import { getOneBooking } from '$lib/remote/booking.remote';
-  import { Badge, Card, CardContent, Separator, Skeleton, messageFor } from '@elmariam/ui';
+  import { Badge, Card, CardContent, Separator, Skeleton, toastError } from '@elmariam/ui';
 
   const bookingId = $derived($page.params.id);
 
   let booking = $state<Awaited<ReturnType<typeof getOneBooking>> | null>(null);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
@@ -16,11 +15,10 @@
     if (!id) return;
 
     loading = true;
-    loadError = '';
 
     getOneBooking(id)
       .then((d) => { booking = d; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 </script>
 
@@ -38,14 +36,12 @@
           <Skeleton class="h-5 w-full" />
         {/each}
       </div>
-    {:else if loadError}
-      <p class="text-sm text-destructive">{loadError}</p>
     {:else if booking}
       {@const b = booking}
       <dl class="text-sm">
         <div class="flex items-center justify-between py-2">
           <dt class="text-muted-foreground">Room Type</dt>
-          <dd class="font-medium capitalize text-foreground">{b.roomType}</dd>
+          <dd class="font-medium capitalize text-foreground">{(b.roomType as any)?.roomType ?? '-'}</dd>
         </div>
         <Separator />
         <div class="flex items-center justify-between py-2">

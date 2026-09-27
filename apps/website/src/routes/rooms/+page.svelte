@@ -1,12 +1,11 @@
 <script lang="ts">
   import { getRoomTypes } from '$lib/remote/catalog.remote';
-  import { Badge, Button, Card, CardContent, Skeleton, messageFor } from '@elmariam/ui';
+  import { Badge, Button, Card, CardContent, Skeleton, toastError } from '@elmariam/ui';
 
   type RoomType = Awaited<ReturnType<typeof getRoomTypes>>[number];
 
   let roomTypes = $state<RoomType[]>([]);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
@@ -18,7 +17,7 @@
   $effect(() => {
     getRoomTypes()
       .then((d) => { roomTypes = d; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 </script>
 
@@ -37,8 +36,6 @@
         </CardContent></Card>
       {/each}
     </div>
-  {:else if loadError}
-    <p class="text-sm text-destructive">{loadError}</p>
   {:else if roomTypes.length === 0}
     <p class="mt-8 text-center text-muted-foreground">No room types available at this time.</p>
   {:else}

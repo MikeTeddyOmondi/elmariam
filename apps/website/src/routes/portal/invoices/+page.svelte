@@ -11,21 +11,20 @@
     TableHead,
     TableHeader,
     TableRow,
-    messageFor
+    toastError
   } from '@elmariam/ui';
 
   type Invoice = Awaited<ReturnType<typeof getMyInvoices>>[number];
 
   let invoices = $state<Invoice[]>([]);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getMyInvoices()
       .then((d) => { invoices = d; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 </script>
 
@@ -38,10 +37,6 @@
         <Skeleton class="h-5 w-full" />
       {/each}
     </CardContent>
-  </Card>
-{:else if loadError}
-  <Card>
-    <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
   </Card>
 {:else if invoices.length === 0}
   <Card>

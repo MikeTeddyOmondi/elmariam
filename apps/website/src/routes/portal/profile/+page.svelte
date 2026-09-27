@@ -1,18 +1,17 @@
 <script lang="ts">
   import { getMyProfile } from '$lib/remote/account.remote';
-  import { Button, Card, CardContent, Separator, Skeleton, messageFor } from '@elmariam/ui';
+  import { Button, Card, CardContent, Separator, Skeleton, toastError } from '@elmariam/ui';
   import UserPen from 'lucide-svelte/icons/user-pen';
 
   let profile = $state<Awaited<ReturnType<typeof getMyProfile>>>(null);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getMyProfile()
       .then((d) => { profile = d; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 </script>
 
@@ -26,8 +25,6 @@
           <Skeleton class="h-5 w-full" />
         {/each}
       </div>
-    {:else if loadError}
-      <p class="text-sm text-destructive">{loadError}</p>
     {:else if profile}
       <dl class="text-sm">
         <div class="flex items-center justify-between py-2">

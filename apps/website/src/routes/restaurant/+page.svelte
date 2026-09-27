@@ -1,12 +1,11 @@
 <script lang="ts">
   import { getMenuItems } from '$lib/remote/catalog.remote';
-  import { Card, CardContent, Skeleton, messageFor } from '@elmariam/ui';
+  import { Card, CardContent, Skeleton, toastError } from '@elmariam/ui';
 
   type MenuItem = Awaited<ReturnType<typeof getMenuItems>>[number];
 
   let menuItems = $state<MenuItem[]>([]);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
@@ -18,7 +17,7 @@
   $effect(() => {
     getMenuItems()
       .then((d) => { menuItems = d; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 
   const categories = ['appetizer', 'main', 'dessert', 'beverage', 'side'] as const;
@@ -42,8 +41,6 @@
         </CardContent></Card>
       {/each}
     </div>
-  {:else if loadError}
-    <p class="text-sm text-destructive">{loadError}</p>
   {:else if menuItems.length === 0}
     <p class="mt-8 text-center text-muted-foreground">Menu coming soon.</p>
   {:else}
