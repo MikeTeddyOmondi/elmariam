@@ -1,23 +1,25 @@
 <script lang="ts">
+  import { Pagination } from '@elmariam/ui';
+  let __page = $state(1);
+  const __perPage = 20;
   import { getInvoices } from '$lib/remote/hotel.remote';
   import {
     Badge, Card, CardContent, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor
+    toastError
   } from '@elmariam/ui';
 
   type Invoice = Awaited<ReturnType<typeof getInvoices>>[number];
 
   let invoices = $state<Invoice[]>([]);
   let loading = $state(true);
-  let loadError = $state('');
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
   $effect(() => {
     getInvoices()
       .then((d) => { invoices = d as Invoice[]; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 
   const totalBilled = $derived(
@@ -30,7 +32,7 @@
     <h1 class="text-2xl font-bold text-foreground">Invoices</h1>
     <p class="mt-1 text-sm text-muted-foreground">
       Billing raised against bookings
-      {#if !loading && !loadError && invoices.length}
+      {#if !loading && invoices.length}
         <span class="text-foreground">({invoices.length} total, KES {totalBilled.toLocaleString()})</span>
       {/if}
     </p>
@@ -43,9 +45,7 @@
           <Skeleton class="h-5 w-full" />
         {/each}
       </CardContent>
-    {:else if loadError}
-      <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
-    {:else}
+{:else}
       <div class="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -59,7 +59,7 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            {#each invoices as inv}
+            {#each invoices.slice((__page - 1) * __perPage, __page * __perPage) as inv}
               <TableRow>
                 <TableCell class="font-mono text-xs text-muted-foreground">{inv.bookingRef}</TableCell>
                 <TableCell>
@@ -81,6 +81,9 @@
             {/each}
           </TableBody>
         </Table>
+      <div class="px-4 py-3">
+        <Pagination bind:page={__page} total={invoices.length} perPage={__perPage} label="invoices" />
+      </div>
       </div>
     {/if}
   </Card>

@@ -57,10 +57,10 @@
   };
 
   const paymentConfig: Chart.ChartConfig = {
-    cash: { label: "Cash", color: "hsl(var(--chart-1))" },
-    mpesa: { label: "M-Pesa", color: "hsl(var(--chart-2))" },
-    bank: { label: "Bank", color: "hsl(var(--chart-3))" },
-    unknown: { label: "Other", color: "hsl(var(--chart-5))" },
+    cash: { label: "Cash", color: "hsl(42 90% 55%)" },
+    mpesa: { label: "M-Pesa", color: "hsl(142 70% 45%)" },
+    bank: { label: "Card / Bank", color: "hsl(210 90% 56%)" },
+    unknown: { label: "Other", color: "hsl(330 45% 55%)" },
   };
 
   const revenueConfig: Chart.ChartConfig = {

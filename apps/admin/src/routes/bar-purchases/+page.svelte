@@ -1,9 +1,12 @@
 <script lang="ts">
+  import { Pagination } from '@elmariam/ui';
+  let __page = $state(1);
+  const __perPage = 20;
   import { getBarPurchases, getDrinks, createBarPurchase, type BarPurchaseView, type DrinkView } from '$lib/remote/bar.remote';
   import {
-    Button, Card, CardContent, CardHeader, CardTitle, Form, Input, Label, SelectField, Skeleton,
+    Button, Card, CardContent, Dialog, Form, Input, Label, SelectField, Skeleton,
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
-    messageFor, toast, toastError
+    toast, toastError
   } from '@elmariam/ui';
   import Plus from 'lucide-svelte/icons/plus';
   import { can } from '$lib/permissions';
@@ -11,14 +14,16 @@
   let purchases: BarPurchaseView[] = $state([]);
   let drinks: DrinkView[] = $state([]);
   let loading = $state(true);
-  let loadError = $state('');
+
+  // Create lives in a modal opened from the header, not a card above the table.
+  let showCreate = $state(false);
 
   // Queries run in $effect, not at component top level: calling them eagerly
   // fetches during SSR and the result is not hydratable.
   $effect(() => {
     Promise.all([getBarPurchases(), getDrinks()])
       .then(([p, d]) => { purchases = p; drinks = d; loading = false; })
-      .catch((e) => { loadError = messageFor(e); loading = false; });
+      .catch((e) => { toastError(e); loading = false; });
   });
 
   const drinkOptions = $derived(
@@ -32,74 +37,18 @@
 </script>
 
 <div class="space-y-6">
-  <div>
-    <h1 class="text-2xl font-bold text-foreground">Bar Purchases</h1>
-    <p class="mt-1 text-sm text-muted-foreground">Stock received from suppliers</p>
+  <div class="flex items-start justify-between gap-4">
+    <div>
+      <h1 class="text-2xl font-bold text-foreground">Bar Purchases</h1>
+      <p class="mt-1 text-sm text-muted-foreground">Stock received from suppliers</p>
+    </div>
+    {#if canWrite}
+      <Button onclick={() => (showCreate = true)}>
+        <Plus />
+        Record Purchase
+      </Button>
+    {/if}
   </div>
-
-  {#if canWrite}
-    <Card class="max-w-2xl">
-      <CardHeader>
-        <CardTitle class="text-base">Record Purchase</CardTitle>
-      </CardHeader>
-      <CardContent>
-        <form
-          {...createBarPurchase.enhance(async ({ submit }) => {
-            try {
-              const ok = await submit();
-              if (ok) toast.success('Purchase recorded.');
-            } catch (e) {
-              toastError(e);
-            }
-          })}
-          class="grid gap-4 sm:grid-cols-2"
-        >
-          <div class="sm:col-span-2 empty:hidden">
-            <Form.Message issues={createBarPurchase.fields.allIssues()} />
-          </div>
-
-          <Form.Field>
-            <Label for="receipt">Receipt #</Label>
-            <Input id="receipt" placeholder="REC-001" {...createBarPurchase.fields.receiptNumber.as('text')} />
-            <Form.FieldErrors issues={createBarPurchase.fields.receiptNumber.issues()} />
-          </Form.Field>
-
-          <Form.Field>
-            <!-- Was a free-text "Drink ID or name" box, which meant typing a raw
-                 ObjectId. Now a picker over the actual catalogue. -->
-            <Label for="product">Product</Label>
-            <SelectField
-              id="product"
-              disabled={loading}
-              items={drinkOptions}
-              placeholder={loading ? 'Loading' : 'Select drink'}
-              {...createBarPurchase.fields.product.as('select')}
-            />
-            <Form.FieldErrors issues={createBarPurchase.fields.product.issues()} />
-          </Form.Field>
-
-          <Form.Field>
-            <Label for="qty">Quantity</Label>
-            <Input id="qty" min="1" {...createBarPurchase.fields.quantity.as('number')} />
-            <Form.FieldErrors issues={createBarPurchase.fields.quantity.issues()} />
-          </Form.Field>
-
-          <Form.Field>
-            <Label for="supplier">Supplier</Label>
-            <Input id="supplier" placeholder="Supplier name" {...createBarPurchase.fields.supplier.as('text')} />
-            <Form.FieldErrors issues={createBarPurchase.fields.supplier.issues()} />
-          </Form.Field>
-
-          <div class="sm:col-span-2 flex justify-end">
-            <Button type="submit" disabled={createBarPurchase.pending > 0}>
-              <Plus />
-              {createBarPurchase.pending > 0 ? 'Saving…' : 'Record Purchase'}
-            </Button>
-          </div>
-        </form>
-      </CardContent>
-    </Card>
-  {/if}
 
   <Card class="overflow-hidden">
     {#if loading}
@@ -108,9 +57,7 @@
           <Skeleton class="h-5 w-full" />
         {/each}
       </CardContent>
-    {:else if loadError}
-      <CardContent class="py-6 text-sm text-destructive">{loadError}</CardContent>
-    {:else}
+{:else}
       <div class="overflow-x-auto">
         <Table>
           <TableHeader>
@@ -123,7 +70,7 @@
             </TableRow>
           </TableHeader>
           <TableBody>
-            {#each purchases as p}
+            {#each purchases.slice((__page - 1) * __perPage, __page * __perPage) as p}
               <TableRow>
                 <TableCell class="font-mono text-xs text-muted-foreground">{p.receiptNumber}</TableCell>
                 <TableCell class="font-medium text-foreground">{p.product?.drinkName ?? '-'}</TableCell>
@@ -140,7 +87,86 @@
             {/each}
           </TableBody>
         </Table>
+      <div class="px-4 py-3">
+        <Pagination bind:page={__page} total={purchases.length} perPage={__perPage} label="purchases" />
+      </div>
       </div>
     {/if}
   </Card>
 </div>
+
+{#if canWrite}
+  <Dialog
+    open={showCreate}
+    title="Record Purchase"
+    description="Log stock received from a supplier."
+    pending={createBarPurchase.pending > 0}
+    onclose={() => (showCreate = false)}
+  >
+    <form
+      {...createBarPurchase.enhance(async ({ submit }) => {
+        try {
+          const ok = await submit();
+          if (ok) {
+            toast.success('Purchase recorded.');
+            showCreate = false;
+          }
+        } catch (e) {
+          toastError(e);
+        }
+      })}
+      class="grid gap-4 sm:grid-cols-2"
+    >
+      <div class="sm:col-span-2 empty:hidden">
+        <Form.Message issues={createBarPurchase.fields.allIssues()} />
+      </div>
+
+      <Form.Field>
+        <Label for="receipt">Receipt #</Label>
+        <Input id="receipt" placeholder="REC-001" {...createBarPurchase.fields.receiptNumber.as('text')} />
+        <Form.FieldErrors issues={createBarPurchase.fields.receiptNumber.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <!-- Was a free-text "Drink ID or name" box, which meant typing a raw
+             ObjectId. Now a picker over the actual catalogue. -->
+        <Label for="product">Product</Label>
+        <SelectField
+          id="product"
+          disabled={loading}
+          items={drinkOptions}
+          placeholder={loading ? 'Loading' : 'Select drink'}
+          {...createBarPurchase.fields.product.as('select')}
+        />
+        <Form.FieldErrors issues={createBarPurchase.fields.product.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="qty">Quantity</Label>
+        <Input id="qty" min="1" {...createBarPurchase.fields.quantity.as('number')} />
+        <Form.FieldErrors issues={createBarPurchase.fields.quantity.issues()} />
+      </Form.Field>
+
+      <Form.Field>
+        <Label for="supplier">Supplier</Label>
+        <Input id="supplier" placeholder="Supplier name" {...createBarPurchase.fields.supplier.as('text')} />
+        <Form.FieldErrors issues={createBarPurchase.fields.supplier.issues()} />
+      </Form.Field>
+
+      <div class="sm:col-span-2 flex justify-end gap-2">
+        <Button
+          type="button"
+          variant="outline"
+          disabled={createBarPurchase.pending > 0}
+          onclick={() => (showCreate = false)}
+        >
+          Cancel
+        </Button>
+        <Button type="submit" disabled={createBarPurchase.pending > 0}>
+          <Plus />
+          {createBarPurchase.pending > 0 ? 'Saving…' : 'Record Purchase'}
+        </Button>
+      </div>
+    </form>
+  </Dialog>
+{/if}
