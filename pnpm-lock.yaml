@@ -63,6 +63,9 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
+      '@types/node':
+        specifier: 22.19.19
+        version: 22.19.19
       svelte:
         specifier: 5.55.5
         version: 5.55.5
@@ -121,6 +124,9 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
+      '@types/node':
+        specifier: 22.19.19
+        version: 22.19.19
       svelte:
         specifier: 5.55.5
         version: 5.55.5
@@ -179,6 +185,9 @@ importers:
       '@tailwindcss/vite':
         specifier: 4.3.3
         version: 4.3.3(vite@5.4.21(@types/node@22.19.19)(lightningcss@1.32.0))
+      '@types/node':
+        specifier: 22.19.19
+        version: 22.19.19
       svelte:
         specifier: 5.55.5
         version: 5.55.5
