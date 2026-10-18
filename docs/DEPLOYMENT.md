@@ -117,15 +117,20 @@ Both routes work; pick one.
 - **Direct ports**: `http://localhost:3000` / `:3001` / `:3002`. This is the
   path for a personal PC and needs no DNS.
 - **Traefik**: the compose labels route
-  `admin-panel.otienoobogeandcompany.com`, `staff.…`, `auth.…`. These only
-  resolve if you own the DNS or add hosts entries.
+  `admin-panel.…`, `staff-panel.…`, `elmariam.…`, `auth.…` (all under
+  `otienoobogeandcompany.com`). These only resolve if each one is a public
+  hostname on the Cloudflare tunnel (or you add hosts entries).
 
-If you serve the apps on real hostnames, three things must change together:
+If you serve the apps on other hostnames, three things must change together:
 
-1. `ORIGIN` in each app's Dockerfile (currently `http://localhost:300{0,1,2}`).
-   `adapter-node` rejects cross-origin POSTs, and the forms submit natively: a wrong `ORIGIN` breaks every form with a 403.
-2. `VITE_OPENAUTH_ISSUER` at **build time**: the browser-side auth client bakes
-   it into the bundle and falls back to `http://localhost:3100`.
+1. `ORIGIN` on each app service in `docker-compose.yml` (the Dockerfiles default
+   to `http://localhost:300{0,1,2}`). `adapter-node` rejects cross-origin POSTs,
+   and the forms submit natively: a wrong `ORIGIN` breaks every form with a 403.
+2. `PUBLIC_OPENAUTH_ISSUER` on each app service: the public issuer URL the
+   browser is sent to for login. It is read at runtime, so no rebuild is needed,
+   and it falls back to `http://localhost:3100`. `OPENAUTH_ISSUER` stays on the
+   internal `http://openauth:3100`, since the server-side token exchange and
+   verification must use the same URL.
 3. `ALLOWED_HOST_SUFFIX` in `infra/openauth/src/index.ts`, which is currently
    pinned to `.otienoobogeandcompany.com`.
 
