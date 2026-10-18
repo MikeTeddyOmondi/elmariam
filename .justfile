@@ -68,7 +68,7 @@ up:
 
 # Start only core infrastructure containers
 up-infra:
-  docker compose up -d mongo compass rabbitmq minio openauth 
+  docker compose up -d mongo compass rabbitmq rustfs openauth 
 
 # Stop all containers
 down:
