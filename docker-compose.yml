@@ -194,6 +194,11 @@ services:
       EMAIL_SENDER: ${EMAIL_SENDER}
       EMAIL_RECIPIENT: ${EMAIL_RECIPIENT}
       RESEND_API_KEY: ${RESEND_API_KEY}
+    # Public entry point for inbound webhooks (IntaSend payment callbacks).
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.integrations.rule=Host(`integrations.otienoobogeandcompany.com`)"
+      - "traefik.http.services.integrations.loadbalancer.server.port=8010"
     depends_on:
       rabbitmq:
         condition: service_healthy
