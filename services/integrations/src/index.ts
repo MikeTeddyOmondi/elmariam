@@ -1,14 +1,17 @@
 import express from "express";
 import { RabbitMQConfig, rabbitMQEnvFromProcess } from "@elmariam/queue";
+import { connectDB } from "./db";
 import { handleMpesa } from "./consumers/mpesa";
 import { handleSms } from "./consumers/sms";
 import { handleSmtp } from "./consumers/smtp";
 import { env } from "./config/env";
+import { intasendWebhook } from "./webhooks/intasend";
 
 const app = express();
 app.get("/", (_req, res) => {
   res.json({ apiVersion: "1.0.0", apiDescription: "Integrations Service (mpesa + sms + smtp)" });
 });
+app.post("/webhooks/intasend", express.json({ limit: "100kb" }), intasendWebhook);
 
 const rabbitMQ = new RabbitMQConfig(rabbitMQEnvFromProcess(), {
   maxRetries: 10,
@@ -17,6 +20,8 @@ const rabbitMQ = new RabbitMQConfig(rabbitMQEnvFromProcess(), {
 });
 
 async function startConsumers() {
+  // The IntaSend webhook settles booking invoices.
+  await connectDB();
   await rabbitMQ.connect();
 
   await rabbitMQ.createQueue("mpesa");

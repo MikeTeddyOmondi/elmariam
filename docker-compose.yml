@@ -188,11 +188,12 @@ services:
       dockerfile: services/integrations/Dockerfile
     restart: always
     environment:
-      <<: *rabbitmq-env
+      <<: [*common-env, *rabbitmq-env]
       PORT: 8010
       INTASEND_API_TOKEN: ${INTASEND_API_TOKEN}
       INTASEND_PUBLISHABLE_KEY: ${INTASEND_PUBLISHABLE_KEY}
       INTASEND_TEST_MODE: ${INTASEND_TEST_MODE:-true}
+      INTASEND_WEBHOOK_CHALLENGE: ${INTASEND_WEBHOOK_CHALLENGE:-}
       UJUMBESMS_API_KEY: ${UJUMBESMS_API_KEY}
       UJUMBESMS_API_URL: ${UJUMBESMS_API_URL:-https://ujumbesms.co.ke}
       UJUMBESMS_ACCOUNT_EMAIL: ${UJUMBESMS_ACCOUNT_EMAIL}
@@ -205,6 +206,8 @@ services:
       - "traefik.http.routers.integrations.rule=Host(`integrations.otienoobogeandcompany.com`)"
       - "traefik.http.services.integrations.loadbalancer.server.port=8010"
     depends_on:
+      mongo:
+        condition: service_healthy
       rabbitmq:
         condition: service_healthy
     networks:
