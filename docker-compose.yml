@@ -198,7 +198,11 @@ services:
     restart: always
     environment:
       <<: [*common-env, *rabbitmq-env]
+      # Server-side token exchange stays on the internal network; the browser
+      # is sent to the public issuer.
       OPENAUTH_ISSUER: http://openauth:3100
+      PUBLIC_OPENAUTH_ISSUER: https://auth.otienoobogeandcompany.com
+      ORIGIN: https://admin-panel.otienoobogeandcompany.com
     ports:
       - "3000:3000"
     labels:
@@ -223,6 +227,8 @@ services:
     environment:
       <<: [*common-env, *rabbitmq-env]
       OPENAUTH_ISSUER: http://openauth:3100
+      PUBLIC_OPENAUTH_ISSUER: https://auth.otienoobogeandcompany.com
+      ORIGIN: https://staff-panel.otienoobogeandcompany.com
     ports:
       - "3001:3001"
     labels:
@@ -247,6 +253,8 @@ services:
     environment:
       <<: [*common-env, *rabbitmq-env]
       OPENAUTH_ISSUER: http://openauth:3100
+      PUBLIC_OPENAUTH_ISSUER: https://auth.otienoobogeandcompany.com
+      ORIGIN: https://elmariam.otienoobogeandcompany.com
     ports:
       - "3002:3002"
     labels:
