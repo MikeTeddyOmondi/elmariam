@@ -75,13 +75,21 @@ services:
     # volume without a separate chown step.
     user: "0:0"
     environment:
-      - RUSTFS_ACCESS_KEY=minio
-      - RUSTFS_SECRET_KEY=minio_password
+      # Root credentials are read on every start, so changing them in .env takes
+      # effect on restart. The defaults are the old MinIO pair, for dev only.
+      - RUSTFS_ACCESS_KEY=${RUSTFS_ACCESS_KEY:-minio}
+      - RUSTFS_SECRET_KEY=${RUSTFS_SECRET_KEY:-minio_password}
       - RUSTFS_VOLUMES=/data
       - RUSTFS_ADDRESS=0.0.0.0:9000
       - RUSTFS_CONSOLE_ADDRESS=0.0.0.0:9001
       - RUSTFS_CONSOLE_ENABLE=true
-      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=*
+      # Lets bucket.s3.<domain> (virtual-host style) resolve alongside path style.
+      - RUSTFS_SERVER_DOMAINS=s3.otienoobogeandcompany.com
+      # S3 API CORS: only browsers talking to the bucket directly (presigned
+      # uploads or downloads from the apps) need this.
+      - RUSTFS_CORS_ALLOWED_ORIGINS=https://admin-panel.otienoobogeandcompany.com,https://staff-panel.otienoobogeandcompany.com,https://elmariam.otienoobogeandcompany.com
+      # The console calls its own origin, so it only has to allow itself.
+      - RUSTFS_CONSOLE_CORS_ALLOWED_ORIGINS=https://rustfs.otienoobogeandcompany.com
     ports:
       - "9003:9000"
       - "9001:9001"
@@ -100,8 +108,12 @@ services:
       - "traefik.http.routers.s3.rule=Host(`s3.otienoobogeandcompany.com`)"
       - "traefik.http.routers.s3.service=s3"
       - "traefik.http.services.s3.loadbalancer.server.port=9000"
-      - "traefik.http.routers.rustfs-console.rule=Host(`minio.otienoobogeandcompany.com`)"
+      - "traefik.http.routers.rustfs-console.rule=Host(`rustfs.otienoobogeandcompany.com`)"
       - "traefik.http.routers.rustfs-console.service=rustfs-console"
+      # The console lives under /rustfs/console/; send the bare host there.
+      - "traefik.http.routers.rustfs-console.middlewares=rustfs-console-root"
+      - "traefik.http.middlewares.rustfs-console-root.redirectregex.regex=^https?://([^/]+)/?$$"
+      - "traefik.http.middlewares.rustfs-console-root.redirectregex.replacement=https://$${1}/rustfs/console/"
       - "traefik.http.services.rustfs-console.loadbalancer.server.port=9001"
     networks:
       - elmariam-network
