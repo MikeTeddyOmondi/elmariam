@@ -146,16 +146,19 @@ services:
       dockerfile: infra/openauth/Dockerfile
     restart: always
     environment:
+      # Verification codes are published to the "mails" queue; without these the
+      # client dials localhost:5672 and every register/reset hangs then fails.
+      <<: *rabbitmq-env
       # Required: without it the issuer logs verification codes to stdout
       # instead of publishing them to the mail queue.
-      - NODE_ENV=production
+      NODE_ENV: production
       # Set to "true" only when pointing local dev apps at this issuer, so
       # http://localhost:* is accepted as a redirect target. Leave unset (false)
       # for a real deployment.
-      - OPENAUTH_ALLOW_LOCALHOST=${OPENAUTH_ALLOW_LOCALHOST:-false}
-      - PORT=3100
-      - DATABASE_URL=mongodb://mongo:27017/auth
-      - OPENAUTH_ISSUER=https://auth.otienoobogeandcompany.com
+      OPENAUTH_ALLOW_LOCALHOST: ${OPENAUTH_ALLOW_LOCALHOST:-false}
+      PORT: 3100
+      DATABASE_URL: mongodb://mongo:27017/auth
+      OPENAUTH_ISSUER: https://auth.otienoobogeandcompany.com
     ports:
       - "3100:3100"
     healthcheck:
@@ -170,6 +173,8 @@ services:
       - "traefik.http.services.auth.loadbalancer.server.port=3100"
     depends_on:
       mongo:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - elmariam-network
