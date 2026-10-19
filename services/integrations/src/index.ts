@@ -6,6 +6,7 @@ import { handleSms } from "./consumers/sms";
 import { handleSmtp } from "./consumers/smtp";
 import { env } from "./config/env";
 import { intasendWebhook } from "./webhooks/intasend";
+import { healthHandler } from "./health";
 
 const app = express();
 app.get("/", (_req, res) => {
@@ -18,6 +19,8 @@ const rabbitMQ = new RabbitMQConfig(rabbitMQEnvFromProcess(), {
   initialDelay: 2000,
   maxDelay: 60000,
 });
+
+app.get("/health", healthHandler(rabbitMQ, ["mpesa", "sms", "mails"]));
 
 async function startConsumers() {
   // The IntaSend webhook settles booking invoices.

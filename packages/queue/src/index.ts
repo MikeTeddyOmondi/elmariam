@@ -20,6 +20,10 @@ export class RabbitMQConfig {
   private connection: ChannelModel | null = null;
   private channel: Channel | null = null;
   private retryOptions: Required<RabbitMQRetryOptions>;
+  // Re-attached after a reconnect: a new channel starts with no consumers.
+  private subscriptions = new Map<string, (message: any) => Promise<void>>();
+  // Set by close() so an intentional close does not trigger a reconnect.
+  private closing = false;
 
   constructor(env: RabbitMQEnv, retryOptions: RabbitMQRetryOptions = {}) {
     this.url = `amqp://${env.username}:${env.password}@${env.host}:${env.port}/${env.vhost}`;
@@ -55,6 +59,7 @@ export class RabbitMQConfig {
         });
 
         this.connection.on("close", () => {
+          if (this.closing) return;
           console.log(
             `⚠️  RabbitMQ connection closed. Attempting to reconnect...`
           );
@@ -62,6 +67,12 @@ export class RabbitMQConfig {
         });
 
         console.log(`✅  Connected to RabbitMQ server!`);
+
+        for (const [queueName, handler] of this.subscriptions) {
+          await this.channel.assertQueue(queueName, { durable: true });
+          await this.consume(queueName, handler);
+          console.log(`👂  Re-subscribed to "${queueName}" queue`);
+        }
         return;
       } catch (error: any) {
         lastError = error;
@@ -110,21 +121,41 @@ export class RabbitMQConfig {
     handler: (message: any) => Promise<void>
   ): Promise<void> {
     if (!this.channel) throw new Error("RabbitMQ channel not initialized");
-    await this.channel.prefetch(1);
-    await this.channel.consume(queueName, async (msg) => {
+    this.subscriptions.set(queueName, handler);
+    await this.consume(queueName, handler);
+  }
+
+  private async consume(queueName: string, handler: (message: any) => Promise<void>) {
+    // Captured so an ack lands on the channel that delivered the message, not
+    // on a newer one opened by a reconnect in the meantime.
+    const channel = this.channel!;
+    await channel.prefetch(1);
+    await channel.consume(queueName, async (msg) => {
       if (!msg) return;
       try {
         const content = JSON.parse(msg.content.toString());
         await handler(content);
-        this.channel!.ack(msg);
+        channel.ack(msg);
       } catch (error: any) {
         console.error(`❌  Error processing message: ${error.message}`);
-        this.channel!.nack(msg, false, false);
+        channel.nack(msg, false, false);
       }
     });
   }
 
+  /** Whether a channel is open. False while reconnecting. */
+  isConnected(): boolean {
+    return this.channel !== null;
+  }
+
+  /** Message and consumer counts for a queue, as the broker reports them. */
+  async checkQueue(queueName: string): Promise<amqp.Replies.AssertQueue> {
+    if (!this.channel) throw new Error("RabbitMQ channel not initialized");
+    return this.channel.checkQueue(queueName);
+  }
+
   async close(): Promise<void> {
+    this.closing = true;
     try {
       await this.channel?.close();
       await this.connection?.close();
