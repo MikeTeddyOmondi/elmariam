@@ -56,7 +56,9 @@
             // `submit()` resolves to false on validation issues; it does not throw.
             const ok = await submit();
             if (!ok) return;
-            profile = await getMyProfile();
+            // From the form's own result. Awaiting `getMyProfile()` here would
+            // fail: an event handler is not a reactive context.
+            profile = saveMyProfile.result?.profile ?? profile;
             editing = false;
             toast.success('Profile saved.');
             if (next) await goto(next);

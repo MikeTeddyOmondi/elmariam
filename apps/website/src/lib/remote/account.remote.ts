@@ -82,7 +82,10 @@ export const saveMyProfile = form(
       await syncUserFromProfile({ firstname, lastname, phone_number: phone!, id_number: id_number! });
     }
 
-    await getMyProfile().refresh();
-    return { saved: true };
+    // Single-flight: push the saved profile into the client's cached
+    // `getMyProfile()` in this same response, and return it for the page.
+    const profile = JSON.parse(JSON.stringify(await findOwnCustomerDoc()));
+    getMyProfile().set(profile);
+    return { profile };
   }
 );
