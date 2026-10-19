@@ -54,7 +54,12 @@ export const getOneBooking = query(v.string(), async (bookingId: string): Promis
   if (!customer) throw httpError(404, 'Booking not found');
 
   const booking = unwrap(await getBooking(bookingId));
-  if (String((booking as any).customer) !== customer.id) {
+  // `getBooking` populates `customer`, so it is a document here, not an id:
+  // `String(doc)` is "[object Object]" and never matched, which made every
+  // booking "not found" to its own owner. Compare the id either way.
+  const owner = (booking as any).customer;
+  const ownerId = String(owner?._id ?? owner?.id ?? owner);
+  if (ownerId !== customer.id) {
     throw httpError(404, 'Booking not found');
   }
 

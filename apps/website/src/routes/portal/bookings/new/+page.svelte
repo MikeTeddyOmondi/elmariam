@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { goto } from '$app/navigation';
   import { createBooking } from '$lib/remote/booking.remote';
   import { getRoomTypes } from '$lib/remote/catalog.remote';
   import { getMyProfile } from '$lib/remote/account.remote';
@@ -71,13 +72,19 @@
       The customer is resolved from the session server-side and is never sent.
     -->
     <form
-      {...createBooking.enhance(async ({ submit }) => {
+      {...createBooking.enhance(async ({ submit, element }) => {
         try {
           // `submit()` resolves to false when the server returns validation
           // issues: it does not throw. Toasting unconditionally would report
           // success on an invalid form.
           const ok = await submit();
-          if (ok) toast.success('Booking created.');
+          if (!ok) return;
+          // `enhance` neither resets nor navigates on its own.
+          element.reset();
+          toast.success('Booking created.');
+          // The server refreshed `getMyBookings()` with this submission, so the
+          // list shows the new booking straight away.
+          await goto('/portal/bookings');
         } catch (e) {
           toastError(e);
         }

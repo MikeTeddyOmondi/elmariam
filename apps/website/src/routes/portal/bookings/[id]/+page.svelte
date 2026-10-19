@@ -1,9 +1,9 @@
 <script lang="ts">
-  import { page } from '$app/stores';
+  import { page } from '$app/state';
   import { getOneBooking } from '$lib/remote/booking.remote';
   import { Badge, Card, CardContent, Separator, Skeleton, toastError } from '@elmariam/ui';
 
-  const bookingId = $derived($page.params.id);
+  const bookingId = $derived(page.params.id);
 
   let booking = $state<Awaited<ReturnType<typeof getOneBooking>> | null>(null);
   let loading = $state(true);
