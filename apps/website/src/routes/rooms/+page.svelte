@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getRoomTypes } from '$lib/remote/catalog.remote';
   import { Badge, Button, Card, CardContent, Skeleton, toastError } from '@elmariam/ui';
+  import CardImage from '$lib/components/CardImage.svelte';
 
   type RoomType = Awaited<ReturnType<typeof getRoomTypes>>[number];
 
@@ -28,12 +29,15 @@
   {#if loading}
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {#each { length: 3 } as _}
-        <Card><CardContent class="space-y-3 py-6">
-          <Skeleton class="h-4 w-20" />
-          <Skeleton class="h-6 w-3/4" />
-          <Skeleton class="h-16 w-full" />
-          <Skeleton class="h-10 w-full" />
-        </CardContent></Card>
+        <Card class="overflow-hidden">
+          <Skeleton class="aspect-[4/3] w-full rounded-none" />
+          <CardContent class="space-y-3 py-6">
+            <Skeleton class="h-4 w-20" />
+            <Skeleton class="h-6 w-3/4" />
+            <Skeleton class="h-16 w-full" />
+            <Skeleton class="h-10 w-full" />
+          </CardContent>
+        </Card>
       {/each}
     </div>
   {:else if roomTypes.length === 0}
@@ -42,9 +46,7 @@
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {#each roomTypes as rt}
         <Card class="flex flex-col overflow-hidden">
-          {#if rt.imageUrl}
-            <img src={rt.imageUrl} alt={rt.title} loading="lazy" class="aspect-[4/3] w-full object-cover" />
-          {/if}
+          <CardImage src={rt.imageUrl} alt={rt.title} />
           <CardContent class="flex flex-1 flex-col gap-3 py-6">
             <Badge variant="secondary" class="w-fit uppercase tracking-widest">{rt.roomType}</Badge>
             <h2 class="text-xl font-semibold text-foreground">{rt.title}</h2>

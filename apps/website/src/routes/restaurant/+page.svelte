@@ -1,6 +1,7 @@
 <script lang="ts">
   import { getMenuItems } from '$lib/remote/catalog.remote';
   import { Card, CardContent, Skeleton, toastError } from '@elmariam/ui';
+  import CardImage from '$lib/components/CardImage.svelte';
 
   type MenuItem = Awaited<ReturnType<typeof getMenuItems>>[number];
 
@@ -34,11 +35,14 @@
   {#if loading}
     <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
       {#each { length: 4 } as _}
-        <Card><CardContent class="space-y-2 py-5">
-          <Skeleton class="h-5 w-2/3" />
-          <Skeleton class="h-10 w-full" />
-          <Skeleton class="h-4 w-1/3" />
-        </CardContent></Card>
+        <Card class="overflow-hidden">
+          <Skeleton class="aspect-[4/3] w-full rounded-none" />
+          <CardContent class="space-y-2 py-5">
+            <Skeleton class="h-5 w-2/3" />
+            <Skeleton class="h-10 w-full" />
+            <Skeleton class="h-4 w-1/3" />
+          </CardContent>
+        </Card>
       {/each}
     </div>
   {:else if menuItems.length === 0}
@@ -54,9 +58,7 @@
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {#each items as item}
               <Card class="overflow-hidden">
-                {#if item.imageUrl}
-                  <img src={item.imageUrl} alt={item.name} loading="lazy" class="aspect-[4/3] w-full object-cover" />
-                {/if}
+                <CardImage src={item.imageUrl} alt={item.name} />
                 <CardContent class="py-5">
                   <h3 class="mb-2 font-medium text-foreground">{item.name}</h3>
                   {#if item.description}
