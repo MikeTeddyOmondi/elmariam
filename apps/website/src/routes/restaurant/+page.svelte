@@ -53,7 +53,10 @@
           </h2>
           <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {#each items as item}
-              <Card>
+              <Card class="overflow-hidden">
+                {#if item.imageUrl}
+                  <img src={item.imageUrl} alt={item.name} loading="lazy" class="aspect-[4/3] w-full object-cover" />
+                {/if}
                 <CardContent class="py-5">
                   <h3 class="mb-2 font-medium text-foreground">{item.name}</h3>
                   {#if item.description}

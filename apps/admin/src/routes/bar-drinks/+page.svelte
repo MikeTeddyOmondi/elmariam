@@ -11,6 +11,7 @@
   import Plus from 'lucide-svelte/icons/plus';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import { can } from '$lib/permissions';
+  import ImageUpload from '$lib/components/ImageUpload.svelte';
 
   let drinks: DrinkView[] = $state([]);
   let loading = $state(true);
@@ -265,6 +266,11 @@
 
       <div class="sm:col-span-2 empty:hidden">
         <Form.Message issues={editForm.fields.allIssues()} />
+      </div>
+
+      <!-- Saved on upload, independent of the form fields below. -->
+      <div class="sm:col-span-2">
+        <ImageUpload kind="drink" id={drink.id} label="Drink image" bind:imageUrl={drink.imageUrl} />
       </div>
 
       <Form.Field>

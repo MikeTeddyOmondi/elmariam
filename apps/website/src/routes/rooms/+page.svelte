@@ -41,7 +41,10 @@
   {:else}
     <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
       {#each roomTypes as rt}
-        <Card class="flex flex-col">
+        <Card class="flex flex-col overflow-hidden">
+          {#if rt.imageUrl}
+            <img src={rt.imageUrl} alt={rt.title} loading="lazy" class="aspect-[4/3] w-full object-cover" />
+          {/if}
           <CardContent class="flex flex-1 flex-col gap-3 py-6">
             <Badge variant="secondary" class="w-fit uppercase tracking-widest">{rt.roomType}</Badge>
             <h2 class="text-xl font-semibold text-foreground">{rt.title}</h2>

@@ -73,6 +73,7 @@ export type RoomTypeView = {
   rate: number;
   capacity: number;
   roomType: 'single' | 'double';
+  imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 };

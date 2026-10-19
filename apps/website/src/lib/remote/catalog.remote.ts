@@ -35,6 +35,7 @@ export type PublicMenuItem = {
   category: 'appetizer' | 'main' | 'dessert' | 'beverage' | 'side';
   price: number;
   isAvailable: boolean;
+  imageUrl?: string;
 };
 
 export const getMenuItems = query(async (): Promise<PublicMenuItem[]> => {

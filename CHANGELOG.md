@@ -8,6 +8,29 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Added: image uploads for room types, menu items and drinks
+
+- One public RustFS bucket, `elmariam-public`, with prefixes `room-types/`, `menu-items/` and `drinks/`. The admin app creates it on first use and reapplies a bucket policy allowing anonymous `s3:GetObject` only; puts, lists and deletes need the root keys, which only the server holds
+- Two-phase upload, as in locci-platform: `presignImageUpload` (gated on the item's write permission) signs a 5-minute PUT against `s3.otienoobogeandcompany.com` with content-type and content-length signed, so a client cannot swap in `text/html` or a larger body; the browser PUTs straight to storage; `attachImage` checks the key belongs to that item, HEADs the object, saves `imageUrl` and deletes the replaced image
+- JPEG, PNG, WebP and AVIF up to 5 MB. Each upload gets a fresh key, so a replaced image is never served stale from a cache
+- An `ImageUpload` component sits in the edit dialogs for room types, menu items and drinks. `RoomType` gained `imageUrl`; the website's rooms and restaurant cards show the image when one is set
+
+### Fixed: deployment on the rootless-Docker host
+
+- Traefik mounts `${DOCKER_SOCK}`; on the server this is `/run/user/1000/docker.sock`. It had mounted the rootful daemon's socket, so it saw no containers and served no routes
+- The browser login redirect reads `PUBLIC_OPENAUTH_ISSUER` at runtime (it was a build-time `VITE_` value that fell back to `localhost:3100`), and each app sets its public `ORIGIN`
+- OpenAuth now gets the RabbitMQ settings. Without them every register and password reset hung for 15s and failed, because verification codes could not be queued, so no account could be created
+
+### Added: IntaSend webhook and integrations health check
+
+- `POST /webhooks/intasend` on `integrations.otienoobogeandcompany.com`, verified by `INTASEND_WEBHOOK_CHALLENGE` in constant time. It settles the booking named by `api_ref`, checks the amount against the stored invoice total, marks the invoice paid at most once, and acknowledges anything it cannot act on with a 200 so IntaSend stops retrying
+- `GET /health` pings Mongo and asks the broker that each consumed queue still has a consumer; compose uses it as the container healthcheck
+
+### Fixed: queue client after a broker restart
+
+- `RabbitMQConfig` re-attaches its consumers after a reconnect. Previously a new channel came up with none, so after any RabbitMQ restart the integrations service looked connected but processed nothing
+- `close()` no longer triggers a reconnect, which had left a background connection behind in every app that publishes once and closes
+
 ### Added: taxes (14% VAT + 2% levy)
 
 - New `packages/db/src/tax.ts` holds `VAT_RATE`, `LEVY_RATE` and `computeTax` so the rates live in one place. Every booking, bar sale and restaurant order now applies 14% VAT and a 2% hotel levy on the pre-tax subtotal. Booking VAT was 16%; it is now 14% with a separate levy line

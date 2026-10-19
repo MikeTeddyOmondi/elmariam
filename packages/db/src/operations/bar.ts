@@ -260,6 +260,7 @@ export interface UpdateDrinkInput {
   packageQty?: number;
   buyingStockPrice?: number;
   sellingStockPrice?: number;
+  imageUrl?: string;
 }
 
 // Stock fields (`stockQty`, `inStock`) are owned by purchases/sales and are not

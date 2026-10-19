@@ -13,6 +13,7 @@ export interface IRoomType extends Document {
     bookingRef: Types.ObjectId[];
     unavailableDates: Date[];
   };
+  imageUrl?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -23,6 +24,7 @@ const RoomTypeSchema = new Schema<IRoomType>(
     description: { type: String, required: true },
     rate: { type: Number, required: true },
     capacity: { type: Number, required: true },
+    imageUrl: { type: String, required: false },
     roomType: {
       type: String,
       enum: ["single", "double"],

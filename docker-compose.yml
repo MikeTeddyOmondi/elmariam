@@ -235,6 +235,13 @@ services:
       OPENAUTH_ISSUER: http://openauth:3100
       PUBLIC_OPENAUTH_ISSUER: https://auth.otienoobogeandcompany.com
       ORIGIN: https://admin-panel.otienoobogeandcompany.com
+      # Image uploads: the server signs PUTs for the public bucket with the
+      # RustFS root keys; browsers upload to S3_PUBLIC_URL directly.
+      S3_ENDPOINT: http://rustfs:9000
+      S3_PUBLIC_URL: https://s3.otienoobogeandcompany.com
+      S3_PUBLIC_BUCKET: elmariam-public
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-minio}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-minio_password}
     ports:
       - "3000:3000"
     labels:
@@ -242,6 +249,8 @@ services:
       - "traefik.http.routers.admin.rule=Host(`admin-panel.otienoobogeandcompany.com`)"
       - "traefik.http.services.admin.loadbalancer.server.port=3000"
     depends_on:
+      rustfs:
+        condition: service_healthy
       mongo:
         condition: service_healthy
       openauth:

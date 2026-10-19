@@ -11,6 +11,7 @@
   import Plus from 'lucide-svelte/icons/plus';
   import Trash2 from 'lucide-svelte/icons/trash-2';
   import { can } from '$lib/permissions';
+  import ImageUpload from '$lib/components/ImageUpload.svelte';
 
   let roomTypes: RoomTypeView[] = $state([]);
   let loading = $state(true);
@@ -234,6 +235,11 @@
 
       <div class="sm:col-span-2 empty:hidden">
         <Form.Message issues={editForm.fields.allIssues()} />
+      </div>
+
+      <!-- Saved on upload, independent of the form fields below. -->
+      <div class="sm:col-span-2">
+        <ImageUpload kind="room-type" id={rt.id} label="Room photo" bind:imageUrl={rt.imageUrl} />
       </div>
 
       <Form.Field>

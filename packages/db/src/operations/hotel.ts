@@ -498,6 +498,7 @@ export interface UpdateRoomTypeInput {
   rate?: number;
   capacity?: number;
   roomType?: "single" | "double";
+  imageUrl?: string;
 }
 
 export async function updateRoomType(id: string, input: UpdateRoomTypeInput) {
