@@ -29,6 +29,7 @@ services:
 
   compass:
     container_name: elmariam-mongodb-compass
+    restart: always
     image: haohanyang/compass-web:0.4.1
     ports:
       - 8765:8080
