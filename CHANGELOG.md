@@ -8,6 +8,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Added: customer profile on the website, linked to the signed-in account
+
+- The portal profile page has a working form (it was a disabled "coming soon" button, so no customer could ever book). `saveMyProfile` creates the profile on first save and edits it after: name and a Kenyan mobile number normalised to `2547XXXXXXXX`, plus the ID number, which is set once and not editable afterwards
+- `Customer.user` references the `User` it belongs to (unique, sparse). Lookups go by that link first; failing that, an unlinked customer with the same email is claimed, which is how a walk-in created by staff gets attached when that person signs up. A customer already linked to another account is never taken over
+- Saving the profile copies the name and phone onto the `User`, and replaces the issuer's `pending-<uuid>` ID number placeholder with the real one
+- The new-booking page checks for a profile first and sends the visitor to complete it, then straight back (`/portal/profile?next=/portal/bookings/new`), instead of failing with a 409 after the form is filled in. Its room type choices come from the room types that exist, with their rates, instead of a fixed single/double list
+
 ### Added: image uploads for room types, menu items and drinks
 
 - One public RustFS bucket, `elmariam-public`, with prefixes `room-types/`, `menu-items/` and `drinks/`. The admin app creates it on first use and reapplies a bucket policy allowing anonymous `s3:GetObject` only; puts, lists and deletes need the root keys, which only the server holds

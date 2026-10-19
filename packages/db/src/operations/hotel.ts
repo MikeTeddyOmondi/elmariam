@@ -22,6 +22,7 @@ export interface CreateCustomerInput {
   id_number: string;
   email: string;
   phone_number?: number;
+  user?: string;
 }
 
 export interface CreateBookingInput {
