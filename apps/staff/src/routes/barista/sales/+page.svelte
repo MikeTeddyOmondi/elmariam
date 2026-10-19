@@ -167,10 +167,9 @@
             toast.success('Sale recorded.');
             rowCount = 1;
             showCreate = false;
-            // `.run()`, not `await getBarSales()`: the bare query is only
-            // awaitable in a reactive context (the $effect loader above); in an
-            // event handler it must be executed imperatively.
-            sales = (await getBarSales().run()) as Row[];
+            // The server handler refreshed this query with the submission, so
+            // this reads the current list.
+            sales = (await getBarSales()) as Row[];
             // Newest sale is first (sorted by createdAt desc): preview its receipt.
             if (sales[0]) receipt = receiptForSale(sales[0]);
           }

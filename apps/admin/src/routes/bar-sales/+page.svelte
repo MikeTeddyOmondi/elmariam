@@ -188,12 +188,9 @@
             toast.success('Sale recorded.');
             rowCount = 1;
             showCreate = false;
-            // `.run()`, not `await getBarSales()`: the bare query is only
-            // awaitable in a reactive context (the $effect loader above). Here
-            // in an event handler it must be executed imperatively. The server
-            // handler already single-flight `refresh()`es this query, so this
-            // reads the freshly recomputed list.
-            sales = await getBarSales().run();
+            // The server handler single-flight `refresh()`es this query, so
+            // this reads the freshly recomputed list from the same response.
+            sales = await getBarSales();
             // Newest sale is first (sorted by createdAt desc): preview its receipt.
             if (sales[0]) receipt = receiptForSale(sales[0]);
           }

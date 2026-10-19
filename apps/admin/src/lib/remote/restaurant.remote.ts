@@ -116,7 +116,10 @@ export const updateOrderStatus = command(
   }),
   async ({ orderId, status }) => {
     requirePermission('orders:status');
-    return unwrap(await dbUpdateOrderStatus(orderId, status));
+    const updated = unwrap(await dbUpdateOrderStatus(orderId, status));
+    // Single-flight: the refreshed list rides back with this response.
+    await getOrders().refresh();
+    return updated;
   }
 );
 
@@ -127,7 +130,9 @@ export const markOrderPaid = command(
   }),
   async ({ orderId, paymentMethod }) => {
     requirePermission('orders:pay');
-    return unwrap(await dbMarkOrderPaid(orderId, paymentMethod));
+    const paid = unwrap(await dbMarkOrderPaid(orderId, paymentMethod));
+    await getOrders().refresh();
+    return paid;
   }
 );
 

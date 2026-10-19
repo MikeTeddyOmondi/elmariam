@@ -8,6 +8,13 @@ The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) for 
 
 ## [Unreleased]
 
+### Changed: SvelteKit 2.59.1 to 2.70.3 (pinned) in admin, staff and website
+
+- 2.61.0 removed `.run()` from remote queries and made `await query()` work in any context, event handlers included. The nine `.run()` calls in admin and staff are now plain `await`s
+- `.run()` always fetched; a plain `await` can return the cached value. So the mutations those reads follow now refresh what they change: booking creation refreshes `getInvoices()` as well as `getBookings()` (admin and staff), and the admin `updateOrderStatus` and `markOrderPaid` commands refresh `getOrders()`. The fresh data comes back in the same response, so pages still read current data after a change
+- The `form` and `data` properties of the `enhance` callback argument now throw when read. The website contact form used `form.reset()`; it uses `element.reset()`
+- No toolchain change: 2.70.3 accepts the same Vite, Svelte and `vite-plugin-svelte` versions as 2.59.1. SvelteKit 3 (TypeScript 6, Node 22, Vite 8) is a separate migration
+
 ### Added: customer profile on the website, linked to the signed-in account
 
 - The portal profile page has a working form (it was a disabled "coming soon" button, so no customer could ever book). `saveMyProfile` creates the profile on first save and edits it after: name and a Kenyan mobile number normalised to `2547XXXXXXXX`, plus the ID number, which is set once and not editable afterwards

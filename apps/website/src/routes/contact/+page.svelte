@@ -43,7 +43,7 @@
         SMTP consumer forwards to the business inbox.
       -->
       <form
-        {...sendContactMessage.enhance(async ({ submit, form }) => {
+        {...sendContactMessage.enhance(async ({ submit, element }) => {
           try {
             // `submit()` resolves false on validation issues; it does not throw.
             const ok = await submit();
@@ -51,7 +51,7 @@
               // Confirmation is a toast like everywhere else in the product,
               // rather than a bespoke panel replacing the form.
               toast.success('Thank you for contacting us: we will reach out to you soon.');
-              form.reset();
+              element.reset();
             }
           } catch (e) {
             toastError(e);

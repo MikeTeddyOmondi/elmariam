@@ -201,8 +201,8 @@
             showCreate = false;
             // Refresh + preview the newest booking's receipt (list is desc).
             [bookings, invoices] = await Promise.all([
-              getBookings().run() as Promise<Row[]>,
-              getInvoices().run(),
+              getBookings() as Promise<Row[]>,
+              getInvoices(),
             ]);
             if (bookings[0]) receipt = receiptForBooking(bookings[0]);
           }

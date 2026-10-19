@@ -36,9 +36,8 @@
     updating = orderId;
     try {
       await updateOrderStatus({ orderId, status });
-      // `.run()`: an event handler is not a reactive context, so the query
-      // cannot be awaited directly there.
-      orders = await getOrders().run();
+      // The command refreshed `getOrders()` server-side; this reads that result.
+      orders = await getOrders();
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { updating = null; }
@@ -49,7 +48,7 @@
     try {
       await markOrderPaid({ orderId, paymentMethod });
       toast.success('Order marked as paid.');
-      orders = await getOrders().run();
+      orders = await getOrders();
     } catch (err: any) {
       toast.error(err.message || 'An error occurred');
     } finally { updating = null; }

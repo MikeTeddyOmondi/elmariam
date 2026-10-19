@@ -213,9 +213,9 @@
             toast.success('Booking created.');
             showCreate = false;
             // Refresh the table + invoices, then preview the newest booking's
-            // receipt. `.run()` executes the query imperatively (the loader
-            // above owns the reactive context). Newest is first (sorted desc).
-            [bookings, invoices] = await Promise.all([getBookings().run(), getInvoices().run()]);
+            // receipt. The server refreshed both queries with this submission,
+            // so these reads are current. Newest is first (sorted desc).
+            [bookings, invoices] = await Promise.all([getBookings(), getInvoices()]);
             if (bookings[0]) receipt = receiptForBooking(bookings[0]);
           }
         } catch (e) {

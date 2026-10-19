@@ -161,7 +161,9 @@ export const createBooking = form(
   async (data) => {
     requirePermission('bookings:write');
     const created = unwrapForm(await dbCreateBooking(data));
-    await getBookings().refresh();
+    // Creating a booking also creates its invoice; refresh both so the page
+    // reads current data from this response instead of a cached list.
+    await Promise.all([getBookings().refresh(), getInvoices().refresh()]);
     return created;
   }
 );

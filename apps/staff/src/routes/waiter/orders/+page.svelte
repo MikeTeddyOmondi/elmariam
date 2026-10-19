@@ -213,7 +213,7 @@
             rowCount = 1;
             showCreate = false;
             // Refresh + preview the newest order's receipt (list is desc).
-            orders = (await getOrders().run()) as Row[];
+            orders = (await getOrders()) as Row[];
             if (orders[0]) receipt = receiptForOrder(orders[0]);
           }
         } catch (e) {
